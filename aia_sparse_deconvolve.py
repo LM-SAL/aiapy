@@ -150,7 +150,8 @@ def pinv_deconv(sat, bit_depth, gap=0.7):
     
     return deconv
 
-def compare_imgs(images,labels,types,clim=(0,17),cmap='nipy_spectral',ycut=[],xcut=[],bit_depth=14):
+def compare_imgs(images,labels,types,clim=(0,17),cmap='nipy_spectral', colorbar_label='log2 [DN]',
+                 ycut=[], xcut=[], bit_depth=14, savefig=None):
     numimages = len(images)
     f, axarray = plt.subplots(1,numimages, sharey=True, figsize=(2+numimages*3.5,3.5))    
     nx = images[0].shape[0]
@@ -166,7 +167,7 @@ def compare_imgs(images,labels,types,clim=(0,17),cmap='nipy_spectral',ycut=[],xc
         axarray[i].set_xlim(0,nx)
         axarray[i].set_ylim(0,ny)
         if i == 0:
-            cbar = f.colorbar(mmm[0], label='log2 [DN]')
+            cbar = f.colorbar(mmm[0], label=colorbar_label)
 
     for yy in ycut:
         axarray[0].plot([0,nx],[yy,yy],color='white', linewidth=4, linestyle='-', alpha=0.8)
@@ -209,4 +210,6 @@ def compare_imgs(images,labels,types,clim=(0,17),cmap='nipy_spectral',ycut=[],xc
         plt.ylim(10,images[len(images)-1][xx,:].max()*2)
         plt.legend(loc='best')
         plt.show()
-      
+    if len(savefig) >0:
+        plt.savefig(savefig)
+    plt.close()
