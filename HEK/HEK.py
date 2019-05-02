@@ -1,7 +1,6 @@
 # Module for the Heliophysics Events Knowledgebase
 # Contributors: Nicholas Padmanabhan, Mark Cheung
 
-import argparse
 import datetime
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ class HER_Event:
 
 	def __init__(self, id):
 		self.eventType = id
-		self.specFile = "/ssw/vobs/ontology/data/VOEvent_Spec.txt" # change this filepath if VOEvent_Spec.txt is located elsewhere
+		self.specFile = "VOEvent_Spec.txt"
 		self.Reference_Names = np.zeros(shape = 20, dtype = str)
 		self.Reference_Links = np.zeros(shape = 20, dtype = str)
 		self.Reference_Types = np.zeros(shape = 20, dtype = str)
