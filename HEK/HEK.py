@@ -1,6 +1,7 @@
 # Module for the Heliophysics Events Knowledgebase
 # Contributors: Nicholas Padmanabhan, Mark Cheung
 
+import argparse
 import datetime
 import numpy as np
 import pandas as pd
@@ -332,11 +333,6 @@ class HER_Event:
 			Reference.set("name", "EVENT_MAPURL")
 			Reference.set("uri", self.optional["EVENT_MAPURL"])
 
-		""" Clean up and export the XML file """
-
-		self.__indentxml(voe)
-		tree = ET.ElementTree(voe)
-
 		""" Checks if all required values have been inputted """
 		to_add = []
 		for param in self.required:
@@ -362,6 +358,11 @@ class HER_Event:
 		if filename is None:
 			filename = eventIdentifier + ".xml"
 			print(filename)
+
+		""" Clean up and export the XML file """
+
+		self.__indentxml(voe)
+		tree = ET.ElementTree(voe)
 
 		tree.write(filename)
 
