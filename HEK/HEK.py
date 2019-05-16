@@ -14,7 +14,7 @@ class HER_Event:
 
 	def __init__(self, id):
 		self.eventType = id
-		self.specFile = "/ssw/vobs/ontology/data/VOEvent_Spec.txt" # change this filepath if VOEvent_Spec.txt is located elsewhere
+		self.specFile = "VOEvent_Spec.txt"
 		self.Reference_Names = np.zeros(shape = 20, dtype = str)
 		self.Reference_Links = np.zeros(shape = 20, dtype = str)
 		self.Reference_Types = np.zeros(shape = 20, dtype = str)
@@ -333,11 +333,6 @@ class HER_Event:
 			Reference.set("name", "EVENT_MAPURL")
 			Reference.set("uri", self.optional["EVENT_MAPURL"])
 
-		""" Clean up and export the XML file """
-
-		self.__indentxml(voe)
-		tree = ET.ElementTree(voe)
-
 		""" Checks if all required values have been inputted """
 		to_add = []
 		for param in self.required:
@@ -363,6 +358,11 @@ class HER_Event:
 		if filename is None:
 			filename = eventIdentifier + ".xml"
 			print(filename)
+
+		""" Clean up and export the XML file """
+
+		self.__indentxml(voe)
+		tree = ET.ElementTree(voe)
 
 		tree.write(filename)
 
