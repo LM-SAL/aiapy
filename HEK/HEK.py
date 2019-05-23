@@ -3,8 +3,10 @@
 
 import argparse
 import datetime
+import io
 import numpy as np
 import pandas as pd
+import requests
 import xml.etree.cElementTree as ET
 
 import pprint
@@ -14,14 +16,14 @@ class HER_Event:
 
 	def __init__(self, id):
 		self.eventType = id
-		self.specFile = "VOEvent_Spec.txt"
 		self.Reference_Names = np.zeros(shape = 20, dtype = str)
 		self.Reference_Links = np.zeros(shape = 20, dtype = str)
 		self.Reference_Types = np.zeros(shape = 20, dtype = str)
 		self.Description = ""
 		self.Citations = np.zeros(shape = 20, dtype = str)
 
-		self.__voevent_spec = pd.read_csv(self.specFile, skiprows = 2)
+		temp = requests.get("https://hesperia.gsfc.nasa.gov/ssw/vobs/ontology/data/VOEvent_Spec.txt").content
+		self.__voevent_spec = pd.read_csv(io.StringIO(temp.decode("utf-8")), skiprows = 2)
 		self.__vals = self.__voevent_spec[self.eventType]
 		self.__params = self.__voevent_spec["Parameter"].str.upper()
 		self.__categories = self.__voevent_spec["VOParamType"]
@@ -357,6 +359,7 @@ class HER_Event:
 
 		if filename is None:
 			filename = eventIdentifier + ".xml"
+			filename = filename.replace(":", ".")
 			print(filename)
 
 		""" Clean up and export the XML file """
@@ -370,7 +373,6 @@ class HER_Event:
 		self.data = {
 			"REQUIRED" : self.required,
 			"OPTIONAL" : self.optional,
-			"SPECFILE" : self.specFile,
 			"REFERENCE_NAMES" : self.Reference_Names,
 			"REFERENCE_LINKS" : self.Reference_Links,
 			"REFERENCE_TYPES" : self.Reference_Types,
