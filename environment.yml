@@ -1,0 +1,12 @@
+name: aiapy-dev
+channels:
+- default
+- conda-forge
+dependencies:
+- python
+- numpy
+- matplotlib
+- astropy
+- sunpy
+- flake8
+- pytest
