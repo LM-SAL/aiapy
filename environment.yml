@@ -8,5 +8,7 @@ dependencies:
 - matplotlib
 - astropy
 - sunpy
+- drms
 - flake8
 - pytest
+- sphinx-astropy
