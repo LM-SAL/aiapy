@@ -1,12 +1,38 @@
-Python package for AIA analysis
+aiapy
 -------------------------------
 
 .. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat 
     :target: http://www.sunpy.org                                               
-    :alt: Powered by SunPy Badge    
+    :alt: Powered by SunPy Badge
 
+aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly instrument
+onboard the Solar Dynamics Observatory spacecraft.
 
+Installation
+------------
 
+First, clone the repository
+
+.. code-block:: shell
+
+   git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
+
+Next, install the needed dependencies using Anaconda and activate 
+the environment,
+
+.. code-block:: shell
+
+   cd aiapy
+   conda env create -f environment.yml
+   source activate aiapy-dev
+
+Finally, install the aiapy package,
+
+.. code-block:: shell
+
+   python setup.py install
+
+Once development is a bit more stable, releases will be made on PyPI and conda-forge
 
 License
 -------
@@ -16,7 +42,6 @@ the terms of the BSD 3-Clause license. This package is based upon
 the `Astropy package template <https://github.com/astropy/package-template>`_
 which is licensed under the BSD 3-clause licence. See the licenses folder for
 more information.
-
 
 Contributing
 ------------
