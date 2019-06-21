@@ -4,6 +4,9 @@ aiapy
 .. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat 
     :target: http://www.sunpy.org                                               
     :alt: Powered by SunPy Badge
+.. image:: https://readthedocs.org/projects/aiapy/badge/?version=latest
+    :target: https://aiapy.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly instrument
 onboard the Solar Dynamics Observatory spacecraft.
