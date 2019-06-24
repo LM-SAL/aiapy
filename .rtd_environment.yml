@@ -1,0 +1,14 @@
+name: aiapy-rtd
+channels:
+- default
+- conda-forge
+dependencies:
+- python
+- numpy
+- matplotlib
+- astropy
+- sunpy
+- drms
+- sphinx-astropy
+- sphinx
+- sphinx_rtd_theme

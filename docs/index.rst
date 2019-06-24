@@ -1,15 +1,19 @@
-Documentation
-=============
+aiapy
+======
 
-This is the documentation for aiapy.
+aiapy is a Python package for analyzing data from the Atmospheric Imaging
+Assembly (AIA) instrument onboard the Solar Dynamics Observatory spacecraft.
+
+aiapy includes software for converting AIA images from level 1 to level 1.5, 
+point spread function deconvolution, and computing the wavelength and temperature
+response functions for the EUV channels.
 
 
 .. toctree::
   :maxdepth: 2
 
-  aiapy/index.rst
+  getting_started
+  tutorial
+  code_ref/index
+  develop
 
-.. note:: The layout of this directory is simply a suggestion.  To follow
-          traditional practice, do *not* edit this page, but instead place
-          all documentation for the package inside ``aiapy/``.
-          You can follow this practice or choose your own layout.
