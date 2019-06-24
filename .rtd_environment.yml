@@ -4,11 +4,7 @@ channels:
 - conda-forge
 dependencies:
 - python
-- numpy
-- matplotlib
-- astropy
 - sunpy
-- drms
-- sphinx-astropy
-- sphinx
-- sphinx_rtd_theme
+- pip:
+  - sphinx-astropy
+  - sphinx_rtd_theme
