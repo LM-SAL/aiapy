@@ -1,5 +1,8 @@
-conda:
-  file: .rtd_environment.yml
 python:
-  version: 3
+  version: 3.7
   setup_py_install: True
+  install:
+    - requirements: .rtd-requirements.txt
+    - method: setuptools
+      path: .
+      
