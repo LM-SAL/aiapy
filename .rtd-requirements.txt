@@ -1,3 +1,2 @@
-  sunpy
-  sphinx-astropy
-  sphinx_rtd_theme
+sunpy
+sphinx-astropy
