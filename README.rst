@@ -8,8 +8,16 @@ aiapy
     :target: https://aiapy.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly instrument
-onboard the Solar Dynamics Observatory spacecraft.
+aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument
+onboard NASA's Solar Dynamics Observatory spacecraft. 
+
+aiapy contains routines for:
+- fetching updated keywords (such as pointing information) from Stanford's Joint Science Operations Center (JSOC)
+- correcting time-dependent instrument throughput degradation, 
+- removing the telescope point-spread function (EUV channels only),
+- registering AIA level 1 images onto a common grid (level 1.5),
+- differential emission measure inversions (DEMs): to be done.
+
 
 Installation
 ------------
