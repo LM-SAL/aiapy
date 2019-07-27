@@ -84,6 +84,10 @@ version = package.__version__.split('-', 1)[0]
 # The full version, including alpha/beta/rc tags.
 release = package.__version__
 
+# -- Add mappings for linking to other project documentation ------------------
+
+intersphinx_mapping['sunpy'] = ('http://docs.sunpy.org/en/stable/', None)
+
 
 # -- Options for HTML output --------------------------------------------------
 
