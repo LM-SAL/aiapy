@@ -13,3 +13,6 @@ dependencies:
 - pytest
 - sphinx-astropy
 - sphinx
+- pip:
+  - hissw
+  - pytest-remotedata

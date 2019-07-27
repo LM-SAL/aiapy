@@ -1,5 +1,5 @@
 aiapy
--------------------------------
+======
 
 .. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat 
     :target: http://www.sunpy.org                                               
@@ -12,11 +12,12 @@ aiapy is a Python package for analyzing data from the Atmospheric Imaging Assemb
 onboard NASA's Solar Dynamics Observatory spacecraft. 
 
 aiapy contains routines for:
+
 - fetching updated keywords (such as pointing information) from Stanford's Joint Science Operations Center (JSOC)
-- correcting time-dependent instrument throughput degradation, 
+- correcting time-dependent instrument throughput degradation,
 - removing the telescope point-spread function (EUV channels only),
 - registering AIA level 1 images onto a common grid (level 1.5),
-- differential emission measure inversions (DEMs): to be done.
+- differential emission measure (DEM) inversions
 
 
 Installation
@@ -28,7 +29,7 @@ First, clone the repository
 
    git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
 
-Next, install the needed dependencies using Anaconda and activate 
+Next, install the needed dependencies using Anaconda and activate
 the environment,
 
 .. code-block:: shell
@@ -43,7 +44,20 @@ Finally, install the aiapy package,
 
    python setup.py install
 
-Once development is a bit more stable, releases will be made on PyPI and conda-forge
+Once development is a bit more stable, releases will be made on PyPI and conda-forge.
+
+Testing
+--------
+
+To run the test suite,
+
+.. code-block:: shell
+
+    python setup.py install --remote-data
+
+If an internet connection is not available, exclude the ``--remote-data`` flag.
+
+The `hissw <https://github.com/wtbarnes/hissw>`_ package as well as a valid install of IDL and SSW are required to run the tests that compare results from aiapy and SSW. If ``hissw`` is not installed, these tests are automatically skipped.
 
 License
 -------
