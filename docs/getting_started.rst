@@ -7,18 +7,14 @@ First, clone the repository
 
    git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
 
-Next, install the needed dependencies using Anaconda and activate 
-the environment,
+Next, install the needed dependencies,
 
 .. code-block:: shell
 
    cd aiapy
-   conda env create -f environment.yml
-   source activate aiapy-dev
+   pip install -r requirements/requirements.txt
 
-Alternatively, you can download all of the packages listed in
-`environment.yml` using `pip` if you're not using the Anaconda
-installation. Finally, install the aiapy package,
+Finally, install the aiapy package,
 
 .. code-block:: shell
 
