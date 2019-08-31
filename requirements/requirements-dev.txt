@@ -1,0 +1,8 @@
+-r requirements.txt
+flake8
+pytest
+sphinx-astropy
+sphinx
+hissw
+pytest-remotedata
+pytest-astropy

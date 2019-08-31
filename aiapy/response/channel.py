@@ -34,7 +34,7 @@ class Channel(object):
         Wavelength of AIA channel
     instrument_file : `str`, optional
         Path to AIA instrument file. If not specified, the latest version will
-        be downloaded from SSW.
+        be downloaded from SolarSoft.
     """
 
     @u.quantity_input
@@ -45,7 +45,9 @@ class Channel(object):
     @property
     def is_fuv(self):
         """
-        Returns True for UV and visible channels: 1600, 1700, 4500 angstroms.
+        Returns True for UV and visible channels: 1600, 1700, 4500 |AA|.
+
+        .. |AA| unicode:: x212B .. angstrom
         """
         return self.channel in [1600, 1700, 4500]*u.angstrom
 
@@ -253,22 +255,16 @@ class Channel(object):
         calibration epoch for `obstime`, :math:`A_{eff}(t_0)` is the effective
         area at the first calibration epoch (i.e. at launch),
         :math:`p_1,p_2,p_3` are the interpolation coefficients for the
-        `obstime`epoch, and :math:`\delta t` is the difference between the
+        `obstime` epoch, and :math:`\delta t` is the difference between the
         start time of the epoch and `obstime`.
 
         All calibration terms are taken from the `aia.response` series in JSOC
         or read from the table input by the user. This function is adapted
-        directly from the `aia_bp_corrections.pro` routine in SolarSoftware.
+        directly from the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_ routine in SolarSoft.
 
         Parameters
         ----------
         obstime : `~astropy.time.Time`
-            Time of observation. Can be any format convertible to
-            `~astropy.time.Time`
-
-        References
-        ----------
-        * https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro
 
         See Also
         --------
@@ -283,7 +279,8 @@ class Channel(object):
         # Polynomial correction to interpolate within epoch
         poly = (table['EFFA_P1'][-1]*dt
                 + table['EFFA_P2'][-1]*dt**2
-                + table['EFFA_P3'][-1]*dt**3 + 1.)
+                + table['EFFA_P3'][-1]*dt**3
+                + 1.)
         return u.Quantity(poly * ratio)
 
     @u.quantity_input
@@ -302,17 +299,11 @@ class Channel(object):
         calibration epoch and :math:`A_{eff}(\lambda_E,t_e)` is the effective
         area at the `obstime` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`). This function is adapted directly from
-        the `aia_bp_corrections.pro` routine in SolarSoftware.
+        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_ routine in SolarSoft.
 
         Parameters
         ----------
         obstime : `~astropy.time.Time`
-            Time of observation. Can be any format convertible to
-            `~astropy.time.Time`
-
-        References
-        ----------
-        * https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro
         """
         table = self._select_epoch_from_table(obstime, **kwargs)
         effective_area_interp = np.interp(table['EFF_WVLN'][-1],
@@ -367,7 +358,7 @@ class Channel(object):
             If specified, a time-dependent correction is applied to account
             for degradation
         include_eve_correction : `bool`, optional
-            If true and `obstime` is not None, include correction from EVE
+            If true and `obstime` is not `None`, include correction to EVE
             calibration. The time-dependent correction is also included.
         include_crosstalk : `bool`, optional
             If true, include the effect of crosstalk between channels that
@@ -384,8 +375,8 @@ class Channel(object):
         effective_area : Uncorrected effective area as a function of wavelength
         gain : Gain of the telescope for the particular channel
         crosstalk : Correction factor for crosstalk channel
-        eve_correction
-        time_correction
+        eve_correction : Correction factor from EVE calibration
+        time_correction : Correction factor for time-dependent degradation
         """
         eve_correction, time_correction = 1, 1
         if obstime is not None:
