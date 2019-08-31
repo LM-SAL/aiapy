@@ -2,7 +2,7 @@ python:
   version: 3.7
   setup_py_install: True
   install:
-    - requirements: .rtd-requirements.txt
+    - requirements: requirements/requirements-dev.txt
     - method: setuptools
       path: .
       
