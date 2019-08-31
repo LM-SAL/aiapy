@@ -1,5 +1,6 @@
 -r requirements.txt
 flake8
+doc8
 pytest
 sphinx-astropy
 sphinx
