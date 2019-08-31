@@ -2,18 +2,20 @@ aiapy
 ======
 
 .. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat 
-    :target: http://www.sunpy.org                                               
+    :target: http://www.sunpy.org
     :alt: Powered by SunPy Badge
 .. image:: https://readthedocs.org/projects/aiapy/badge/?version=latest
     :target: https://aiapy.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument
-onboard NASA's Solar Dynamics Observatory spacecraft. 
+aiapy is a Python package for analyzing data from the Atmospheric Imaging
+Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory
+spacecraft.
 
 aiapy contains routines for:
 
-- fetching updated keywords (such as pointing information) from Stanford's Joint Science Operations Center (JSOC)
+- fetching updated keywords (such as pointing information) from Stanford's
+  Joint Science Operations Center (JSOC)
 - correcting time-dependent instrument throughput degradation,
 - removing the telescope point-spread function (EUV channels only),
 - registering AIA level 1 images onto a common grid (level 1.5),
@@ -44,7 +46,8 @@ Finally, install the aiapy package,
 
    python setup.py install
 
-Once development is a bit more stable, releases will be made on PyPI and conda-forge.
+Once development is a bit more stable, releases will be made on PyPI and
+conda-forge.
 
 Testing
 --------
@@ -57,7 +60,9 @@ To run the test suite,
 
 If an internet connection is not available, exclude the ``--remote-data`` flag.
 
-The `hissw <https://github.com/wtbarnes/hissw>`_ package as well as a valid install of IDL and SSW are required to run the tests that compare results from aiapy and SSW. If ``hissw`` is not installed, these tests are automatically skipped.
+The `hissw <https://github.com/wtbarnes/hissw>`_ package as well as a valid install
+of IDL and SSW are required to run the tests that compare results from aiapy
+and SSW. If ``hissw`` is not installed, these tests are automatically skipped.
 
 License
 -------
