@@ -25,20 +25,21 @@ aiapy contains routines for:
 Installation
 ------------
 
+If you'll be developing aiapy, see the
+`development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`_.
+
 First, clone the repository
 
 .. code-block:: shell
 
    git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
 
-Next, install the needed dependencies using Anaconda and activate
-the environment,
+Next, install the needed dependencies,
 
 .. code-block:: shell
 
    cd aiapy
-   conda env create -f environment.yml
-   source activate aiapy-dev
+   pip install -r requirements/requirements.txt
 
 Finally, install the aiapy package,
 
