@@ -21,8 +21,8 @@ def test_correction_table_is_table(correction_table):
 
 @pytest.mark.remote_data
 def test_correction_table_has_columns(correction_table):
-    colnames = ['VER_NUM', 'WAVE_STR', 'T_START', 'T_STOP', 'EFFA_P1', 'EFFA_P2', 'EFFA_P3',
-                'EFF_AREA', 'EFF_WVLN']
+    colnames = ['VER_NUM', 'WAVE_STR', 'T_START', 'T_STOP', 'EFFA_P1',
+                'EFFA_P2', 'EFFA_P3', 'EFF_AREA', 'EFF_WVLN']
     assert all([cn in correction_table.colnames for cn in colnames])
 
 
