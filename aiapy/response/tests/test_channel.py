@@ -16,13 +16,13 @@ else:
     HISSW_MISSING = False
 
 from aiapy.response import Channel
-
-VERSION = 8  # FIXME: import this from aiapy.response
+from aiapy.response.channel import VERSION_NUMBER
 
 # FIXME: need a better way of testing whether to run SSW tests
 needs_ssw = pytest.mark.skipif(
     HISSW_MISSING,
-    reason='hissw required for comparing SSW and Python results. IDL and SSW are also required.')
+    reason='''hissw required for comparing SSW and Python results.
+              IDL and SSW are also required.''')
 
 
 @pytest.fixture
@@ -31,8 +31,13 @@ def channel():
         instrument_file = None
     else:
         # Make sure we are using the same set of SSW data
-        instrument_file = os.path.join(hissw.Environment().ssw_home, 'sdo', 'aia', 'response', 
-                                       f'aia_V{VERSION}_all_fullinst.genx')
+        instrument_file = os.path.join(
+            hissw.Environment().ssw_home,
+            'sdo',
+            'aia',
+            'response',
+            f'aia_V{VERSION_NUMBER}_all_fullinst.genx'
+        )
     return Channel(94*u.angstrom, instrument_file=instrument_file)
 
 
@@ -52,8 +57,8 @@ def test_has_channel_data(channel):
 
 
 def test_channel_data_has_keys(channel):
-    required_keys = ['wave', 'primary', 'secondary', 'fp_filter', 'ent_filter', 'geoarea', 'ccd',
-                     'platescale', 'elecperev', 'elecperdn']
+    required_keys = ['wave', 'primary', 'secondary', 'fp_filter', 'ent_filter',
+                     'geoarea', 'ccd', 'platescale', 'elecperev', 'elecperdn']
     assert all([k in channel._data for k in required_keys])
 
 
@@ -68,10 +73,19 @@ def test_channel_wavelength(channel):
 
 def test_channel_properties(channel):
     """Test that expected properties are present and are quantities"""
-    properties = ['wavelength', 'primary_reflectance', 'secondary_reflectance',
-                  'focal_plane_filter_efficiency', 'entrance_filter_efficiency',
-                  'geometrical_collecting_area', 'quantum_efficiency', 'contamination',
-                  'plate_scale', 'effective_area', 'gain']
+    properties = [
+        'wavelength',
+        'primary_reflectance',
+        'secondary_reflectance',
+        'focal_plane_filter_efficiency',
+        'entrance_filter_efficiency',
+        'geometrical_collecting_area',
+        'quantum_efficiency',
+        'contamination',
+        'plate_scale',
+        'effective_area',
+        'gain'
+    ]
     for p in properties:
         assert isinstance(getattr(channel, p), u.Quantity)
 
@@ -87,12 +101,14 @@ def test_effective_area(channel):
     assert (effective_area == channel.effective_area).all()
 
 
+@pytest.mark.remote_data
 def test_time_correction(channel):
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time
     time_correction = 0.7667012041798814 * u.dimensionless_unscaled
-    assert u.allclose(channel.time_correction(obstime), time_correction, rtol=1e-10, atol=0.)
+    assert u.allclose(channel.time_correction(obstime), time_correction,
+                      rtol=1e-10, atol=0.)
 
 
 def test_eve_correction(channel):
@@ -100,7 +116,8 @@ def test_eve_correction(channel):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time
     eve_correction = 1.0140518082508945 * u.dimensionless_unscaled
-    assert u.allclose(channel.eve_correction(obstime), eve_correction, rtol=1e-10, atol=0.)
+    assert u.allclose(channel.eve_correction(obstime), eve_correction,
+                      rtol=1e-10, atol=0.)
 
 
 def test_gain(channel):
@@ -113,8 +130,8 @@ def test_wavelength_response_uncorrected(channel, hissw_env):
     r = channel.wavelength_response()
     ssw = hissw_env.run('r = aia_get_response(/area,/dn,evenorm=0)',
                         save_vars=['r'], verbose=False)
-    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.photon
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.photon)
+    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.ph)
 
 
 @needs_ssw
@@ -122,8 +139,8 @@ def test_wavelength_response_no_crosstalk(channel, hissw_env):
     r = channel.wavelength_response(include_crosstalk=False)
     ssw = hissw_env.run('r = aia_get_response(/area,/dn,/noblend,evenorm=0)',
                         save_vars=['r'], verbose=False)
-    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.photon
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.photon)
+    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.ph)
 
 
 @pytest.mark.remote_data
@@ -132,10 +149,15 @@ def test_wavelength_response_time(channel, hissw_env):
     now = astropy.time.Time.now()
     r = channel.wavelength_response(obstime=now)
     ssw = hissw_env.run(
-        '''r = aia_get_response(/area,/dn,evenorm=0,timedepend_date='{{obstime}}',version=8)''',
-        save_vars=['r'], args={'obstime': now.tai.isot}, verbose=False)
-    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.photon
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.photon)
+        '''
+r = aia_get_response(/area,/dn,evenorm=0,timedepend_date='{{obstime}}',version={{version}})
+        ''',
+        save_vars=['r'],
+        args={'obstime': now.tai.isot, 'version': VERSION_NUMBER},
+        verbose=False
+    )
+    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.ph)
 
 
 @pytest.mark.remote_data
@@ -144,7 +166,12 @@ def test_wavelength_response_eve(channel, hissw_env):
     now = astropy.time.Time.now()
     r = channel.wavelength_response(obstime=now, include_eve_correction=True)
     ssw = hissw_env.run(
-        '''r = aia_get_response(/area,/dn,evenorm=1,timedepend_date='{{obstime}}',version=8)''',
-        save_vars=['r'], args={'obstime': now.tai.isot}, verbose=False)
-    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.photon
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.photon)
+        '''
+r = aia_get_response(/area,/dn,evenorm=1,timedepend_date='{{obstime}}',version={{version}})
+        ''',
+        save_vars=['r'],
+        args={'obstime': now.tai.isot, 'version': VERSION_NUMBER},
+        verbose=False
+    )
+    r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.ph)
