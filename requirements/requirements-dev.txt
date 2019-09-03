@@ -1,9 +1,10 @@
 -r requirements.txt
 flake8
 doc8
-pytest
+pytest==5.0.1
 sphinx-astropy
 sphinx
 hissw
 pytest-remotedata
 pytest-astropy
+pytest-pep8
