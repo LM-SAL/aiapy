@@ -1,0 +1,30 @@
+image: python:3.7
+
+before_script:
+  - pip install -r requirements/requirements-dev.txt
+  - pip uninstall hissw  -y # cannot run IDL tests on GitLab
+
+stages:
+- Install
+- Test
+
+install:
+  stage: Install
+  script:
+    - python setup.py install
+
+pep8:
+  allow_failure: true  # don't want to be too strict on this yet
+  stage: Test
+  script:
+    - python setup.py test --pep8
+
+test:
+  stage: Test
+  script:
+    - python setup.py test --remote-data
+
+docs:
+  stage: Test
+  script:
+    - python setup.py build_docs
