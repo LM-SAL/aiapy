@@ -7,7 +7,6 @@ before_script:
 stages:
 - Install
 - Test
-- Linting
 
 install:
   stage: Install
@@ -16,7 +15,7 @@ install:
 
 pep8:
   allow_failure: true  # don't want to be too strict on this yet
-  stage: Linting
+  stage: Test
   script:
     - python setup.py test --pep8
 
