@@ -19,7 +19,7 @@ aiapy contains routines for:
 - correcting time-dependent instrument throughput degradation,
 - removing the telescope point-spread function (EUV channels only),
 - registering AIA level 1 images onto a common grid (level 1.5),
-- differential emission measure (DEM) inversions
+
 
 
 Installation
