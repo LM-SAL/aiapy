@@ -7,24 +7,43 @@ before_script:
 stages:
 - Install
 - Test
+- Static
 
 install:
   stage: Install
   script:
     - python setup.py install
 
-pep8:
-  allow_failure: true  # don't want to be too strict on this yet
-  stage: Test
-  script:
-    - python setup.py test --pep8
-
-test:
+test-py37:
   stage: Test
   script:
     - python setup.py test --remote-data
 
-docs:
+test-py36:
+  stage: Test
+  image: python:3.6
+  script:
+    - python setup.py test --remote-data
+
+test-sunpy-dev:
+  allow_failure: true  # we want to know if there will be problems in the future
   stage: Test
   script:
+    - pip install git+https://github.com/sunpy/sunpy.git@master
+    - python setup.py test --remote-data
+
+test-offline:
+  stage: Test
+  script:
+    - python setup.py test
+
+docs:
+  stage: Static
+  script:
     - python setup.py build_docs
+
+pep8:
+  allow_failure: true  # don't want to be too strict on this yet
+  stage: Static
+  script:
+    - python setup.py test --pep8
