@@ -3,7 +3,7 @@ Tests for function that update FITS keywords
 """
 import pytest
 
-import sunpy.data.sample
+import sunpy.data.test
 from sunpy.map import Map
 
 from aiapy.calibrate import fix_observer_location, update_pointing
@@ -11,7 +11,7 @@ from aiapy.calibrate import fix_observer_location, update_pointing
 
 @pytest.fixture
 def smap():
-    return Map(sunpy.data.sample.AIA_171_IMAGE)
+    return Map(sunpy.data.test.get_test_filepath('aia_171_level1.fits'))
 
 
 def test_fix_observer_location(smap):
