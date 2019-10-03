@@ -24,7 +24,7 @@ def fix_observer_location(smap):
     HAEY_OBS, HAEZ_OBS``.
 
     .. note:: `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
-              HGS keywords by using the HAE keywords to construct the 
+              HGS keywords by using the HAE keywords to construct the
               derived observer location.
 
     Parameters

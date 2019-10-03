@@ -87,6 +87,7 @@ release = package.__version__
 # -- Add mappings for linking to other project documentation ------------------
 
 intersphinx_mapping['sunpy'] = ('http://docs.sunpy.org/en/stable/', None)
+intersphinx_mapping['skimage'] = ('https://scikit-image.org/docs/stable/', None)
 
 
 # -- Options for HTML output --------------------------------------------------
