@@ -1,1 +1,1 @@
-sunpy[net]
+sunpy[net,image]
