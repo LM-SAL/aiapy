@@ -45,6 +45,9 @@ def register(smap, missing=None, order=3, use_scipy=False):
         A level 1.5 copy of `~sunpy.map.sources.sdo.AIAMap` or
         `~sunpy.map.sources.sdo.HMIMap`.
     """
+    # This implementation is taken directly from the `aiaprep` method in
+    # sunpy.instr.aia.aiaprep under the terms of the BSD 2 Clause license.
+    # See licenses/SUNPY.rst.
     if not isinstance(smap, (AIAMap, HMIMap)):
         raise ValueError("Input must be an AIAMap or HMIMap.")
     if not contains_full_disk(smap):
