@@ -17,7 +17,8 @@ install:
 test-py37:
   stage: Test
   script:
-    - python setup.py test --remote-data
+    - python setup.py test --remote-data --coverage
+    - coveralls --rcfile='aiapy/tests/coveragerc'
 
 test-py36:
   stage: Test

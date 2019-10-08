@@ -9,3 +9,6 @@ pytest-remotedata
 pytest-astropy
 pytest-pep8
 hissw
+coverage
+coveralls
+PyYaml
