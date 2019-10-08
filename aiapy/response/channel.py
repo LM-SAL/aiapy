@@ -7,14 +7,13 @@ import collections
 import numpy as np
 import astropy.units as u
 import astropy.constants as const
-import astropy.time
-import astropy.table
 from sunpy.io.special import read_genx
 from sunpy.util.config import get_and_create_download_dir
 from sunpy.util.net import check_download_file
 from sunpy.util.metadata import MetaDict
 
-from .util import get_correction_table
+from aiapy.calibrate.util import _select_epoch_from_table
+from aiapy.calibrate import degradation_correction
 
 __all__ = ['Channel']
 
@@ -214,75 +213,6 @@ class Channel(object):
         else:
             return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
-    def _select_epoch_from_table(self, obstime, **kwargs):
-        """
-        Return correction table with only the first epoch and the epoch in
-        which `obstime` falls.
-        """
-        if kwargs.get('correction_table', None) is not None:
-            table = kwargs.get('correction_table')
-        else:
-            table = get_correction_table()
-        # Select only this channel
-        table = table[table['WAVE_STR'] == f'{self.name}_THIN']
-        # Select only most recent version number, JSOC keeps some old entries
-        table = table[table['VER_NUM'] == VERSION_NUMBER]
-        # Select the epoch for the given observation time
-        obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
-                                          obstime < table['T_STOP'])
-        if not obstime_in_epoch.any():
-            raise IndexError(f'No valid calibration epoch for {obstime}')
-        # Create new table with only first and obstime epochs
-        return astropy.table.Table(rows=[table[0], table[obstime_in_epoch][0]],
-                                   names=table.colnames)
-
-    @u.quantity_input
-    def time_correction(self, obstime, **kwargs) -> u.dimensionless_unscaled:
-        """
-        Correction to effective area to account for time-dependent degradation
-        of instrument
-
-        The correction factor to account for the time-varying degradation of
-        the telescopes is given by a normalization to the calibration epoch
-        closest to `obstime` and an interpolation within that epoch to
-        `obstime`,
-
-        .. math::
-
-            \\frac{A_{eff}(t_{e})}{A_{eff}(t_0)}(1 + p_1\delta t + p_2\delta t^2 + p_3\delta t^3)
-
-        where :math:`A_{eff}(t_e)` is the effective area calculated at the
-        calibration epoch for `obstime`, :math:`A_{eff}(t_0)` is the effective
-        area at the first calibration epoch (i.e. at launch),
-        :math:`p_1,p_2,p_3` are the interpolation coefficients for the
-        `obstime` epoch, and :math:`\delta t` is the difference between the
-        start time of the epoch and `obstime`.
-
-        All calibration terms are taken from the `aia.response` series in JSOC
-        or read from the table input by the user. This function is adapted
-        directly from the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_ routine in SolarSoft.
-
-        Parameters
-        ----------
-        obstime : `~astropy.time.Time`
-
-        See Also
-        --------
-        wavelength_response
-        eve_correction
-        """
-        table = self._select_epoch_from_table(obstime, **kwargs)
-        # Time difference between obstime and start of epoch
-        dt = (obstime - table['T_START'][-1]).to(u.day).value
-        # Correction to most recent epoch
-        ratio = table['EFF_AREA'][-1] / table['EFF_AREA'][0]
-        # Polynomial correction to interpolate within epoch
-        poly = (table['EFFA_P1'][-1]*dt
-                + table['EFFA_P2'][-1]*dt**2
-                + table['EFFA_P3'][-1]*dt**3
-                + 1.)
-        return u.Quantity(poly * ratio)
-
     @u.quantity_input
     def eve_correction(self, obstime, **kwargs) -> u.dimensionless_unscaled:
         """
@@ -299,13 +229,14 @@ class Channel(object):
         calibration epoch and :math:`A_{eff}(\lambda_E,t_e)` is the effective
         area at the `obstime` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`). This function is adapted directly from
-        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_ routine in SolarSoft.
+        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+        routine in SolarSoft.
 
         Parameters
         ----------
         obstime : `~astropy.time.Time`
         """
-        table = self._select_epoch_from_table(obstime, **kwargs)
+        table = _select_epoch_from_table(self.channel, obstime, **kwargs)
         effective_area_interp = np.interp(table['EFF_WVLN'][-1],
                                           self.wavelength.to(u.angstrom),
                                           self.effective_area.to(u.cm**2))
@@ -314,6 +245,23 @@ class Channel(object):
     @property
     @u.quantity_input
     def gain(self,) -> u.count / u.ph:
+        """
+        Gain of the CCD camera system.
+
+        According to Section 2 of [1]_, the gain of the CCD-camera system, in
+        DN per photon, is given by,
+
+        .. math::
+
+            G(\lambda) = \\frac{hc}{\lambda}\\frac{g}{a}
+
+        where :math:`g` is the camera gain in DN per electron
+        and :math:`a\\approx 3.65` eV per electron is a conversion factor.
+
+        References
+        ----------
+        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        """
         _e = u.electron  # Avoid rewriting u.electron a lot
         electron_per_ev = self._data['elecperev'] * _e / u.eV
         energy_per_photon = const.h * const.c / self.wavelength / u.ph
@@ -366,21 +314,23 @@ class Channel(object):
 
         Other Parameters
         ----------------
-        correction_table : `~astropy.table.Table`, optional
-            Table of correction parameters. If not specified, it will be
-            queried from JSOC.
+        correction_table : `~astropy.table.Table` or `str`, optional
+            Table of correction parameters or path to correction table file.
+            If not specified, it will be queried from JSOC. See
+            `~aiapy.calibrate.util.get_correction_table` for more information.
 
         See Also
         --------
-        effective_area : Uncorrected effective area as a function of wavelength
-        gain : Gain of the telescope for the particular channel
-        crosstalk : Correction factor for crosstalk channel
-        eve_correction : Correction factor from EVE calibration
-        time_correction : Correction factor for time-dependent degradation
+        effective_area
+        gain
+        crosstalk
+        eve_correction
+        aiapy.calibrate.degradation_correction
         """
         eve_correction, time_correction = 1, 1
         if obstime is not None:
-            time_correction = self.time_correction(obstime, **kwargs)
+            time_correction = degradation_correction(self.channel, obstime,
+                                                     **kwargs)
             if include_eve_correction:
                 eve_correction = self.eve_correction(obstime, **kwargs)
         crosstalk = self.crosstalk if include_crosstalk else 0*u.cm**2

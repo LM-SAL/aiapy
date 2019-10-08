@@ -6,7 +6,9 @@ import astropy.units as u
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.map import contains_full_disk
 
-__all__ = ['register']
+from .util import _select_epoch_from_table
+
+__all__ = ['register', 'degradation_correction']
 
 
 def register(smap, missing=None, order=3, use_scipy=False):
@@ -83,3 +85,52 @@ def register(smap, missing=None, order=3, use_scipy=False):
     newmap.meta['bitpix'] = -64
 
     return newmap
+
+
+@u.quantity_input
+def degradation_correction(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unscaled:
+    """
+    Correction to account for time-dependent degradation of the instrument.
+
+    The correction factor to account for the time-varying degradation of
+    the telescopes is given by a normalization to the calibration epoch
+    closest to `obstime` and an interpolation within that epoch to
+    `obstime`,
+
+    .. math::
+
+        \\frac{A_{eff}(t_{e})}{A_{eff}(t_0)}(1 + p_1\delta t + p_2\delta t^2 + p_3\delta t^3)
+
+    where :math:`A_{eff}(t_e)` is the effective area calculated at the
+    calibration epoch for `obstime`, :math:`A_{eff}(t_0)` is the effective
+    area at the first calibration epoch (i.e. at launch),
+    :math:`p_1,p_2,p_3` are the interpolation coefficients for the
+    `obstime` epoch, and :math:`\delta t` is the difference between the
+    start time of the epoch and `obstime`.
+
+    All calibration terms are taken from the `aia.response` series in JSOC
+    or read from the table input by the user. This function is adapted
+    directly from the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+    routine in SolarSoft.
+
+    Parameters
+    ----------
+    channel : `~astropy.units.Quantity`
+    obstime : `~astropy.time.Time`
+
+    See Also
+    --------
+    aiapy.response.Channel.wavelength_response
+    aiapy.response.Channel.eve_correction
+    """
+    table = _select_epoch_from_table(channel, obstime, **kwargs)
+    # Time difference between obstime and start of epoch
+    dt = (obstime - table['T_START'][-1]).to(u.day).value
+    # Correction to most recent epoch
+    ratio = table['EFF_AREA'][-1] / table['EFF_AREA'][0]
+    # Polynomial correction to interpolate within epoch
+    poly = (table['EFFA_P1'][-1]*dt
+            + table['EFFA_P2'][-1]*dt**2
+            + table['EFFA_P3'][-1]*dt**3
+            + 1.)
+    return u.Quantity(poly * ratio)
