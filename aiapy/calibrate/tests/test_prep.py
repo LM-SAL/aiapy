@@ -5,11 +5,15 @@ import tempfile
 
 import numpy as np
 import pytest
+import astropy.time
+import astropy.units as u
 from astropy.io.fits.verify import VerifyWarning
 import sunpy.data.test
 from sunpy.map import Map
 
-from aiapy.calibrate import register
+from aiapy.calibrate import register, degradation_correction
+from aiapy.calibrate.util import get_correction_table
+from aiapy.tests.data import get_test_filepath
 
 
 @pytest.fixture
@@ -44,7 +48,7 @@ def test_register(original, lvl_15_map):
     assert lvl_15_map.meta['lvl_num'] == 1.5
 
 
-def test_filesave(lvl_15_map):
+def test_register_filesave(lvl_15_map):
     """
     Test that adjusted header values are still correct after saving the map
     and reloading it.
@@ -68,7 +72,7 @@ def test_filesave(lvl_15_map):
     assert load_map.meta['lvl_num'] == 1.5
 
 
-def test_unsupported_maps(original):
+def test_register_unsupported_maps(original):
     """
     Make sure we raise an error when an unsupported map is passed in
     """
@@ -82,3 +86,37 @@ def test_unsupported_maps(original):
         'mdi_fd_Ic_6h_01d.5871.0000_s.fits'))
     with pytest.raises(ValueError):
         _ = register(non_sdo_map)
+
+
+@pytest.mark.remote_data
+def test_degradation_correction_jsoc():
+    obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
+    time_correction = degradation_correction(94*u.angstrom, obstime)
+    # NOTE: this just tests an expected result from aiapy, not necessarily an
+    # absolutely correct result. It was calculated for the above time based
+    # on the correction parameters in JSOC at the time this code was committed.
+    # NOTE: If this test starts failing, it may be because the correction table
+    # parameters have been updated in JSOC.
+    time_correction_truth = 0.7667012041798814 * u.dimensionless_unscaled
+    assert u.allclose(time_correction, time_correction_truth,
+                      rtol=1e-10, atol=0.)
+
+
+@pytest.mark.parametrize('correction_table', [
+    get_test_filepath('aia_V8_20171210_050627_response_table.txt'),
+    get_correction_table(correction_table=get_test_filepath(
+        'aia_V8_20171210_050627_response_table.txt')),
+])
+def test_degradation_correction_file(correction_table):
+    obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
+    time_correction = degradation_correction(94*u.angstrom, obstime,
+                                             correction_table=correction_table)
+    # NOTE: this just tests an expected result from aiapy, not necessarily an
+    # absolutely correct result. It was calculated for the above time and
+    # the specific correction table file.
+    # NOTE: This value is different from that returned by JSOC because the
+    # correction tables in JSOC are not necessarily the same as those in
+    # the correction table files in SSW.
+    time_correction_truth = 0.7667108920899671 * u.dimensionless_unscaled
+    assert u.allclose(time_correction, time_correction_truth,
+                      rtol=1e-10, atol=0.)
