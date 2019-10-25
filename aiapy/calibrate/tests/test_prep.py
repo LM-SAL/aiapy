@@ -23,7 +23,8 @@ def original():
 
 @pytest.fixture
 def lvl_15_map(original):
-    return register(original)
+    # Use scipy set to True as skimage can cause CI test failures
+    return register(original, use_scipy=True)
 
 
 def test_register(original, lvl_15_map):
