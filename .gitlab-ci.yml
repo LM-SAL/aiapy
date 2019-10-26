@@ -14,15 +14,22 @@ install:
   script:
     - python setup.py install
 
+test-py36:
+  stage: Test
+  image: python:3.6
+  script:
+    - python setup.py test --remote-data
+
 test-py37:
   stage: Test
   script:
     - python setup.py test --remote-data --coverage
     - coveralls --rcfile='aiapy/tests/coveragerc'
 
-test-py36:
+test-py38:
   stage: Test
-  image: python:3.6
+  image: python:3.8
+  allow_failure: true
   script:
     - python setup.py test --remote-data
 
