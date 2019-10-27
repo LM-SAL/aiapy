@@ -11,7 +11,8 @@ from astropy.io.fits.verify import VerifyWarning
 import sunpy.data.test
 from sunpy.map import Map
 
-from aiapy.calibrate import register, degradation_correction
+from aiapy.calibrate import (register, correct_degradation,
+                             degradation_correction)
 from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 
@@ -90,6 +91,16 @@ def test_register_unsupported_maps(original):
 
 
 @pytest.mark.remote_data
+def test_correct_degradation(original):
+    original_corrected = correct_degradation(original)
+    d = degradation_correction(original.wavelength, original.date)
+    uncorrected_over_corrected = original.data / original_corrected.data
+    # If intensity is zero, ratio will be NaN/infinite
+    i_valid = original.data > 0.
+    assert np.allclose(uncorrected_over_corrected[i_valid], d)
+
+
+@pytest.mark.remote_data
 def test_degradation_correction_jsoc():
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
     time_correction = degradation_correction(94*u.angstrom, obstime)
@@ -115,9 +126,6 @@ def test_degradation_correction_file(correction_table):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the specific correction table file.
-    # NOTE: This value is different from that returned by JSOC because the
-    # correction tables in JSOC are not necessarily the same as those in
-    # the correction table files in SSW.
     time_correction_truth = 0.7667108920899671 * u.dimensionless_unscaled
     assert u.allclose(time_correction, time_correction_truth,
                       rtol=1e-10, atol=0.)
