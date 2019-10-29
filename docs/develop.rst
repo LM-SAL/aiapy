@@ -84,6 +84,8 @@ To make sure everything is working alright, you can run the tests,
 
     python setup.py test
 
+See testing_ for more details regarding running the tests.
+
 Making a Contribution
 ---------------------
 
@@ -114,6 +116,58 @@ At least one other aiapy developer must approve your changes before the code
 can be merged. Additionally, all automated tests should pass and all
 conversations should be resolved. Once these steps are complete, the code can
 be merged and you can delete  your branch `my-new-feature`.
+
+.. _testing:
+
+Testing
+-------
+
+Before committing any changes, you should ensure that the all of the tests pass
+locally. To run the tests,
+
+.. code:: shell
+
+    python setup.py test --remote-data
+
+This will generate report showing which tests passed and which failed (if any).
+Dropping the `--remote-data` flag will skip tests that require a network
+connection. aiapy uses the `pytest <https://pytest.org/en/latest/>`_ framework
+in the context of the astropy package template for discovering and running
+all of the tests. See the
+`Astropy testing guidelines <https://docs.astropy.org/en/stable/development/testguide.html>`_
+for additional details.
+
+Additions to the codebase should be accompanied by appropriate
+tests such that the test coverage of the entire package does not decrease.
+You can check the test coverage by running,
+
+.. code:: shell
+
+    python setup.py test --remote-data --coverage
+
+Tests should be added to the directory in the appropriate subpackage, e.g.
+for  `calibrate`, the tests should be placed in `calibrate/tests`. Your
+tests can be added to an existing file or placed in a new file following
+the naming convention `test_*.py`. This organization allows the tests to
+be automatically discovered by pytest.
+
+There are several tests that require a working installation of `sswidl <http://www.lmsal.com/solarsoft/>`_
+in order to compare results from IDL and Python. This is managed
+via the `hissw <https://github.com/wtbarnes/hissw/>`_ package.
+If you'd like to run these tests, you must first tell `hissw`
+where to find your IDL and SSW installations by placing the
+following lines in the file `$HOME/.hissw/hisswrc`,
+
+.. code:: yaml
+
+    [hissw]
+    ssw_home=/path/to/ssw
+    idl_home=/another/path/to/idl
+
+where `ssw_home` is the path to the top of the sswidl tree and `idl_home` is
+the path to a working installation of IDL. For more details, see
+the `hissw documentation <https://wtbarnes.github.io/hissw/>`_. If a working
+installation is not available, these tests are automatically skipped.
 
 Best Practices
 --------------
