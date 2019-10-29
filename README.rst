@@ -8,12 +8,10 @@ spacecraft.
 aiapy contains routines for:
 
 - fetching updated keywords (such as pointing information) from Stanford's
-  Joint Science Operations Center (JSOC)
+  Joint Science Operations Center (JSOC),
 - correcting time-dependent instrument throughput degradation,
 - removing the telescope point-spread function (EUV channels only),
-- registering AIA level 1 images onto a common grid (level 1.5),
-
-
+- registering AIA level 1 images onto a common grid (level 1.5).
 
 Installation
 ------------
@@ -46,17 +44,23 @@ conda-forge.
 Testing
 --------
 
-To run the test suite,
+If you want to run the test suite, first install the dev requirements,
 
 .. code-block:: shell
 
-    python setup.py install --remote-data
+    pip install -r requirements/requirements-dev.txt
+
+and then run
+
+.. code-block:: shell
+
+    python setup.py test --remote-data
 
 If an internet connection is not available, exclude the ``--remote-data`` flag.
 
-The `hissw <https://github.com/wtbarnes/hissw>`_ package as well as a valid install
-of IDL and SSW are required to run the tests that compare results from aiapy
-and SSW. If ``hissw`` is not installed, these tests are automatically skipped.
+A valid install of IDL and SSW are required to run the tests that compare
+results from aiapy and SSW. If one is not available, these tests are
+automatically skipped.
 
 License
 -------
