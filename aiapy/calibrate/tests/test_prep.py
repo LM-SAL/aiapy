@@ -55,7 +55,7 @@ def test_register_filesave(lvl_15_map):
     Test that adjusted header values are still correct after saving the map
     and reloading it.
     """
-    afilename = tempfile.NamedTemporaryFile(suffix='fits').name
+    afilename = tempfile.NamedTemporaryFile(suffix='.fits').name
     with pytest.warns(
             VerifyWarning,
             match="The 'BLANK' keyword is only applicable to integer data"):
