@@ -8,7 +8,7 @@ from sunpy.map import contains_full_disk
 
 from .util import _select_epoch_from_table
 
-__all__ = ['register', 'correct_degradation', 'degradation_correction']
+__all__ = ['register', 'correct_degradation', 'degradation']
 
 
 def register(smap, missing=None, order=3, use_scipy=False):
@@ -93,7 +93,7 @@ def correct_degradation(smap, **kwargs):
 
     This function applies a time-dependent correction to an AIA observation by
     dividing the observed intensity by the correction factor calculated by
-    `degradation_correction`.
+    `degradation`.
 
     Parameters
     ----------
@@ -101,15 +101,15 @@ def correct_degradation(smap, **kwargs):
 
     See Also
     --------
-    degradation_correction
+    degradation
     """
-    d = degradation_correction(smap.wavelength, smap.date, **kwargs)
+    d = degradation(smap.wavelength, smap.date, **kwargs)
     return smap._new_instance(smap.data / d, smap.meta)
 
 
 @u.quantity_input
-def degradation_correction(channel: u.angstrom, obstime,
-                           **kwargs) -> u.dimensionless_unscaled:
+def degradation(channel: u.angstrom, obstime,
+                **kwargs) -> u.dimensionless_unscaled:
     """
     Correction to account for time-dependent degradation of the instrument.
 
