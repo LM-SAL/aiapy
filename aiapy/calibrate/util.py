@@ -30,7 +30,7 @@ def get_correction_table(correction_table=None):
 
     See Also
     --------
-    aiapy.calibrate.degradation_correction
+    aiapy.calibrate.degradation
     """
     if correction_table is not None:
         table = astropy.io.ascii.read(correction_table)

@@ -13,7 +13,7 @@ from sunpy.util.net import check_download_file
 from sunpy.util.metadata import MetaDict
 
 from aiapy.calibrate.util import _select_epoch_from_table
-from aiapy.calibrate import degradation_correction
+from aiapy.calibrate import degradation
 
 __all__ = ['Channel']
 
@@ -325,12 +325,11 @@ class Channel(object):
         gain
         crosstalk
         eve_correction
-        aiapy.calibrate.degradation_correction
+        aiapy.calibrate.degradation
         """
         eve_correction, time_correction = 1, 1
         if obstime is not None:
-            time_correction = degradation_correction(self.channel, obstime,
-                                                     **kwargs)
+            time_correction = degradation(self.channel, obstime, **kwargs)
             if include_eve_correction:
                 eve_correction = self.eve_correction(obstime, **kwargs)
         crosstalk = self.crosstalk if include_crosstalk else 0*u.cm**2
