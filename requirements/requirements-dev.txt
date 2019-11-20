@@ -5,6 +5,7 @@ pytest
 sphinx-astropy
 sphinx
 sphinx-rtd-theme
+sphinx-gallery
 pytest-remotedata
 pytest-astropy
 pytest-pep8

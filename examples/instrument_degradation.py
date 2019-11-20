@@ -1,0 +1,65 @@
+"""
+==========================================
+Modeling AIA Channel Degradation over Time
+==========================================
+
+This example demonstrates how to model the degradation
+of the AIA channels as a function of time over the entire
+lifetime of the instrument.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import astropy.units as u
+import astropy.time
+
+from aiapy.calibrate import degradation
+from aiapy.calibrate.util import get_correction_table
+
+###########################################################
+# When looking at AIA images over the lifetime of the mission,
+# it important to understand how the degradation of the instrument
+# impacts the measured intensity. This can be important in machine
+# learning applications where a training set may comprise many images
+# over a number of years. In this case, incorporating the effect of
+# instrument degradation is an important step in the data normalization
+# process.
+#
+# First, fetch the table of correction table parameters from JSOC. It is
+# not strictly necessary to do this, but will significantly speed up the
+# calculation by only fetching the table once.
+correction_table = get_correction_table()
+
+###########################################################
+# We want to compute the degradation for each EUV channel.
+channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
+
+###########################################################
+# We can use the `~astropy.time` subpackage to create an array of times
+# between now and the start of the mission with a cadence of one week.
+time_0 = astropy.time.Time('2010-06-01T00:00:00', scale='utc')
+now = astropy.time.Time.now()
+time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
+
+###########################################################
+# Finally, we can use the `~aiapy.calibration.degradation` function to
+# compute the degradation for a particular channel and observation time.
+# This is modeled as the ratio of the effective area measured at a particular
+# calibration epoch over the uncorrected effective area with a polynomial
+# interpolation to the exact time.
+deg = {}
+for c in channels:
+    deg[c] = u.Quantity([degradation(c, t, correction_table=correction_table)
+                         for t in time])
+
+###########################################################
+# Plotting the different degradation curves as a function of time, we can
+# easily visualize how the different channels have degraded over time.
+fig = plt.figure()
+ax = fig.gca()
+for c in channels:
+    ax.plot(time.jyear, deg[c], label=f'{c.value:.0f} Å')
+ax.set_xlim(time.jyear[[0, -1]])
+ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc='lower center')
+ax.set_xlabel('Time [Julian Year]')
+ax.set_ylabel('Degradation')

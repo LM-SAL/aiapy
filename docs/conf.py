@@ -156,6 +156,21 @@ latex_documents = [('index', project + '.tex', project + u' Documentation',
 man_pages = [('index', project.lower(), project + u' Documentation',
               [author], 1)]
 
+# -- Extensions -------------------------------------------------------------
+
+extensions += [
+    'sphinx_gallery.gen_gallery',
+]
+
+# -- Sphinx-gallery ----------------------------------------------------------
+
+sphinx_gallery_conf = {
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'generated/gallery',
+    # execute all examples except those that start with "skip_"
+    'filename_pattern': '^((?!skip_).)*$',
+    'default_thumb_file': '_static/sdo.png',
+}
 
 # -- Options for the edit_on_github extension ---------------------------------
 
