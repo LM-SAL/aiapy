@@ -28,7 +28,10 @@ test-py37:
 test-py38:
   stage: Test
   image: python:3.8
-  allow_failure: true
+  allow_failure: false
+  before_script:
+  - pip install numpy
+  - pip install -r requirements/requirements-dev.txt
   script:
     - python setup.py test --remote-data
 
