@@ -13,7 +13,7 @@ response functions for the EUV channels.
   :maxdepth: 2
 
   getting_started
-  tutorial
+  generated/gallery/index
   code_ref/index
   develop
 
