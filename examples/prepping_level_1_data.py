@@ -25,21 +25,20 @@ from aiapy.calibrate import register, update_pointing
 # grid in which the y-axis of the image is aligned with solar North.
 #
 # This process is often referred to as "aia_prep" and the resulting data are
-# typically referred to as level 1.5 data.  In this example, we will
+# typically referred to as level 1.5 data. In this example, we will
 # demonstrate how to do this with `aiapy`.
 #
-# First, let's fetch a level 1 AIA image from the VSO for each of the EUV
-# wavelengths from 1 January 2019 and create a list of `~sunpy.map.Map`
-# objects.
+# First, let's fetch level 1 AIA images from the VSO from 1 January
+# 2019 for the 94 Å and 131 Å channels and create a `~sunpy.map.Map` object.
 q = Fido.search(
     attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
     attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=335*u.angstrom),
+    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=131*u.angstrom),
 )
 maps = sunpy.map.Map(Fido.fetch(q))
 
 ###########################################################
-# The first step in this process is to update the metadata of each map to the
+# The first step in this process is to update the metadata of the map to the
 # most recent pointing using  the `~aiapy.calibrate.update_pointing` function.
 # This function queries the JSOC for the most recent pointing information,
 # updates the metadata, and returns a `~sunpy.map.Map` with updated metadata.
