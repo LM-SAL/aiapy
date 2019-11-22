@@ -29,7 +29,7 @@ from aiapy.calibrate.util import get_correction_table
 # degradation compared to the other EUV channels.
 q = Fido.search(
     attrs.Time('2010-06-01T00:00:00', '2018-06-01T00:00:00'),
-    attrs.Sample(1*u.year),
+    attrs.Sample(2*u.year),
     attrs.Instrument('AIA'),
     attrs.Wavelength(335*u.angstrom),
 )
@@ -41,9 +41,12 @@ maps = sunpy.map.Map(sorted(Fido.fetch(q)))
 # based on the time and wavelength of the observation, divides the intensity
 # by the correction factor, and returns a new corrected map. For more details
 # on how the correction factor is calculated, see the documentation for the
-# `~aiapy.calibrate.degradation` function.
+# `~aiapy.calibrate.degradation` function. Note that each map is resampled
+# to 1024 pixels in each direction to reduce memory consumption. This step
+# can be omitted if you prefer to work with the full-resolution data.
 correction_table = get_correction_table()
-maps_corrected = [correct_degradation(m, correction_table=correction_table)
+maps_corrected = [correct_degradation(m.resample((1024, 1024)*u.pixel),
+                                      correction_table=correction_table)
                   for m in maps]
 
 ###########################################################
