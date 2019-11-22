@@ -56,19 +56,14 @@ for m in maps_updated_pointing:
 ###########################################################
 # We can use the `~aiapy.calibrate.register` function to scale each image to
 # a common resolution and derotate the image such that the y-axis of the image
-# is aligned with solar North. To save memory and compute time, we will first
-# resample each map to have 1024 pixels in each direction. This step can be
-# omitted if you'd prefer to work with the full-resolution images.
-maps_resampled = [m.resample((1024, 1024)*u.pixel) for m in maps_updated_pointing]
+# is aligned with solar North.
 maps_registered = [register(m) for m in maps_updated_pointing]
 
 ###########################################################
 # If we look again at the plate scale and rotation matrix of each image, we
 # should find that the resolution in each direction of all images is
-# the same and that the rotation matrices are all diagonalized.
-# The images in `maps_registered` are now level 1.5 data products. Note that
-# if we had not resampled the image prior to registration, the new plate scale
-# of each image would be 0.6 arcseconds per pixel.
+# 0.6 arcseconds per pixel and that the rotation matrices are all diagonalized.
+# The images in `maps_registered` are now level 1.5 data products.
 for m in maps_registered:
     print(m.scale)
 for m in maps_registered:
