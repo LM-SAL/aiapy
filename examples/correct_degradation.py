@@ -29,7 +29,7 @@ from aiapy.calibrate.util import get_correction_table
 # degradation compared to the other EUV channels.
 q = Fido.search(
     attrs.Time('2010-06-01T00:00:00', '2018-06-01T00:00:00'),
-    attrs.Sample(1*u.year),
+    attrs.Sample(2*u.year),
     attrs.Instrument('AIA'),
     attrs.Wavelength(335*u.angstrom),
 )
