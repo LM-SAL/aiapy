@@ -10,6 +10,6 @@ pytest-remotedata
 pytest-astropy
 pytest-pep8
 hissw
-coverage
+coverage<5
 coveralls
 PyYaml
