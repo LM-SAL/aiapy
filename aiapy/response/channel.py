@@ -238,9 +238,9 @@ class Channel(object):
         """
         table = _select_epoch_from_table(self.channel, obstime, **kwargs)
         effective_area_interp = np.interp(table['EFF_WVLN'][-1],
-                                          self.wavelength.to(u.angstrom),
-                                          self.effective_area.to(u.cm**2))
-        return u.Quantity(table['EFF_AREA'][0] / effective_area_interp)
+                                          self.wavelength,
+                                          self.effective_area)
+        return table['EFF_AREA'][0] / effective_area_interp
 
     @property
     @u.quantity_input

@@ -5,7 +5,7 @@ import numpy as np
 from astropy.time import Time
 import astropy.units as u
 import astropy.io.ascii
-from astropy.table import Table
+from astropy.table import QTable
 from sunpy.net import jsoc, attrs
 
 __all__ = ['get_correction_table']
@@ -44,10 +44,14 @@ def get_correction_table(correction_table=None):
                              'EFFA_P1', 'EFFA_P2', 'EFFA_P3', 'EFF_AREA',
                              'EFF_WVLN']),
         )
-        table = Table.from_pandas(q)
+        table = QTable.from_pandas(q)
 
     table['T_START'] = Time(table['T_START'], scale='utc')
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')
+    table['WAVELNTH'].unit = 'Angstrom'
+    table['EFF_WVLN'].unit = 'Angstrom'
+    table['EFF_AREA'].unit = 'cm2'
+
     return table
 
 
@@ -78,5 +82,4 @@ def _select_epoch_from_table(channel, obstime, **kwargs):
     if not obstime_in_epoch.any():
         raise IndexError(f'No valid calibration epoch for {obstime}')
     # Create new table with only first and obstime epochs
-    return astropy.table.Table(rows=[table[0], table[obstime_in_epoch][0]],
-                               names=table.colnames)
+    return QTable(table[[0, np.where(obstime_in_epoch)[0][0]]])

@@ -258,7 +258,7 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
 
     area_not_mesh = 0.82  # fractional area not covered by the mesh
     spacing = meshinfo['spacing_fp'] if focal_plane else meshinfo['spacing_e']
-    mesh_ratio = meshinfo['mesh_pitch'] / meshinfo['mesh_width']
+    mesh_ratio = (meshinfo['mesh_pitch'] / meshinfo['mesh_width']).decompose().value
     spacing_x = spacing * np.cos(angles)
     spacing_y = spacing * np.sin(angles)
 
