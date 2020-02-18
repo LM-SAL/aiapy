@@ -89,6 +89,25 @@ class Channel(object):
         return f'{self.channel.to(u.angstrom).value:.0f}'
 
     @property
+    def telescope_number(self,):
+        """
+        Label denoting the telescope to which the given channel is assigned.
+        See `crosstalk` for context of why this is important.
+        """
+        return {
+            94*u.angstrom: 4,
+            131*u.angstrom: 1,
+            171*u.angstrom: 3,
+            193*u.angstrom: 2,
+            211*u.angstrom: 2,
+            304*u.angstrom: 4,
+            335*u.angstrom: 1,
+            1600*u.angstrom: 3,
+            1700*u.angstrom: 3,
+            4500*u.angstrom: 3,
+        }[self.channel]
+
+    @property
     @u.quantity_input
     def wavelength(self,) -> u.angstrom:
         """
