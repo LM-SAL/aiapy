@@ -4,26 +4,18 @@ aiapy
 aiapy is a Python package for analyzing data from the Atmospheric Imaging
 Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory
 spacecraft.
-
-aiapy contains routines for:
-
-- fetching updated keywords (such as pointing information) from Stanford's
-  Joint Science Operations Center (JSOC),
-- correcting time-dependent instrument throughput degradation,
-- removing the telescope point-spread function (EUV channels only),
-- registering AIA level 1 images onto a common grid (level 1.5).
+For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`_.
+For some examples of using aiapy, see
+`our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`_.
 
 Installation
 ------------
-
-If you'll be developing aiapy, see the
-`development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`_.
 
 First, clone the repository
 
 .. code-block:: shell
 
-   git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
+   git clone --recursive https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
 
 Next, install the needed dependencies,
 
@@ -40,6 +32,8 @@ Finally, install the aiapy package,
 
 Once development is a bit more stable, releases will be made on PyPI and
 conda-forge.
+If you'll be developing aiapy, see the
+`development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`_.
 
 Testing
 --------
