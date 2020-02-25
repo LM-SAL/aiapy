@@ -10,7 +10,7 @@ to account for the degradation of the telescopes over time.
 import matplotlib.pyplot as plt
 import astropy.units as u
 import astropy.time
-from astropy.visualization import ImageNormalize, SqrtStretch
+from astropy.visualization import ImageNormalize, SqrtStretch, time_support
 from sunpy.net import Fido, attrs
 import sunpy.map
 
@@ -23,8 +23,8 @@ from aiapy.calibrate.util import get_correction_table
 # can correct for this by modeling the degradation over time and
 # then dividing the image intensity by this correction.
 #
-# First, let's fetch one 335 Å AIA observation from the VSO for every year
-# between 2010 and 2018 and create a list of `~sunpy.map.Map` objects.
+# First, let's fetch one 335 Å AIA observation from the VSO for every other
+# year between 2010 and 2018 and create a list of `~sunpy.map.Map` objects.
 # We choose the 335 Å channel because it has experienced significant
 # degradation compared to the other EUV channels.
 q = Fido.search(
@@ -43,8 +43,7 @@ maps = sunpy.map.Map(sorted(Fido.fetch(q)))
 # on how the correction factor is calculated, see the documentation for the
 # `~aiapy.calibrate.degradation` function.
 correction_table = get_correction_table()
-maps_corrected = [correct_degradation(m, correction_table=correction_table)
-                  for m in maps]
+maps_corrected = [correct_degradation(m, correction_table=correction_table) for m in maps]
 
 ###########################################################
 # Let's plot the uncorrected and corrected images for each year to show the
@@ -72,10 +71,11 @@ for i, (m, mc) in enumerate(zip(maps, maps_corrected)):
 flux_corrected = u.Quantity([m.data.sum() for m in maps_corrected])
 flux_uncorrected = u.Quantity([m.data.sum() for m in maps])
 time = astropy.time.Time([m.date for m in maps])
+time_support()
 fig = plt.figure()
 ax = fig.gca()
-ax.plot(time.jyear, flux_uncorrected, label='uncorrected')
-ax.plot(time.jyear, flux_corrected, label='corrected')
-ax.set_xlabel('Time [Julian Year]')
+ax.plot(time, flux_uncorrected, label='uncorrected', marker='o')
+ax.plot(time, flux_corrected, label='corrected', marker='o')
+ax.set_xlabel('Time')
 ax.set_ylabel('Total Intensity [DN]')
 ax.legend(frameon=False)

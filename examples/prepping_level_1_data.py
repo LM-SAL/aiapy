@@ -29,50 +29,48 @@ from aiapy.calibrate import register, update_pointing
 # demonstrate how to do this with `aiapy`.
 #
 # First, let's fetch level 1 AIA images from the VSO from 1 January
-# 2019 for the 94 Å and 131 Å channels and create a `~sunpy.map.Map` object.
+# 2019 for the 94 Å channel and create a `~sunpy.map.Map` object.
 q = Fido.search(
     attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
     attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=131*u.angstrom),
+    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=94*u.angstrom),
 )
-maps = sunpy.map.Map(Fido.fetch(q))
+m = sunpy.map.Map(Fido.fetch(q))
 
 ###########################################################
 # The first step in this process is to update the metadata of the map to the
 # most recent pointing using  the `~aiapy.calibrate.update_pointing` function.
 # This function queries the JSOC for the most recent pointing information,
 # updates the metadata, and returns a `~sunpy.map.Map` with updated metadata.
-maps_updated_pointing = [update_pointing(m) for m in maps]
+m_updated_pointing = update_pointing(m)
 
 ###########################################################
-# If we take a look at the plate scale and rotation matrices of each map, we
-# find that each scale is slightly different for each channel and that the
-# rotation matrices have off-diagonal entries.
-for m in maps_updated_pointing:
-    print(m.scale)
-for m in maps_updated_pointing:
-    print(m.rotation_matrix)
+# If we take a look at the plate scale and rotation matrix of the map, we
+# find that the scale is slightly off from the expected value of 0.6" per
+# pixel and that the rotation matrix has off-diagonal entries.
+print(m_updated_pointing.scale)
+print(m_updated_pointing.rotation_matrix)
 
 ###########################################################
-# We can use the `~aiapy.calibrate.register` function to scale each image to
-# a common resolution and derotate the image such that the y-axis of the image
-# is aligned with solar North.
-maps_registered = [register(m) for m in maps_updated_pointing]
+# We can use the `~aiapy.calibrate.register` function to scale the image to
+# the 0.6" per pixel and derotate the image such that the y-axis is aligned
+# with solar North.
+m_registered = register(m_updated_pointing)
 
 ###########################################################
-# If we look again at the plate scale and rotation matrix of each image, we
-# should find that the resolution in each direction of all images is
-# 0.6 arcseconds per pixel and that the rotation matrices are all diagonalized.
-# The images in `maps_registered` are now level 1.5 data products.
-for m in maps_registered:
-    print(m.scale)
-for m in maps_registered:
-    print(m.rotation_matrix)
+# If we look again at the plate scale and rotation matrix, we
+# should find that the resolution in each direction is 0.6 arcseconds
+# per pixel and that the rotation matrix is diagonalized.
+# The image in `m_registered` is now a level 1.5 data product.
+print(m_registered.scale)
+print(m_registered.rotation_matrix)
 
 ###########################################################
 # Though it is not typically part of the level 1.5 "prep" data pipeline,
 # it is also common to normalize the image to the exposure time such that
 # the units of the image are DN / pixel / s. This is straightforward to do
 # using the information exposed by the `~sunpy.map.Map` API.
-maps_normalized = [sunpy.map.Map(m.data/m.exposure_time.to(u.s).value, m.meta)
-                   for m in maps_registered]
+m_normalized = sunpy.map.Map(
+    m_registered.data/m_registered.exposure_time.to(u.s).value,
+    m_registered.meta
+)

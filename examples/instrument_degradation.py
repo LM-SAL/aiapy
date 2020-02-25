@@ -1,7 +1,7 @@
 """
-==========================================
-Modeling AIA Channel Degradation over Time
-==========================================
+========================================
+Modeling Channel Degradation over Time
+========================================
 
 This example demonstrates how to model the degradation
 of the AIA channels as a function of time over the entire
@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 import astropy.time
+from astropy.visualization import time_support
 
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
@@ -42,24 +43,24 @@ now = astropy.time.Time.now()
 time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
 
 ###########################################################
-# Finally, we can use the `~aiapy.calibration.degradation` function to
+# Finally, we can use the `~aiapy.calibrate.degradation` function to
 # compute the degradation for a particular channel and observation time.
 # This is modeled as the ratio of the effective area measured at a particular
 # calibration epoch over the uncorrected effective area with a polynomial
 # interpolation to the exact time.
 deg = {}
 for c in channels:
-    deg[c] = u.Quantity([degradation(c, t, correction_table=correction_table)
-                         for t in time])
+    deg[c] = [degradation(c, t, correction_table=correction_table) for t in time]
 
 ###########################################################
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
+time_support()  # Pass astropy.time.Time directly to matplotlib
 fig = plt.figure()
 ax = fig.gca()
 for c in channels:
-    ax.plot(time.jyear, deg[c], label=f'{c.value:.0f} Å')
-ax.set_xlim(time.jyear[[0, -1]])
+    ax.plot(time, deg[c], label=f'{c.value:.0f} Å')
+ax.set_xlim(time[[0, -1]])
 ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc='lower center')
-ax.set_xlabel('Time [Julian Year]')
+ax.set_xlabel('Time')
 ax.set_ylabel('Degradation')

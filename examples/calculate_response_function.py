@@ -1,7 +1,7 @@
 """
-===============================================
-Computing the AIA Wavelength Response Functions
-===============================================
+========================================
+Computing Wavelength Response Functions
+========================================
 
 This example shows how to compute the
 wavelength response function of the 335 Å channel as
