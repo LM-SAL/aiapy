@@ -156,8 +156,8 @@ class Channel(object):
 
     @property
     @u.quantity_input
-    def plate_scale(self,) -> u.pixel / u.steradian:
-        return u.Quantity(self._data['platescale'], u.pixel/u.steradian)
+    def plate_scale(self,) -> u.steradian / u.pixel:
+        return u.Quantity(self._data['platescale'], u.steradian/u.pixel)
 
     @property
     @u.quantity_input
