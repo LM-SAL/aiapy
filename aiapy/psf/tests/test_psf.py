@@ -35,11 +35,11 @@ def psf_idl(idl_environment):
     """
     The point spread function as calculated by `aia_calc_psf.pro`
     """
-    r = idl_environment.run('psf = aia_calc_psf({channel},/use_preflightcore)',
-                            args={'channel': CHANNELS[0]},
+    r = idl_environment.run('psf = aia_calc_psf({{channel}},/use_preflightcore)',
+                            args={'channel': f'{CHANNELS[0].value:.0f}'},
                             save_vars=['psf'],
                             verbose=False)
-    return r['psf'].T
+    return r['psf']
 
 
 @pytest.mark.parametrize('use_preflightcore', [True, False])
@@ -69,4 +69,4 @@ def test_psf_consistent(psf_full, psf_idl):
     # NOTE: Only compare values above some threshold as the
     # rest of the PSF is essentially noise
     i_valid = np.where(psf_idl > 1e-10)
-    assert np.allclose(psf[i_valid], psf_idl[i_valid], atol=0., rtol=2e-3)
+    assert np.allclose(psf_full[i_valid], psf_idl[i_valid], atol=0., rtol=2e-3)
