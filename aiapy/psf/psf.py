@@ -3,6 +3,11 @@ Calculate the point spread function (PSF) for the AIA telescopes
 """
 import numpy as np
 import astropy.units as u
+try:
+    import cupy
+    HAS_CUPY = True
+except ImportError:
+    HAS_CUPY = False
 
 __all__ = ['psf', 'filter_mesh_parameters', '_psf']
 
@@ -249,12 +254,18 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
 
 def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
     psf = np.zeros((4096, 4096), dtype=float)
+    # If cupy is available, cast to a cupy array
+    if HAS_CUPY:
+        psf = cupy.array(psf)
     Nx, Ny = psf.shape
     width_x = meshinfo['width'].value
     width_y = meshinfo['width'].value
     # x and y position grids
     x = np.outer(np.ones(Ny), np.arange(Nx) + 0.5)
     y = np.outer(np.arange(Ny) + 0.5, np.ones(Nx))
+    if HAS_CUPY:
+        x = cupy.array(x)
+        y = cupy.array(y)
 
     area_not_mesh = 0.82  # fractional area not covered by the mesh
     spacing = meshinfo['spacing_fp'] if focal_plane else meshinfo['spacing_e']
@@ -269,7 +280,7 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
         for dx, dy in zip(spacing_x.value, spacing_y.value):
             x_centered = x - (0.5*Nx + dx*order + 0.5)
             y_centered = y - (0.5*Ny + dy*order + 0.5)
-            # NOTE: this step is the bottleneck
+            # NOTE: this step is the bottleneck and is VERY slow on a CPU
             psf += np.exp(-width_x*x_centered*x_centered
                           - width_y*y_centered*y_centered)*intensity
 
@@ -277,5 +288,9 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
     psf_core = np.exp(-width_x*(x - 0.5*Nx - 0.5)**2
                       - width_y*(y - 0.5*Ny - 0.5)**2)
 
-    return ((1 - area_not_mesh) * psf / psf.sum()
-            + area_not_mesh * psf_core / psf_core.sum())
+    psf_total = ((1 - area_not_mesh) * psf / psf.sum()
+                 + area_not_mesh * psf_core / psf_core.sum())
+    # If using cupy, cast back to a normal numpy array
+    if HAS_CUPY:
+        psf_total = cupy.asnumpy(psf_total)
+    return psf_total
