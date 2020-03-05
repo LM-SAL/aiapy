@@ -2,12 +2,10 @@
 Test PSF calculation
 """
 import numpy as np
-import astropy.units as u
 import pytest
 
 import aiapy.psf
 
-CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 MESH_PROPERTIES = [
     'angle_arm',
     'error_angle_arm',
@@ -20,36 +18,30 @@ MESH_PROPERTIES = [
 
 
 @pytest.fixture
-def psf():
-    return aiapy.psf.psf(CHANNELS[0], use_preflightcore=True,
-                         diffraction_orders=[-1, 0, 1])
-
-
-@pytest.fixture
-def psf_full():
-    return aiapy.psf.psf(CHANNELS[0], use_preflightcore=True)
+def psf_full(channels):
+    return aiapy.psf.psf(channels[0], use_preflightcore=True)
 
 
 @pytest.fixture(scope='module')
-def psf_idl(idl_environment):
+def psf_idl(idl_environment, channels):
     """
     The point spread function as calculated by `aia_calc_psf.pro`
     """
     r = idl_environment.run('psf = aia_calc_psf({{channel}},/use_preflightcore)',
-                            args={'channel': f'{CHANNELS[0].value:.0f}'},
+                            args={'channel': f'{channels[0].value:.0f}'},
                             save_vars=['psf'],
                             verbose=False)
     return r['psf']
 
 
 @pytest.mark.parametrize('use_preflightcore', [True, False])
-def test_filter_mesh_parameters(use_preflightcore):
+def test_filter_mesh_parameters(use_preflightcore, channels):
     params = aiapy.psf.filter_mesh_parameters(
         use_preflightcore=use_preflightcore)
     assert isinstance(params, dict)
-    assert all([c in params for c in CHANNELS])
+    assert all([c in params for c in channels])
     assert all([all([p in params[c] for p in MESH_PROPERTIES])
-                for c in CHANNELS])
+                for c in channels])
 
 
 def test_psf(psf):

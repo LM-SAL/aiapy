@@ -88,6 +88,7 @@ release = package.__version__
 
 intersphinx_mapping['sunpy'] = ('http://docs.sunpy.org/en/stable/', None)
 intersphinx_mapping['skimage'] = ('https://scikit-image.org/docs/stable/', None)
+intersphinx_mapping['cupy'] = ('https://docs-cupy.chainer.org/en/stable/', None)
 
 
 # -- Options for HTML output --------------------------------------------------

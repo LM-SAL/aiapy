@@ -151,6 +151,12 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     .. note:: This function has been adapted from
               `aia_calc_psf.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
 
+    .. note:: If the `cupy` package is installed
+              and your machine has an NVIDIA GPU, the PSF calculation will
+              automatically be accelerated with CUDA. This can lead to
+              several orders of magnitude in performance increase compared to
+              pure `numpy` on a CPU.
+
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,
 
@@ -221,6 +227,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     See Also
     --------
     filter_mesh_parameters
+    deconvolve
 
     References
     ----------
@@ -245,11 +252,17 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane)
                           * np.fft.fft2(psf_entrance)))
 
-    # Shift columns right and shift rows down to rotate halfway
-    psf = np.roll(np.roll(psf, psf.shape[1]//2, axis=1), psf.shape[0]//2,
+    # Center PSF in the middle of the image
+    psf = np.roll(np.roll(psf, psf.shape[1]//2, axis=1),
+                  psf.shape[0]//2,
                   axis=0)
+    # Normalize by total number of pixels
+    psf = psf/(psf.shape[0]*psf.shape[1])
+    # If using cupy, cast back to a normal numpy array
+    if HAS_CUPY:
+        psf = cupy.asnumpy(psf)
 
-    return psf/(psf.shape[0]*psf.shape[1])
+    return psf
 
 
 def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
@@ -290,7 +303,5 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
 
     psf_total = ((1 - area_not_mesh) * psf / psf.sum()
                  + area_not_mesh * psf_core / psf_core.sum())
-    # If using cupy, cast back to a normal numpy array
-    if HAS_CUPY:
-        psf_total = cupy.asnumpy(psf_total)
+    
     return psf_total
