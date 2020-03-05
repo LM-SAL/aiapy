@@ -1,5 +1,8 @@
 import pytest
 import hissw
+import astropy.units as u
+import sunpy.map
+import sunpy.data.test
 from astropy.version import version as astropy_version
 if astropy_version < '3.0':
     # For older versions of astropy
@@ -8,6 +11,13 @@ else:
     from astropy.tests.plugins.display import (PYTEST_HEADER_MODULES,
                                                TESTED_VERSIONS)
 from astropy.tests.helper import enable_deprecations_as_exceptions
+
+
+@pytest.fixture
+def aia_171_map():
+    m = sunpy.map.Map(sunpy.data.test.get_test_filepath('aia_171_level1.fits'))
+    # For testing purposes, need the map to be 4K-by-4K
+    return m.resample((4096, 4096)*u.pixel)
 
 
 @pytest.fixture(scope='session')

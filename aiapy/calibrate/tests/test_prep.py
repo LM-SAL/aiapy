@@ -18,24 +18,19 @@ from aiapy.tests.data import get_test_filepath
 
 
 @pytest.fixture
-def original():
-    return Map(sunpy.data.test.get_test_filepath('aia_171_level1.fits'))
-
-
-@pytest.fixture
-def lvl_15_map(original):
+def lvl_15_map(aia_171_map):
     # Use scipy set to True as skimage can cause CI test failures
-    return register(original, use_scipy=True)
+    return register(aia_171_map, use_scipy=True)
 
 
-def test_register(original, lvl_15_map):
+def test_register(aia_171_map, lvl_15_map):
     """
     Test that header info for the map has been correctly updated after the
     map has been scaled to 0.6 arcsec / pixel and aligned with solar north
     """
     # Check all of these for Map attributes and .meta values?
     # Check array shape
-    assert lvl_15_map.data.shape == original.data.shape
+    assert lvl_15_map.data.shape == aia_171_map.data.shape
     # Check crpix values
     assert lvl_15_map.meta['crpix1'] == lvl_15_map.data.shape[1] / 2.0 + 0.5
     assert lvl_15_map.meta['crpix2'] == lvl_15_map.data.shape[0] / 2.0 + 0.5
@@ -74,13 +69,13 @@ def test_register_filesave(lvl_15_map):
     assert load_map.meta['lvl_num'] == 1.5
 
 
-def test_register_unsupported_maps(original):
+def test_register_unsupported_maps(aia_171_map):
     """
     Make sure we raise an error when an unsupported map is passed in
     """
     # A submap
-    original_cutout = original.submap(original.center,
-                                      original.top_right_coord)
+    original_cutout = aia_171_map.submap(aia_171_map.center,
+                                         aia_171_map.top_right_coord)
     with pytest.raises(ValueError):
         _ = register(original_cutout)
     # A Map besides AIA or HMI
@@ -95,14 +90,14 @@ def test_register_unsupported_maps(original):
     get_correction_table(correction_table=get_test_filepath(
         'aia_V8_20171210_050627_response_table.txt')),
 ])
-def test_correct_degradation(original, correction_table):
+def test_correct_degradation(aia_171_map, correction_table):
     original_corrected = correct_degradation(
-        original, correction_table=correction_table)
-    d = degradation(original.wavelength, original.date,
+        aia_171_map, correction_table=correction_table)
+    d = degradation(aia_171_map.wavelength, aia_171_map.date,
                     correction_table=correction_table)
-    uncorrected_over_corrected = original.data / original_corrected.data
+    uncorrected_over_corrected = aia_171_map.data / original_corrected.data
     # If intensity is zero, ratio will be NaN/infinite
-    i_valid = original.data > 0.
+    i_valid = aia_171_map.data > 0.
     assert np.allclose(uncorrected_over_corrected[i_valid], d)
 
 
