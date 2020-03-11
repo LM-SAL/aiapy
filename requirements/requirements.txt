@@ -1,1 +1,1 @@
-sunpy[net,image]
+sunpy[net,image]>=1.1
