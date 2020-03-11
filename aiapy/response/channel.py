@@ -1,25 +1,35 @@
 """
 Class for accessing response function data from each channel
 """
-import os
 import collections
 
 import numpy as np
 import astropy.units as u
 import astropy.constants as const
 from sunpy.io.special import read_genx
-from sunpy.util.config import get_and_create_download_dir
-from sunpy.util.net import check_download_file
 from sunpy.util.metadata import MetaDict
+from sunpy.data import manager
 
 from aiapy.calibrate.util import _select_epoch_from_table
 from aiapy.calibrate import degradation
 
 __all__ = ['Channel']
 
-SSW_AIA_URL = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/'
-AIA_INSTRUMENT_FILE = 'aia_V{}_{}_fullinst.genx'  # What changes with version?
+AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'  # What changes with version?
 VERSION_NUMBER = 8  # Most recent version number for instrument data
+# URLs and SHA-256 hashes for each version for the EUV and FUV files
+# The URLs are left as a list so that possible mirrors for these files
+# can be specified
+URL_HASH = {
+    2: {'fuv': None, 'euv': None},
+    3: {'fuv': None, 'euv': None},
+    4: {'fuv': None, 'euv': None},
+    6: {'fuv': None, 'euv': None},
+    8: {'fuv': ((AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, 'fuv')),
+                '8635166d8f6dde48da4f135925f4e8f48a0574f129c2c2ca24da6628550f5430'),
+        'euv': ((AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, 'all'),),
+                '3940648e6b02876c45a9893f40806bbcc50baa994ae3fa2d95148916988426dd')},
+}
 
 
 class Channel(object):
@@ -55,19 +65,22 @@ class Channel(object):
         Read the raw instrument data for all channels from the `.genx` files
         in SSW
         """
-        # TODO: Do not rely on genx files for this data!
-        # Avoid reading data if possible
         if isinstance(instrument_file, collections.OrderedDict):
             return instrument_file
-        # TODO: refactor using the new remote data capabilities in sunpy
         if instrument_file is None:
-            # TODO: don't put this in $HOME/sunpy
-            local_dir = get_and_create_download_dir()
-            filename = AIA_INSTRUMENT_FILE.format(
-                VERSION_NUMBER, 'fuv' if self.is_fuv else 'all')
-            check_download_file(filename, SSW_AIA_URL, local_dir)
-            instrument_file = os.path.join(local_dir, filename)
+            if self.is_fuv:
+                instrument_file = self._get_fuv_instrument_file()
+            else:
+                instrument_file = self._get_euv_instrument_file()
         return read_genx(instrument_file)
+
+    @manager.require('instrument_file_euv', *URL_HASH[VERSION_NUMBER]['euv'])
+    def _get_euv_instrument_file(self):
+        return manager.get('instrument_file_euv')
+
+    @manager.require('instrument_file_fuv', *URL_HASH[VERSION_NUMBER]['fuv'])
+    def _get_fuv_instrument_file(self):
+        return manager.get('instrument_file_fuv')
 
     @property
     def _data(self,):
