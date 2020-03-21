@@ -77,6 +77,6 @@ def deconvolve(smap, psf=None, iterations=25):
     return smap._new_instance(
         cupy.asnumpy(img_decon) if HAS_CUPY else img_decon,
         copy.deepcopy(smap.meta),
-        plot_settings=smap.plot_settings,
+        plot_settings=copy.deepcopy(smap.plot_settings),
         mask=smap.mask,
     )
