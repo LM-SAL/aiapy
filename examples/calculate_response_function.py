@@ -16,6 +16,11 @@ from aiapy.response import Channel
 
 
 ##################################################
+# Since AIA uses wide-band filters, other wavelengths (outside of the nominal
+# wavelength attributed to each filter) contribute to the image data. 
+# Computing these response functions allow us to see which other wavelengths
+# contribute to the image data.
+#
 # First, create a channel object by specifying the
 # wavelength of the channel. In this case, we'll
 # choose the 335 Å channel, but this same workflow
@@ -133,7 +138,7 @@ ax = fig.gca()
 ax.plot(c.wavelength, r, label='uncorrected')
 ax.plot(c.wavelength, r_time, label='degradation correction')
 ax.plot(c.wavelength, r_eve, label='EVE correction')
-ax.set_xlim((c.channel + [-10, 10]*u.angstrom).value)
+ax.set_xlim((c.channel + [-20, 20]*u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
