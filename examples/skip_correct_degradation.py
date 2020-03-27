@@ -17,16 +17,18 @@ import sunpy.map
 from aiapy.calibrate import correct_degradation
 from aiapy.calibrate.util import get_correction_table
 
+
 ###########################################################
-# The performance of the AIA telescopes is degrading over time,
+# The performance of the AIA telescope is degrading over time,
 # leading to the resulting images becoming increasingly dim. We
 # can correct for this by modeling the degradation over time and
 # then dividing the image intensity by this correction.
 #
-# First, let's fetch one 335 Å AIA observation from the VSO for every other
-# year between 2010 and 2018 and create a list of `~sunpy.map.Map` objects.
-# We choose the 335 Å channel because it has experienced significant
-# degradation compared to the other EUV channels.
+# First, let's fetch one 335 Å AIA observation from the 
+# `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
+# for every other year between 2010 and 2018 and create a list of `
+# ~sunpy.map.Map` objects. We choose the 335 Å channel because it has 
+# experienced significant degradation compared to the other EUV channels.
 q = Fido.search(
     attrs.Time('2010-06-01T00:00:00', '2018-06-01T00:00:00'),
     attrs.Sample(2*u.year),

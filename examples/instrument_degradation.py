@@ -18,17 +18,24 @@ from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
 
 ###########################################################
-# When looking at AIA images over the lifetime of the mission,
-# it important to understand how the degradation of the instrument
-# impacts the measured intensity. This can be important in machine
-# learning applications where a training set may comprise many images
-# over a number of years. In this case, incorporating the effect of
+
+# Both the AIA filters and the opacity of the front window degrade over time,
+# causing long-term changes in photon transmission. When looking at AIA images
+# over the lifetime of the mission, it important to understand how the 
+# degradation of the instrument impacts the measured intensity. This can be 
+# important in machine learning applications where a training set may comprise
+# many images over a number of years. In this case, incorporating the effect of
 # instrument degradation is an important step in the data normalization
 # process.
 #
-# First, fetch the table of correction table parameters from JSOC. It is
-# not strictly necessary to do this, but will significantly speed up the
-# calculation by only fetching the table once.
+# The AIA team models the change in transmission as a function of time (see
+# `Boerner et al. (2012) <https://doi.org/10.1007/s11207-011-9804-8>`_,), and 
+# these parameters are publicly available in a table correction parameters at
+# the `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
+#
+# First, fetch this correction table. It is not strictly necessary to do this,
+# but will significantly speed up the calculation by only fetching the table
+# once.
 correction_table = get_correction_table()
 
 ###########################################################

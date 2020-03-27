@@ -3,10 +3,12 @@
 Registering and Aligning Level 1 Data
 =======================================
 
-This example demonstrates how to convert AIA images
-to a common pointing, rescale them to a common resolution,
-and remove the roll angle. This corresponds to the `aia_prep.pro`
-procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_
+This example demonstrates how to convert AIA images to a common pointing,
+rescale them to a common resolution, and remove the roll angle. This process
+is often referred to as "aia_prep" and the resulting data are typically 
+referred to as level 1.5 data. In this example, we will demonstrate how to do
+this with `aiapy`. This corresponds to the `aia_prep.pro` procedure as 
+described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
 """
 
 import astropy.units as u
@@ -19,17 +21,22 @@ from aiapy.calibrate import register, update_pointing
 # Performing multi-wavelength analysis on level 1 data can be problematic as
 # each of the AIA channels have slightly different spatial scales and roll
 # angles. Furthermore, the pointing keywords (`CDELT1`, `CDELT2`, `CRPIX1`,
-# `CRPIX2`, `CROTA2`) may be out of date. Thus, before performing any
-# multi-wavelength analyses, level 1 data should be updated to the most
-# recent and accurate pointing and interpolated to a common resolution
-# grid in which the y-axis of the image is aligned with solar North.
+# `CRPIX2`, `CROTA2`) may be out of date. The 
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
+# AIA image data and metadata separately; when users download AIA data, these
+# two data types are combined to produce a FITS file. While metadata are 
+# continuously updated at JSOC, previously downloaded FITS files will not 
+# contain the most recent information.
+
+# Thus, before performing any multi-wavelength analyses, level 1 data 
+# should be updated to the most recent and accurate pointing and interpolated
+# to a common resolution grid in which the y-axis of the image is aligned
+# with solar North.
 #
-# This process is often referred to as "aia_prep" and the resulting data are
-# typically referred to as level 1.5 data. In this example, we will
-# demonstrate how to do this with `aiapy`.
-#
-# First, let's fetch level 1 AIA images from the VSO from 1 January
-# 2019 for the 94 Å channel and create a `~sunpy.map.Map` object.
+# First, let's fetch level 1 AIA images from the 
+# `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
+# from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map` 
+# object.
 q = Fido.search(
     attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
     attrs.Instrument('AIA'),
@@ -74,3 +81,7 @@ m_normalized = sunpy.map.Map(
     m_registered.data/m_registered.exposure_time.to(u.s).value,
     m_registered.meta
 )
+
+###########################################################
+# Plot the normalized map
+m_normalized.peek()
