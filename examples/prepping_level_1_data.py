@@ -83,5 +83,10 @@ m_normalized = sunpy.map.Map(
 )
 
 ###########################################################
-# Plot the normalized map
+# Plot the exposure-normalized map
+# Note: Small negative pixel values are possible because 
+# CCD images were taken with a pedestal set at ~ 100 DN.
+# This pedestal is then subtracted when the JSOC pipeline
+# performs dark (+pedestal) subtraction and flatfielding 
+# to generate level 1 files. 
 m_normalized.peek(vmin=0)
