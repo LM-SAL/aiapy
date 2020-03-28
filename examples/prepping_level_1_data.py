@@ -84,4 +84,4 @@ m_normalized = sunpy.map.Map(
 
 ###########################################################
 # Plot the normalized map
-m_normalized.peek()
+m_normalized.peek(vmin=0)
