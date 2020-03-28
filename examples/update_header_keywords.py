@@ -97,5 +97,5 @@ print(m_updated_pointing.observer_coordinate)
 # However, we suggest that users apply this fix such that the information
 # stored in `~sunpy.map.Map.meta` is accurate and consistent.
 #
-## Plot the fixed map
+# Plot the fixed map
 m_observer_fixed.peek()

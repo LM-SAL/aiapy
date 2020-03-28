@@ -4,7 +4,7 @@ Registering and Aligning Level 1 Data
 =======================================
 
 This example demonstrates how to convert AIA images to a common pointing,
-rescale them to a common resolution, and remove the roll angle. This process
+rescale them to a common plate scale , and remove the roll angle. This process
 is often referred to as "aia_prep" and the resulting data are typically 
 referred to as level 1.5 data. In this example, we will demonstrate how to do
 this with `aiapy`. This corresponds to the `aia_prep.pro` procedure as 
@@ -20,8 +20,8 @@ from aiapy.calibrate import register, update_pointing
 ###########################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
 # each of the AIA channels have slightly different spatial scales and roll
-# angles. Furthermore, the pointing keywords (`CDELT1`, `CDELT2`, `CRPIX1`,
-# `CRPIX2`, `CROTA2`) may be out of date. The 
+# angles. Furthermore, the estimates of the pointing keywords (`CDELT1`, `CDELT2`, `CRPIX1`,
+# `CRPIX2`, `CROTA2`) may have been improved due to limb fitting procedures. The 
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
 # AIA image data and metadata separately; when users download AIA data, these
 # two data types are combined to produce a FITS file. While metadata are 
@@ -30,7 +30,7 @@ from aiapy.calibrate import register, update_pointing
 
 # Thus, before performing any multi-wavelength analyses, level 1 data 
 # should be updated to the most recent and accurate pointing and interpolated
-# to a common resolution grid in which the y-axis of the image is aligned
+# to a common grid in which the y-axis of the image is aligned
 # with solar North.
 #
 # First, let's fetch level 1 AIA images from the 
@@ -66,7 +66,7 @@ m_registered = register(m_updated_pointing)
 
 ###########################################################
 # If we look again at the plate scale and rotation matrix, we
-# should find that the resolution in each direction is 0.6 arcseconds
+# should find that the plate scale in each direction is 0.6 arcseconds
 # per pixel and that the rotation matrix is diagonalized.
 # The image in `m_registered` is now a level 1.5 data product.
 print(m_registered.scale)
@@ -83,5 +83,10 @@ m_normalized = sunpy.map.Map(
 )
 
 ###########################################################
-# Plot the normalized map
-m_normalized.peek()
+# Plot the exposure-normalized map
+# Note: Small negative pixel values are possible because 
+# CCD images were taken with a pedestal set at ~ 100 DN.
+# This pedestal is then subtracted when the JSOC pipeline
+# performs dark (+pedestal) subtraction and flatfielding 
+# to generate level 1 files. 
+m_normalized.peek(vmin=0)
