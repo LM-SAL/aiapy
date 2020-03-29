@@ -18,21 +18,21 @@ from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
 
 ###########################################################
-
-# The sensitivity of AIA channels degrade over time. Possible  causes  include  the  
-# deposition of organic molecules from the telescope structure onto the optical elements,
-# and the decrease in detector sensitivity following (E)UV exposure.
-# When looking at AIA images over the lifetime of the mission, it important 
-# to understand how the degradation of the instrument impacts the measured intensity.
-# For monitoring brightness changes over months and years, degradation correction 
-# is an important step in the data normalization proces. For instance, the 
-# SDO Machine Learning Dataset (`Galvez et al. <https://ui.adsabs.harvard.edu/abs/2019ApJS..242....7G/abstract>`_)
+# The sensitivity of AIA channels degrade over time. Possible causes include
+# the deposition of organic molecules from the telescope structure onto the
+# optical elements and the decrease in detector sensitivity following (E)UV
+# exposure. When looking at AIA images over the lifetime of the mission, it
+# isimportant to understand how the degradation of the instrument impacts the
+# measured intensity. For monitoring brightness changes over months and years,
+# degradation correction is an important step in the data normalization proces.
+# For instance, the SDO Machine Learning Dataset
+# (`Galvez et al., 2019 <https://ui.adsabs.harvard.edu/abs/2019ApJS..242....7G/abstract>`_)
 # includes this correction.
 #
 # The AIA team models the change in transmission as a function of time (see
-# `Boerner et al. (2012) <https://doi.org/10.1007/s11207-011-9804-8>`_,), and 
-# these parameters are publicly available in a table storing correction parameters at
-# the `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
+# `Boerner et al., 2012 <https://doi.org/10.1007/s11207-011-9804-8>`_) and
+# the table of correction parameters is publicly available via the
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
 #
 # First, fetch this correction table. It is not strictly necessary to do this,
 # but will significantly speed up the calculation by only fetching the table
