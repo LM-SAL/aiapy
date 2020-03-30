@@ -63,6 +63,12 @@ def update_pointing(smap):
     Parameters
     ----------
     smap : `~sunpy.map.Map`
+
+    Notes
+    -----
+    The method removes any ``PCi_j`` matrix keys in the header, and updates the
+    ``CROTA2``.
+
     """
     # Query 3h pointing table from JSOC
     # NOTE: should this be a separate function?
@@ -88,6 +94,13 @@ def update_pointing(smap):
     new_meta['CDELT1'] = table[f'A_{w_str}_IMSCALE'][i_nearest]
     new_meta['CDELT2'] = table[f'A_{w_str}_IMSCALE'][i_nearest]
     new_meta['CROTA2'] = table[f'A_{w_str}_INSTROT'][i_nearest]
+
+    # SunPy map converts crota to a PCi_j matrix, so we remove it to force the
+    # re-conversion.
+    new_meta.pop('PC1_1')
+    new_meta.pop('PC1_2')
+    new_meta.pop('PC2_1')
+    new_meta.pop('PC2_2')
 
     return smap._new_instance(smap.data,
                               new_meta,
