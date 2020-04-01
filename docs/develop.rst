@@ -1,3 +1,5 @@
+.. _dev-guide:
+
 Developing aiapy
 ================
 
@@ -168,6 +170,23 @@ where `ssw_home` is the path to the top of the sswidl tree and `idl_home` is
 the path to a working installation of IDL. For more details, see
 the `hissw documentation <https://wtbarnes.github.io/hissw/>`_. If a working
 installation is not available, these tests are automatically skipped.
+
+Documentation
+--------------
+
+All documentation is written in `reStructuredText <https://docutils.sourceforge.io/rst.html>`_
+and rendered using `Sphinx <https://www.sphinx-doc.org/en/master/>`_.
+Docstrings are automatically pulled from all modules, functions and classes to
+create the API documentation.
+You can build and test the documentation locally by running,
+
+.. code:: shell
+
+    python setup.py build_docs
+
+This will run Sphinx on the restructured text files in order to create the 
+HTML version of the documentation.
+The built documentation, in HTML format, is in `docs/_build/html`.
 
 Best Practices
 --------------
