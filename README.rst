@@ -11,27 +11,21 @@ For some examples of using aiapy, see
 Installation
 ------------
 
-First, clone the repository
+aiapy is available through the Python Package Index and can be installed via `pip`
+
+.. code-block:: shell
+
+   pip install aiapy
+
+Additionally, you can install the current development version from GitLab,
 
 .. code-block:: shell
 
    git clone --recursive https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
-
-Next, install the needed dependencies,
-
-.. code-block:: shell
-
    cd aiapy
    pip install -r requirements/requirements.txt
-
-Finally, install the aiapy package,
-
-.. code-block:: shell
-
    python setup.py install
 
-Once development is a bit more stable, releases will be made on PyPI and
-conda-forge.
 If you'll be developing aiapy, see the
 `development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`_.
 
