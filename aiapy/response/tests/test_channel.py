@@ -15,6 +15,7 @@ from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 
 
+@pytest.mark.remote_data
 @pytest.fixture
 def channel(ssw_home):
     if ssw_home is not None:
