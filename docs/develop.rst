@@ -184,7 +184,7 @@ You can build and test the documentation locally by running,
 
     python setup.py build_docs
 
-This will run Sphinx on the restructured text files in order to create the 
+This will run Sphinx on the restructured text files in order to create the
 HTML version of the documentation.
 The built documentation, in HTML format, is in `docs/_build/html`.
 

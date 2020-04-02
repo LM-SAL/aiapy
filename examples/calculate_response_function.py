@@ -17,7 +17,7 @@ from aiapy.response import Channel
 
 ##################################################
 # Since AIA uses wide-band filters, other wavelengths (outside of the nominal
-# wavelength attributed to each filter) contribute to the image data. 
+# wavelength attributed to each filter) contribute to the image data.
 # Computing these response functions allow us to see which other wavelengths
 # contribute to the image data.
 #
