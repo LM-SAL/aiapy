@@ -1,0 +1,13 @@
+default_context:
+  package_name: aiapy
+  module_name: aiapy
+  short_description: Python package for AIA analysis.
+  author_name: AIA Instrument Team
+  author_email: cheung@lmsal.com
+  license: BSD 3-Clause
+  project_url: https://gitlab.com/LMSAL_HUB/aia_hub/aiapy
+  github_repo: sunpy/aiapy
+  minimum_python_version: 3.6
+  use_compiled_extensions: n
+  include_example_code: n
+  _sphinx_theme: sphinx_rtd_theme

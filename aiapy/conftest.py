@@ -3,13 +3,6 @@ import hissw
 import astropy.units as u
 import sunpy.map
 import sunpy.data.test
-from astropy.version import version as astropy_version
-if astropy_version < '3.0':
-    # For older versions of astropy
-    from astropy.tests.pytest_plugins import *
-else:
-    from astropy.tests.plugins.display import (PYTEST_HEADER_MODULES,
-                                               TESTED_VERSIONS)
 from astropy.tests.helper import enable_deprecations_as_exceptions
 
 
