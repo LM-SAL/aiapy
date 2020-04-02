@@ -1,7 +1,7 @@
 image: python:3.7
 
 before_script:
-  - pip install -r requirements/requirements-dev.txt
+  - pip install tox
 
 stages:
 - Install
@@ -11,48 +11,44 @@ stages:
 install:
   stage: Install
   script:
-    - python setup.py install
+    - pip install .
 
-test-py36:
+py36-online:
   stage: Test
   image: python:3.6
   script:
-    - python setup.py test --remote-data
+    - tox -e py36-online
 
-test-py37:
+py37-online:
   stage: Test
   script:
-    - python setup.py test --remote-data --coverage
+    - tox -e py37-online
+    - pip install coveralls PyYAML
     - coveralls --rcfile='aiapy/tests/coveragerc'
 
-test-py38:
+py38-online:
   stage: Test
   image: python:3.8
-  before_script:
-  - pip install numpy
-  - pip install -r requirements/requirements-dev.txt
   script:
-    - python setup.py test --remote-data
+    - tox -e py38-online
 
-test-sunpy-dev:
+py37-devdeps-online:
   allow_failure: true  # we want to know if there will be problems in the future
   stage: Test
   script:
-    - pip install git+https://github.com/sunpy/sunpy.git@master
-    - python setup.py test --remote-data
+    - tox -e py37-devdeps-online
 
-test-offline:
+py37:
   stage: Test
   script:
-    - python setup.py test
+    - tox -e py37
 
-docs:
+build_docs:
   stage: Static
   script:
-    - python setup.py build_docs
+    - tox -e build_docs
 
-pep8:
-  allow_failure: true  # don't want to be too strict on this yet
+codestyle:
   stage: Static
   script:
-    - python setup.py test --pep8
+    - tox -e codestyle

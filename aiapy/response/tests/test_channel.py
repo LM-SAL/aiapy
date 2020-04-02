@@ -15,8 +15,9 @@ from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 
 
-@pytest.fixture
-def channel(ssw_home):
+# Mark all tests which use this fixture as online
+@pytest.fixture(params=[pytest.param(None, marks=pytest.mark.remote_data)])
+def channel(request, ssw_home):
     if ssw_home is not None:
         instrument_file = os.path.join(
             ssw_home,

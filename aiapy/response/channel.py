@@ -178,7 +178,7 @@ class Channel(object):
         """
         Uncorrected effective area as a function of wavelength
 
-        According to Section 2 of [1]_, the effective area is given by,
+        According to Section 2 of [boerner]_, the effective area is given by,
 
         .. math::
 
@@ -201,7 +201,7 @@ class Channel(object):
 
         References
         ----------
-        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
         """
         return (self.primary_reflectance
                 * self.secondary_reflectance
@@ -280,7 +280,7 @@ class Channel(object):
         """
         Gain of the CCD camera system.
 
-        According to Section 2 of [1]_, the gain of the CCD-camera system, in
+        According to Section 2 of [boerner1]_, the gain of the CCD-camera system, in
         DN per photon, is given by,
 
         .. math::
@@ -292,7 +292,7 @@ class Channel(object):
 
         References
         ----------
-        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
         """
         _e = u.electron  # Avoid rewriting u.electron a lot
         electron_per_ev = self._data['elecperev'] * _e / u.eV

@@ -30,7 +30,7 @@ Creating a Fork
 If you would like to contribute to aiapy, you will first need to setup your
 development environment. First create a fork of the main aiapy repository under
 your GitLab username. You can find the instructions for how to do this
-`here <https://docs.gitlab.com/ee/gitlab-basics/fork-project.html>`_.
+`here <https://docs.gitlab.com/ee/gitlab-basics/fork-project.html>`__.
 If you don't already have an account on GitLab, you'll need to create one. You
 can also sign into GitLab using your GitHub username.
 
@@ -110,7 +110,7 @@ After you've made your changes, commit and push them up to GitLab,
 
 Once you see the changes in GitLab, create a merge request against the main
 aiapy repository. You can find instructions for how to do this
-`here <https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html>`_.
+`here <https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html>`__.
 Others will likely have comments and suggestions regarding your proposed
 changes. You can make these changes using the instructions listed above.
 
@@ -184,7 +184,7 @@ You can build and test the documentation locally by running,
 
     python setup.py build_docs
 
-This will run Sphinx on the restructured text files in order to create the 
+This will run Sphinx on the restructured text files in order to create the
 HTML version of the documentation.
 The built documentation, in HTML format, is in `docs/_build/html`.
 

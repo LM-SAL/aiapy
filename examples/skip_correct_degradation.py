@@ -24,10 +24,10 @@ from aiapy.calibrate.util import get_correction_table
 # can correct for this by modeling the degradation over time and
 # then dividing the image intensity by this correction.
 #
-# First, let's fetch one 335 Å AIA observation from the 
+# First, let's fetch one 335 Å AIA observation from the
 # `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
 # for every other year between 2010 and 2018 and create a list of `
-# ~sunpy.map.Map` objects. We choose the 335 Å channel because it has 
+# ~sunpy.map.Map` objects. We choose the 335 Å channel because it has
 # experienced significant degradation compared to the other EUV channels.
 q = Fido.search(
     attrs.Time('2010-06-01T00:00:00', '2018-06-01T00:00:00'),
