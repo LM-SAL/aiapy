@@ -16,19 +16,19 @@ import sunpy.map
 from aiapy.calibrate import update_pointing, fix_observer_location
 
 ###########################################################
-# An AIA FITS header contains various pieces of 
+# An AIA FITS header contains various pieces of
 # `standard <https://fits.gsfc.nasa.gov/fits_standard.html>`_.
-# metadata that are critical to the physical interpretation of the data. 
-# These include the pointing of the spacecraft, necessary for connecting 
-# positions on the pixel grid to physical locations on the Sun, as well as 
+# metadata that are critical to the physical interpretation of the data.
+# These include the pointing of the spacecraft, necessary for connecting
+# positions on the pixel grid to physical locations on the Sun, as well as
 # the observer (i.e. satellite) location.
 #
 # While this metadata is recorded in the FITS header, some values in
-# the headers exported by data providers (e.g. 
-# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ and 
+# the headers exported by data providers (e.g.
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ and
 # the `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
-# may not always be the most accurate. In the case of the spacecraft 
-# pointing, a more accurate 3-hourly pointing table is available from the 
+# may not always be the most accurate. In the case of the spacecraft
+# pointing, a more accurate 3-hourly pointing table is available from the
 # JSOC.
 #
 # As an example, let's first query the VSO for a single 171 Å AIA observation
