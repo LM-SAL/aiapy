@@ -303,5 +303,5 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
 
     psf_total = ((1 - area_not_mesh) * psf / psf.sum()
                  + area_not_mesh * psf_core / psf_core.sum())
-    
+
     return psf_total
