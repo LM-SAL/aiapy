@@ -8,3 +8,4 @@ API Reference
    aiapy_calibrate
    aiapy_psf
    aiapy_response
+   aiapy_util
