@@ -23,8 +23,8 @@ py37-online:
   stage: Test
   script:
     - tox -e py37-online
-    - pip install coveralls PyYAML
-    - coveralls --rcfile='aiapy/tests/coveragerc'
+    - pip install --upgrade codecov
+    - codecov --token=$CODECOV_TOKEN
 
 py38-online:
   stage: Test
