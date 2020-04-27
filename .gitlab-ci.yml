@@ -43,7 +43,8 @@ py37:
 
 py37-coverage:
   stage: Test
-  except: merge_requests
+  except:
+  - merge_requests
   script:
   - tox -e py37-online
   - pip install --upgrade codecov
