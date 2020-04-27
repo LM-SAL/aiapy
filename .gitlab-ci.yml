@@ -23,8 +23,6 @@ py37-online:
   stage: Test
   script:
     - tox -e py37-online
-    - pip install coveralls PyYAML
-    - coveralls --rcfile='aiapy/tests/coveragerc'
 
 py38-online:
   stage: Test
@@ -33,7 +31,7 @@ py38-online:
     - tox -e py38-online
 
 py37-devdeps-online:
-  allow_failure: true  # we want to know if there will be problems in the future
+  allow_failure: true
   stage: Test
   script:
     - tox -e py37-devdeps-online
@@ -42,6 +40,15 @@ py37:
   stage: Test
   script:
     - tox -e py37
+
+py37-coverage:
+  stage: Test
+  only:
+  - master@LMSAL_HUB/AIA_HUB/aiapy  # only run on parent master
+  script:
+  - tox -e py37-online
+  - pip install --upgrade codecov
+  - codecov --token=$CODECOV_TOKEN
 
 build_docs:
   stage: Static
