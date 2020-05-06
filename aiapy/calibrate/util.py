@@ -55,15 +55,16 @@ def get_correction_table(correction_table=None):
     return table
 
 
-def _select_epoch_from_table(channel, obstime, **kwargs):
+@u.quantity_input
+def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     """
     Return correction table with only the first epoch and the epoch in
     which `obstime` falls.
 
     Parameters
     ----------
-    obstime: `~astropy.time.Time`
     channel: `~astropy.units.Quantity`
+    obstime: `~astropy.time.Time`
     """
     correction_table = kwargs.get('correction_table', None)
     if isinstance(correction_table, astropy.table.Table):
@@ -71,7 +72,10 @@ def _select_epoch_from_table(channel, obstime, **kwargs):
     else:
         table = get_correction_table(correction_table=correction_table)
     # Select only this channel
-    table = table[table['WAVE_STR'] == f'{channel.value:.0f}_THIN']
+    # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
+    # non-EUV channels do not have a thick/thin designation
+    thin = '_THIN' if channel not in (1600, 1700, 4500)*u.angstrom else ''
+    table = table[table['WAVE_STR'] == f'{channel.to(u.angstrom).value:.0f}{thin}']
     # Put import here to avoid circular imports
     from aiapy.response.channel import VERSION_NUMBER
     # Select only most recent version number, JSOC keeps some old entries
