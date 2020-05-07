@@ -23,8 +23,8 @@ table_local = get_correction_table(
     _select_epoch_from_table(1600*u.angstrom, obstime, correction_table=table_local),
 ])
 def test_correction_table(correction_table):
-    # NOTE: This is kind of a hack to get around the fact that sticking the table 
-    # generated from the remote data will get triggered regardless of the remote 
+    # NOTE: This is kind of a hack to get around the fact that sticking the table
+    # generated from the remote data will get triggered regardless of the remote
     # mark.
     if correction_table is None:
         correction_table = get_correction_table()
