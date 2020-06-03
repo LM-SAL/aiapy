@@ -75,7 +75,7 @@ def test_register_unsupported_maps(aia_171_map):
     """
     # A submap
     original_cutout = aia_171_map.submap(aia_171_map.center,
-                                         aia_171_map.top_right_coord)
+                                         top_right=aia_171_map.top_right_coord)
     with pytest.raises(ValueError):
         _ = register(original_cutout)
     # A Map besides AIA or HMI
