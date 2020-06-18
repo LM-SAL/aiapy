@@ -23,8 +23,7 @@ Additionally, you can install the current development version from GitLab,
 
    git clone --recursive https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
    cd aiapy
-   pip install -r requirements/requirements.txt
-   python setup.py install
+   pip install -e .
 
 If you'll be developing aiapy, see the
 `development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`_.
@@ -36,19 +35,22 @@ If you want to run the test suite, first install the dev requirements,
 
 .. code-block:: shell
 
-    pip install -r requirements/requirements-dev.txt
+    pip install -e .[test,docs]
 
 and then run
 
 .. code-block:: shell
 
-    python setup.py test --remote-data
+    pytest --remote-data=any
 
 If an internet connection is not available, exclude the ``--remote-data`` flag.
 
 A valid install of IDL and SSW are required to run the tests that compare
 results from aiapy and SSW. If one is not available, these tests are
 automatically skipped.
+
+The entire test suite can also be run using tox. For additional instructions,
+please see the `SunPy development guide on testing <https://docs.sunpy.org/en/latest/dev_guide/tests.html>`_.
 
 License
 -------
