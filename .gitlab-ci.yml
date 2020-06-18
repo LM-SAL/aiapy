@@ -52,6 +52,7 @@ py37-coverage:
 
 build_docs:
   stage: Static
+  image: python:3.8
   script:
     - tox -e build_docs
 
