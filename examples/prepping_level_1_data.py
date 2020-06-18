@@ -27,7 +27,7 @@ from aiapy.calibrate import register, update_pointing
 # two data types are combined to produce a FITS file. While metadata are
 # continuously updated at JSOC, previously downloaded FITS files will not
 # contain the most recent information.
-
+#
 # Thus, before performing any multi-wavelength analyses, level 1 data
 # should be updated to the most recent and accurate pointing and interpolated
 # to a common grid in which the y-axis of the image is aligned
