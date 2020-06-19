@@ -43,12 +43,12 @@ py37:
 
 py37-coverage:
   stage: Test
-  only:
-  - master@LMSAL_HUB/aia_hub/aiapy  # only run on parent master
+  #only:
+  #- master@LMSAL_HUB/aia_hub/aiapy  # only run on parent master
   script:
   - tox -e py37-online
   - pip install --upgrade codecov
-  - codecov --token=$CODECOV_TOKEN
+  - codecov
 
 build_docs:
   stage: Static
