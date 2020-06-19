@@ -48,8 +48,7 @@ py37-coverage:
   script:
   - tox -e py37-online
   - pip install --upgrade codecov
-  - if [ -f "coverage.xml" ]; then echo "coverage.xml exists"; fi
-  - codecov --token=$CODECOV_TOKEN -f coverage.xml
+  - codecov
 
 build_docs:
   stage: Static
