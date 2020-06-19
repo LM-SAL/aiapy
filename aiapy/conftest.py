@@ -5,6 +5,14 @@ import sunpy.map
 import sunpy.data.test
 from astropy.tests.helper import enable_deprecations_as_exceptions
 
+# Force MPL to use non-gui backends for testing.
+try:
+    import matplotlib
+except ImportError:
+    pass
+else:
+    matplotlib.use('Agg')
+
 
 @pytest.fixture
 def aia_171_map():
