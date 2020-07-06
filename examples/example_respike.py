@@ -1,148 +1,117 @@
 """
 ========================================
-Re-spiking Level 1 Data
+Re-spiking Level 1 Images
 ========================================
 
-This example demonstrates how to "re-spike" AIA level 1 images. AIA level 1
-images have been corrected for hot-pixels (commonly referred to as "spikes")
-using an automated correction algorith, which detects them, removes them and
-replaces the "holes" left in the image via interpolation. However, For certain
-research topics, this automated hot-pixel removal process may result in unwanted
-removal of bright points which may be real. In this example, we will demonstrate
-how to do revert this removal by putting back all the removed pixel values with
-`respike()` in `aiapy`.
-This corresponds to the `aia_respike.pro` IDL procedure as described in the
-`SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
-
+This example demonstrates how to "re-spike" AIA level 1 images
 """
 
 import astropy.units as u
 import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from sunpy.net import Fido, attrs
-from astropy.io import fits
-import drms
 import sunpy.map
-from aiapy.calibrate import respike
+from aiapy.calibrate import respike, fetch_spikes
 
-###########################################################
-#The keywords (`LVL_NUM`, `NSPIKES`) describe the level number of the AIA data
-#(i.e. level 1) and how many hot pixels were removed from the image (i.e.
-#the "spikes").
-#The data containing the information of the pixel position and the intensities
-#of the hot pixels  are available as a separate segment of the
-#`aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series from the
-#`Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
-#
-#Below we show how this data can be retrieved.
-#
-#First, let's fetch a level 1 AIA image and its associated spike data from the `JSOC <https://jsoc.stanford.edu/>`_. For our demonstration we use a 193 Å image taken on 15 March 2013 and create a `~sunpy.map.Map` object.
 
+####################################################
+# AIA level 1 images have been corrected for hot-pixels (commonly referred to
+# as "spikes") using an automated correction algorithm, which detects them,
+# removes them and replaces the "holes" left in the image via interpolation.
+# However, for certain research topics, this automated hot-pixel removal
+# process may result in unwanted removal of bright points which may be
+# physically meaningful. In this example, we will demonstrate how to revert
+# this removal by putting back all the removed pixel values with the
+# `~aiapy.calibrate.respike` in function. This corresponds to the
+# aia_respike.pro` IDL procedure as described in the
+# `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
+#
+# The header keywords `LVL_NUM` and `NSPIKES` describe the level number of the
+# AIA data (e.g. level 1) and how many hot pixels were removed from the image
+# (i.e. the "spikes"). The data containing the information of the pixel
+# position and the intensities of the removed hot pixels are available from the
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ as a
+# separate segment of the `aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series
+
+####################################################
+# First, let's fetch a level 1 AIA image read it into a `~sunpy.map.Map`. For
+# our demonstration we use a 193 Å image taken on 15 March 2013.
 q = Fido.search(attrs.Time('2013-03-15T12:01:00', '2013-03-15T12:01:10'),
-    attrs.jsoc.Wavelength(193*u.angstrom),
-    attrs.jsoc.Series('aia.lev1_euv_12s'),
-    attrs.jsoc.Segment('image') & attrs.jsoc.Segment('spikes'),
-    attrs.jsoc.Notify('sunpy@sunpy.org'))
-
-ms = Fido.fetch(q)
-
-#ensure that the query returns 'image' filename as the first entry in the list and 'spikes' as the second
-sortms = list(ms)
-for i in range(len(sortms)): sortms[i] = [s for s in ms if ['image','spikes'][i] in s]
-ms = [i[0] for i in sortms]
-
-#read fetched image and produce a sunpy map from the downloaded level 1 193 A snapshot
-dummy, image = fits.open(ms[0])
-image.verify('fix')
-AIAMap1 = sunpy.map.Map(image.data, image.header)
-
-#read the data array for the spikes (note that there is no useful header information for spikes)
-dummy, spikes = fits.open(ms[1])
-spikes.verify('fix')
-spikes = spikes.data
+                attrs.Wavelength(193*u.angstrom),
+                attrs.Instrument('AIA'))
+f = Fido.fetch(q)
+m = sunpy.map.Map(f)
 
 
 ###########################################################
-#The spike data are stored as separate data segments in JSOC
-#as a [3, N] arrays, where N the number of spikes removed.
+# The spike data are stored as separate data segments in JSOC
+# as a :math:`3\times N` arrays, where :math:`N` is the number of spikes
+# removed and the three dimensions correspond to the the 1-D pixel index
+# of the spike, intensity value of the removed spikes, and the intensity value
+# used in replacing the removed spike (via interpolation).
+# The spike pixel positions are given with respect to the level 0.5 full-disk
+# image.
 #
-#[0,:] contains the 1-D pixel index representing its (y, x) position
-#in the 2-D image data,
-#[1,:] contains the intensity value for each spike removed, and
-#[2,:] contains the intensity value used in replacing the spike removed (via interpolation).
+# We can use the `~aiapy.calibrate.fetch_spikes` function to query the JSOC
+# for the spike positions and intensity values and convert the positions of the
+# spikes to the 2D pixel full-disk pixel coordinate system given a
+# `~sunpy.map.Map` representing a level 1 AIA image.
 #
-#Spike data come without header information - the pixel positions are
-#given with respect to the level 0.5 full disk image.
-#
-#The `respike()` function fetches the spike data for a given AIAmap from JSOC
-#However, it is advised that the user should get the data (e.g., as shown above)
-#and pass the spike array to `respike()` via the arguments, i.e.,
-#`respike(AIAMap, spikes=spike_data_array)`
-#
+positions, values = fetch_spikes(m)
 
 ###########################################################
-#Now we are ready to respike the Level 1 AIA image. We produce a sunpy
-#AIAMap and run `respike(AIAMap, spikes=spikes)`.
-#The routine spike_coords() also exports the pixel x and y positions as
+# Now we are ready to respike the level 1 AIA image. The
+# `~aiapy.calibrate.respike` performs the respike operation on the given
+# input image and returns a `~sunpy.map.Map` with the respiked image. This
+# operation also alters both the metadata by updating the `LVL_NUM`, `NSPIKES`
+# and `COMMENTS` keywords.
 #
-#`spike_pixcoords = spike_coords(AIAMap, spikes=spikes, pixels=True)`
-
-#perform respike operation on the desired map.
-#Note that this operation alters both the data and the metadata (the latter by updating the
-#keywords LVL_NUM, NSPIKES and COMMENTS). Using `spike_coords()` one can get the pixel position of the spikes
-#in units (arcsec) or in pixels (if pixels=True).
-AIAMap = respike(AIAMap1, spikes = spikes)
-
-#export positions of spikes in units (arcsec)
-hpc_spikes = spike_coords(AIAMap1, spikes = spikes)
+# Note that explicitly specifying the spike positions and values is optional.
+# If they are not given, they are automatically queried from the JSOC.
+m_respiked = respike(m, spikes=(positions, values))
 
 ###########################################################
-#Alternatively, given an AIAMap, `respike()` can fetch the associated spike data from JSOC.
-#This can be done by simply typing `AIAMap=respike(AIAMap1)`
-#
-#Tip: Fetching the spike data automatically through the functions seems reasonable
-#if the number of AIA maps in the image series is small. However,
-#if the number of AIA maps is large, it is more efficient to request the spike data
-#for the image series via JSOC and then import them using
-#the `spike=` argument in these functions
-#
+# Now let's create a cutouts of the original level 1 and "re-spiked" (i.e.
+# level 0.5) images for a region with hot pixels.
+top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec,
+                     frame=m.coordinate_frame)
+bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec,
+                       frame=m.coordinate_frame)
+m_cutout = m.submap(bottom_left, top_right=top_right)
+m_respiked_cutout = m_respiked.submap(bottom_left, top_right=top_right)
 
-#Now let's plot a cutout of the 'clean' AIAMap1 (Level 1) and "re-spiked" AIAMap (i.e. Level 0.5) for a region with hot pixels
-top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec, frame = AIAMap1.coordinate_frame)
-bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec, frame = AIAMap1.coordinate_frame)
-submap = AIAMap.submap(bottom_left, top_right)
-submap1 = AIAMap1.submap(bottom_left, top_right)
+###########################################################
+# Note that we can also retrieve the positions of the spikes
+# as `~astropy.coordinates.SkyCoord` objects in the projected coordinate
+# system of the image using the `as_coords=True` keyword argument. This
+# gives us only those spikes in the field of view of the cutout.
+spike_coords, _ = fetch_spikes(m_cutout, as_coords=True)
 
-#plot the two maps for comparison
-#Level 1
+###########################################################
+# Finally, let's plot the two cutouts for comparison and plot
+# the positions of the spikes in both images, denoted by white
+# circles.
 fig = plt.figure()
-ax = fig.add_subplot(111, projection = submap)
-ax.plot_coord(hpc_spikes, 'o', color = 'white', fillstyle = 'None', markersize = 15)
-fig.subplots_adjust(top = 0.87)
-fig.suptitle('Level 1 data ("De-spiked")')
-submap1.plot()
-plt.show()
-
-#Level 0.5
-fig = plt.figure()
-ax = fig.add_subplot(111, projection = submap1)
-ax.plot_coord(hpc_spikes, 'o', color = 'white', fillstyle = 'None', markersize = 15)
-fig.subplots_adjust(top = 0.87)
-fig.suptitle('"Re-spiked" data (back to Level 0.5)')
-submap.plot()
-plt.show()
-
-###########################################################
-#The white circles show the location of the spikes. We plot the circles in both
-#Level 1 and Level 0.5 data to aid the visual inspection.
-#
-#Lastly, let's check the metadata information:
-
-print("Data downloaded from VSO/JSOC are Level {} and had {} hot pixels removed".format(submap1.meta['lvl_num'], submap1.meta['nspikes']))
-print("These data when respiked are converted to Level {} with {} hot pixels removed (i.e. all hotpixels are now included)".format(submap.meta['lvl_num'], submap.meta['nspikes']))
+ax = fig.add_subplot(121, projection=m_cutout)
+ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
+              markersize=15)
+m_cutout.plot(axes=ax, title='Level 1 "de-spiked" data')
+lon, lat = ax.coords
+lon.set_axislabel('HPC Longitude')
+lat.set_axislabel('HPC Latitude')
+ax = fig.add_subplot(122, projection=m_respiked_cutout)
+ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
+              markersize=15)
+m_respiked_cutout.plot(axes=ax, annotate=False)
+ax.set_title('Level 0.5 "re-spiked" data')
+lon, lat = ax.coords
+lon.set_axislabel('HPC Longitude')
+lat.set_axislabel(' ')
+lat.set_ticklabel_visible(False)
 
 ###########################################################
-#This confirms that the data have been successfuly converted to Level 0.5
-#after re-spiking and the header information is also reflecting this
-#conversion. You may now proceed and use custom methods for the removal of
-#hot pixels from such Level 0.5 AIA maps.
+# Lastly, let's check the metadata in both the level 1 and resulting
+# 0.5 images to double check that the appropriate keywords have been updated.
+for k in ['lvl_num', 'nspikes', 'comments']:
+    print(f'Level 1: {k}: {m_cutout.meta.get(k)}')
+    print(f'Level 0.5: {k}: {m_respiked_cutout.meta.get(k)}')
