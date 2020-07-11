@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import astropy.units as u
 from astropy.wcs.utils import pixel_to_pixel
@@ -6,6 +8,8 @@ from sunpy.map.mapbase import PixelPair
 import copy
 from astropy.io import fits
 import drms
+
+from aiapy.util import AiapyUserWarning
 
 __all__ = ['respike', 'fetch_spikes']
 
@@ -63,6 +67,22 @@ def respike(smap, spikes=None):
 
     if smap.meta['lvl_num'] != 1.0:
         raise ValueError('Can only apply respike procedure to level 1 data')
+
+    # Approximate check to make sure the input map has not been interpolated
+    # in any way. Note that the level 1 plate scales are not exactly 0.6
+    # ''/pixel, but should not differ by more than 0.1%. This is only a
+    # warning because there is no exact way of determining whether an image
+    # has been interpolated or not.
+    nominal_scale = 0.6 * u.arcsec / u.pixel
+    tol = 1e-3 * u.arcsec / u.pixel
+    if not all([u.allclose(s, nominal_scale, rtol=0, atol=tol) for s in smap.scale]):
+        warnings.warn(
+            (f'{smap.scale} is significantly different from the expected level '
+             '1 plate scale {nominal_scale}. If this map has been interpolated '
+             'in any way from the level 1 image, the spike data will likely be '
+             'reinserted in the incorrect pixel positions.'),
+            AiapyUserWarning
+        )
 
     # FIXME: Should raise an exception? Or just return with a warning?
     # Or better yet, why can't the logic below just handle the case of
@@ -146,8 +166,8 @@ def fetch_spikes(smap, as_coords=False):
         # of the Sun in array coordinates (0-based), but FITS WCS indexing is
         # 1-based. See Section 2.2 of
         # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
-        meta_full_frame['crpix1'] = meta_full_frame['x0_mp']+1
-        meta_full_frame['crpix2'] = meta_full_frame['y0_mp']+1
+        meta_full_frame['crpix1'] = meta_full_frame['x0_mp'] + 1
+        meta_full_frame['crpix2'] = meta_full_frame['y0_mp'] + 1
         meta_full_frame['naxis1'] = shape_full_frame[0]
         meta_full_frame['naxis2'] = shape_full_frame[1]
         wcs_full_frame = smap._new_instance(
