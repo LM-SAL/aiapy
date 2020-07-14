@@ -53,6 +53,10 @@ py37-coverage:
 build_docs:
   stage: Static
   image: python:3.8
+  # Need graphviz binary for generating inheritance diagrams
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq graphviz
+    - pip install tox
   script:
     - tox -e build_docs
 
