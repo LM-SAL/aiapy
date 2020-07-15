@@ -16,7 +16,7 @@ from aiapy.calibrate import degradation
 __all__ = ['Channel']
 
 AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'  # What changes with version?
-VERSION_NUMBER = 8  # Most recent version number for instrument data
+VERSION_NUMBER = 9  # Most recent version number for instrument data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
 # The URLs are left as a list so that possible mirrors for these files
 # can be specified
