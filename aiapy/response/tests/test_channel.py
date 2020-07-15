@@ -97,30 +97,32 @@ def test_effective_area(channel):
     assert (effective_area == channel.effective_area).all()
 
 
-@pytest.mark.parametrize('correction_table,eve_correction_truth', [
-    pytest.param(None, 1.0140518082508945 * u.dimensionless_unscaled,
+@pytest.mark.parametrize('correction_table,version,eve_correction_truth', [
+    pytest.param(None, 9, 0.9494731307817633 * u.dimensionless_unscaled,
                  marks=pytest.mark.remote_data),
-    (get_test_filepath('aia_V8_20171210_050627_response_table.txt'),
+    pytest.param(None, 8, 1.0140518082508945 * u.dimensionless_unscaled,
+                 marks=pytest.mark.remote_data),
+    (get_test_filepath('aia_V8_20171210_050627_response_table.txt'), 8,
      1.0140386988603103 * u.dimensionless_unscaled),
     (get_correction_table(correction_table=get_test_filepath(
-        'aia_V8_20171210_050627_response_table.txt')),
+        'aia_V8_20171210_050627_response_table.txt')), 8,
      1.0140386988603103 * u.dimensionless_unscaled),
 ])
-def test_eve_correction(channel, correction_table, eve_correction_truth):
+def test_eve_correction(channel, correction_table, version, eve_correction_truth):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the correction parameters in JSOC at the time this code was committed/
     # the specific correction table file.
-    # NOTE: If the first test starts failing, it may be because the correction
-    # table parameters have been updated in JSOC.
-    # NOTE: This second and third values are different from first because the
-    # first is the expected result from JSOC and the second and third are
+    # NOTE: If the first two test starts failing, it may be because the
+    # correction table parameters have been updated in JSOC.
+    # NOTE: This third and fourth values are different from first because the
+    # first two are the expected result from JSOC and the third and fourth are
     # results from the correction table file in SSW. The result returned by
     # JSOC are not necessarily the same as those in the correction table files
     # in SSW though they should be close.
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
     eve_correction = channel.eve_correction(
-        obstime, correction_table=correction_table)
+        obstime, correction_table=correction_table, calibration_version=version)
     assert u.allclose(eve_correction, eve_correction_truth,
                       rtol=1e-10, atol=0.)
 

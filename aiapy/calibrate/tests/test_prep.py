@@ -85,39 +85,45 @@ def test_register_unsupported_maps(aia_171_map):
         _ = register(non_sdo_map)
 
 
-@pytest.mark.parametrize('correction_table', [
-    pytest.param(None, marks=pytest.mark.remote_data),
-    get_correction_table(correction_table=get_test_filepath(
-        'aia_V8_20171210_050627_response_table.txt')),
+@pytest.mark.parametrize('correction_table,version', [
+    pytest.param(None, None, marks=pytest.mark.remote_data),
+    (get_correction_table(correction_table=get_test_filepath(
+        'aia_V8_20171210_050627_response_table.txt')), 8),
 ])
-def test_correct_degradation(aia_171_map, correction_table):
-    original_corrected = correct_degradation(
-        aia_171_map, correction_table=correction_table)
+def test_correct_degradation(aia_171_map, correction_table, version):
+    original_corrected = correct_degradation(aia_171_map,
+                                             correction_table=correction_table,
+                                             calibration_version=version)
     d = degradation(aia_171_map.wavelength, aia_171_map.date,
-                    correction_table=correction_table)
+                    correction_table=correction_table,
+                    calibration_version=version)
     uncorrected_over_corrected = aia_171_map.data / original_corrected.data
     # If intensity is zero, ratio will be NaN/infinite
     i_valid = aia_171_map.data > 0.
     assert np.allclose(uncorrected_over_corrected[i_valid], d)
 
 
-@pytest.mark.parametrize('correction_table,time_correction_truth', [
-    pytest.param(None, 0.7667012041798814 * u.dimensionless_unscaled,
+@pytest.mark.parametrize('correction_table,version,time_correction_truth', [
+    pytest.param(None, 9, 0.8658650561969473 * u.dimensionless_unscaled,
                  marks=pytest.mark.remote_data),
-    (get_test_filepath('aia_V8_20171210_050627_response_table.txt'),
+    pytest.param(None, 8, 0.7667012041798814 * u.dimensionless_unscaled,
+                 marks=pytest.mark.remote_data),
+    (get_test_filepath('aia_V8_20171210_050627_response_table.txt'), 8,
      0.7667108920899671 * u.dimensionless_unscaled),
     (get_correction_table(correction_table=get_test_filepath(
-        'aia_V8_20171210_050627_response_table.txt')),
+        'aia_V8_20171210_050627_response_table.txt')), 8,
      0.7667108920899671 * u.dimensionless_unscaled),
 ])
-def test_degradation(correction_table, time_correction_truth):
+def test_degradation(correction_table, version, time_correction_truth):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the specific correction table file.
     # NOTE: If the first test starts failing, it may be because the correction
     # table parameters have been updated in JSOC.
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
-    time_correction = degradation(94*u.angstrom, obstime,
+    time_correction = degradation(94*u.angstrom,
+                                  obstime,
+                                  calibration_version=version,
                                   correction_table=correction_table)
     assert u.allclose(time_correction, time_correction_truth,
                       rtol=1e-10, atol=0.)
