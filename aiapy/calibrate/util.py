@@ -78,7 +78,7 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     table = table[table['WAVE_STR'] == f'{channel.to(u.angstrom).value:.0f}{thin}']
     #check if the table is now empty
     if not table:
-        raise IndexError(f'Not a valid wavelength: {channel}')
+        raise IndexError(f'Wavelength not found in correction table: {channel}')
     # Put import here to avoid circular imports
     from aiapy.response.channel import VERSION_NUMBER
     # First check if the specified version number is present in the location table
