@@ -79,7 +79,10 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     # Put import here to avoid circular imports
     from aiapy.response.channel import VERSION_NUMBER
     # Select only most recent version number, JSOC keeps some old entries
-    table = table[table['VER_NUM'] == VERSION_NUMBER]
+    if table['VER_NUM'].any()==VERSION_NUMBER:
+        table = table[table['VER_NUM'] == VERSION_NUMBER]
+    else:
+        table = table[table['VER_NUM'] == max(table['VER_NUM'])]
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
                                       obstime < table['T_STOP'])
