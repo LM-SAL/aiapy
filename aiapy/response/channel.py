@@ -16,7 +16,7 @@ from aiapy.calibrate import degradation
 __all__ = ['Channel']
 
 AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'  # What changes with version?
-VERSION_NUMBER = 8  # Most recent version number for instrument data
+VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
 # The URLs are left as a list so that possible mirrors for these files
 # can be specified
@@ -267,6 +267,14 @@ class Channel(object):
         Parameters
         ----------
         obstime : `~astropy.time.Time`
+
+        Additional Parameters
+        ---------------------
+        calibration_version : `int`, optional
+            The version of the calibration to use when calculating the
+            degradation. By default, this is the most recent version available
+            from JSOC. If you are using a specific calibration response file,
+            you may need to specify this according to the version in that file.
         """
         table = _select_epoch_from_table(self.channel, obstime, **kwargs)
         effective_area_interp = np.interp(table['EFF_WVLN'][-1],
