@@ -10,6 +10,10 @@ from sunpy.net import jsoc, attrs
 
 __all__ = ['get_correction_table']
 
+# Default version of the degradation calibration curve to use. This
+# needs to be incremented as the calibration is updated in JSOC.
+CALIBRATION_VERSION = 9
+
 
 def get_correction_table(correction_table=None):
     """
@@ -39,7 +43,12 @@ def get_correction_table(correction_table=None):
         q = jsoc.JSOCClient().search_metadata(
             # FIXME: more accurate time range?
             attrs.Time(start=now-100*u.year, end=now+100*u.year),
-            attrs.jsoc.Series('aia.response'),
+            # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
+            # the query to find records that are ordinarily considered
+            # identical (because the PrimeKeys for this series are WAVE_STR
+            # and T_START, so without the !1=1! the query only returns the
+            # latest record for each unique combination of those keywords
+            attrs.jsoc.Series('aia.response[!1=1!]'),
             attrs.jsoc.Keys(['VER_NUM', 'WAVE_STR', 'T_START', 'T_STOP',
                              'EFFA_P1', 'EFFA_P2', 'EFFA_P3', 'EFF_AREA',
                              'EFF_WVLN']),
@@ -59,7 +68,7 @@ def get_correction_table(correction_table=None):
 def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     """
     Return correction table with only the first epoch and the epoch in
-    which `obstime` falls.
+    which `obstime` falls and for only one given calibration version.
 
     Parameters
     ----------
@@ -75,11 +84,15 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
     # non-EUV channels do not have a thick/thin designation
     thin = '_THIN' if channel not in (1600, 1700, 4500)*u.angstrom else ''
-    table = table[table['WAVE_STR'] == f'{channel.to(u.angstrom).value:.0f}{thin}']
-    # Put import here to avoid circular imports
-    from aiapy.response.channel import VERSION_NUMBER
-    # Select only most recent version number, JSOC keeps some old entries
-    table = table[table['VER_NUM'] == VERSION_NUMBER]
+    wave = channel.to(u.angstrom).value
+    table = table[table['WAVE_STR'] == f'{wave:.0f}{thin}']
+    if len(table) == 0:
+        raise IndexError(f'Correction table does not contain calibration for wavelength {wave:.0f}')
+    version = kwargs.get('calibration_version')
+    version = CALIBRATION_VERSION if version is None else version
+    table = table[table['VER_NUM'] == version]
+    if len(table) == 0:
+        raise IndexError(f'Correction table does not contain calibration for version {version}')
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
                                       obstime < table['T_STOP'])
