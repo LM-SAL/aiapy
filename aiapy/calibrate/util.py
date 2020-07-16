@@ -76,10 +76,17 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     # non-EUV channels do not have a thick/thin designation
     thin = '_THIN' if channel not in (1600, 1700, 4500)*u.angstrom else ''
     table = table[table['WAVE_STR'] == f'{channel.to(u.angstrom).value:.0f}{thin}']
+    #check if the table is now empty
+    if not table:
+        raise IndexError(f'Wavelength not found in correction table: {channel}')
     # Put import here to avoid circular imports
     from aiapy.response.channel import VERSION_NUMBER
-    # Select only most recent version number, JSOC keeps some old entries
-    table = table[table['VER_NUM'] == VERSION_NUMBER]
+    # First check if the specified version number is present in the location table
+    if any(table['VER_NUM']==VERSION_NUMBER):
+        table = table[table['VER_NUM'] == VERSION_NUMBER]
+    #otherwise use only the most recent entries in the location table
+    else:
+        table = table[table['VER_NUM'] == max(table['VER_NUM'])]
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
                                       obstime < table['T_STOP'])
