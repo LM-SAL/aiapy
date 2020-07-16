@@ -17,11 +17,12 @@ aiapy is available through the Python Package Index and can be installed via `pi
 
    pip install aiapy
 
-Additionally, you can install the current development version from GitLab,
+This is the recommended way to obtain and install aiapy. Alternatively, you can
+install the current development version from GitLab,
 
 .. code-block:: shell
 
-   git clone --recursive https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
+   git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
    cd aiapy
    pip install -e .
 

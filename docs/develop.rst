@@ -6,7 +6,7 @@ Developing aiapy
 This page outlines how to setup your Python environment to develop
 aiapy as well as some basic best practices for collaborative development.
 These instructions are adapted from the
-`SunPy developer's guide <https://docs.sunpy.org/en/latest/dev_guide/index.html>`_.
+`SunPy developer's guide`_.
 This guide is by no means complete or definitive. If you feel like something
 is missing or incorrect, please
 `create an issue <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/issues>`_
@@ -70,7 +70,7 @@ Next, install the needed dependencies,
 .. code-block:: shell
 
    cd aiapy
-   pip install -r requirements/requirements-dev.txt
+   pip install -e .[test,docs]
 
 This includes all of the dependencies for the package as well as `pytest` for
 running tests and `sphinx` for building the docs. Finally, install the
@@ -84,7 +84,7 @@ To make sure everything is working alright, you can run the tests,
 
 .. code-block:: shell
 
-    python setup.py test
+    pytest --remote-data=any
 
 See testing_ for more details regarding running the tests.
 
@@ -129,15 +129,12 @@ locally. To run the tests,
 
 .. code:: shell
 
-    python setup.py test --remote-data
+    pytest --remote-data=any
 
 This will generate report showing which tests passed and which failed (if any).
 Dropping the `--remote-data` flag will skip tests that require a network
 connection. aiapy uses the `pytest <https://pytest.org/en/latest/>`_ framework
-in the context of the astropy package template for discovering and running
-all of the tests. See the
-`Astropy testing guidelines <https://docs.astropy.org/en/stable/development/testguide.html>`_
-for additional details.
+for discovering and running all of the tests.
 
 Additions to the codebase should be accompanied by appropriate
 tests such that the test coverage of the entire package does not decrease.
@@ -145,7 +142,11 @@ You can check the test coverage by running,
 
 .. code:: shell
 
-    python setup.py test --remote-data --coverage
+    pytest --remote-data=any --cov aiapy
+
+Additionally, the test suite, including the documentation build and code
+style checks can be run with `tox <https://tox.readthedocs.io/en/latest/>`_. See the
+`SunPy developer's guide`_ for more information on running the test suite with `tox`.
 
 Tests should be added to the directory in the appropriate subpackage, e.g.
 for  `calibrate`, the tests should be placed in `calibrate/tests`. Your
@@ -182,7 +183,8 @@ You can build and test the documentation locally by running,
 
 .. code:: shell
 
-    python setup.py build_docs
+    cd docs
+    make html
 
 This will run Sphinx on the restructured text files in order to create the
 HTML version of the documentation.
@@ -191,8 +193,9 @@ The built documentation, in HTML format, is in `docs/_build/html`.
 Best Practices
 --------------
 
-All contributors to the aiapy codebase should follow
-`SunPy developer's guide <https://docs.sunpy.org/en/latest/dev_guide/index.html>`_.
+All contributors to the aiapy codebase should follow the `SunPy developer's guide`_.
 This guide lays out a set of best practices for contributing, reviewing,
 testing, and documenting code. All contributions to aiapy must adhere to the
 `Python in Heliophysics Community Standards <https://doi.org/10.5281/zenodo.2529130>`_.
+
+.. _`SunPy developer's guide`: https://docs.sunpy.org/en/latest/dev_guide/index.html
