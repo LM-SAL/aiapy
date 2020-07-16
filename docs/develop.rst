@@ -133,7 +133,7 @@ locally. To run the tests,
 
 This will generate report showing which tests passed and which failed (if any).
 Dropping the `--remote-data` flag will skip tests that require a network
-connection. aiapy uses the `pytest <https://pytest.org/en/latest/>`_ framework 
+connection. aiapy uses the `pytest <https://pytest.org/en/latest/>`_ framework
 for discovering and running all of the tests.
 
 Additions to the codebase should be accompanied by appropriate
@@ -147,7 +147,7 @@ You can check the test coverage by running,
 Additionally, the test suite, including the documentation build and code
 style checks can be run with `tox <https://tox.readthedocs.io/en/latest/>`_. See the
 `SunPy Developer's Guide <https://docs.sunpy.org/en/stable/dev_guide/stability.html>`_
-for more information on running the test suite with `tox`. 
+for more information on running the test suite with `tox`.
 
 Tests should be added to the directory in the appropriate subpackage, e.g.
 for  `calibrate`, the tests should be placed in `calibrate/tests`. Your
