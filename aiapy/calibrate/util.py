@@ -84,10 +84,15 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
     # non-EUV channels do not have a thick/thin designation
     thin = '_THIN' if channel not in (1600, 1700, 4500)*u.angstrom else ''
-    table = table[table['WAVE_STR'] == f'{channel.to(u.angstrom).value:.0f}{thin}']
+    wave = channel.to(u.angstrom).value
+    table = table[table['WAVE_STR'] == f'{wave:.0f}{thin}']
+    if len(table) == 0:
+        raise IndexError(f'Correction table does not contain calibration for wavelength {wave:.0f}')
     version = kwargs.get('calibration_version')
     version = CALIBRATION_VERSION if version is None else version
     table = table[table['VER_NUM'] == version]
+    if len(table) == 0:
+        raise IndexError(f'Correction table does not contain calibration for version {version}')
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
                                       obstime < table['T_STOP'])

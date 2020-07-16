@@ -50,5 +50,17 @@ def test_correction_table(correction_table):
 
 
 def test_invalid_wavelength_raises_exception():
-    with pytest.raises(IndexError):
-        _select_epoch_from_table(1800*u.angstrom, obstime, correction_table=table_local)
+    with pytest.raises(IndexError,
+                       match='Correction table does not contain calibration for wavelength 1800'):
+        _select_epoch_from_table(1800*u.angstrom,
+                                 obstime,
+                                 correction_table=table_local)
+
+
+def test_wrong_version_number_raises_exception():
+    with pytest.raises(IndexError,
+                       match='Correction table does not contain calibration for version -1'):
+        _select_epoch_from_table(94*u.angstrom,
+                                 obstime,
+                                 correction_table=table_local,
+                                 calibration_version=-1)
