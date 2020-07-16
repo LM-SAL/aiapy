@@ -140,6 +140,14 @@ def degradation(channel: u.angstrom, obstime,
     channel : `~astropy.units.Quantity`
     obstime : `~astropy.time.Time`
 
+    Additional Parameters
+    ---------------------
+    calibration_version : `int`, optional
+        The version of the calibration to use when calculating the degradation.
+        By default, this is the most recent version available from JSOC. If you
+        are using a specific calibration response file, you may need to specify
+        this according to the version in that file.
+
     See Also
     --------
     aiapy.response.Channel.wavelength_response
