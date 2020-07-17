@@ -268,7 +268,7 @@ class Channel(object):
         ----------
         obstime : `~astropy.time.Time`
 
-        Additional Parameters
+        Other Parameters
         ---------------------
         calibration_version : `int`, optional
             The version of the calibration to use when calculating the
