@@ -94,7 +94,8 @@ def correct_degradation(smap, **kwargs):
 
     This function applies a time-dependent correction to an AIA observation by
     dividing the observed intensity by the correction factor calculated by
-    `degradation`.
+    `degradation`. Any keyword arguments that can be passed to `degradation`
+    can also be passed in here.
 
     Parameters
     ----------
@@ -132,7 +133,8 @@ def degradation(channel: u.angstrom, obstime,
 
     All calibration terms are taken from the `aia.response` series in JSOC
     or read from the table input by the user. This function is adapted
-    directly from the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+    directly from the
+    `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
     routine in SolarSoft.
 
     Parameters
@@ -140,8 +142,15 @@ def degradation(channel: u.angstrom, obstime,
     channel : `~astropy.units.Quantity`
     obstime : `~astropy.time.Time`
 
-    Additional Parameters
+    Other Parameters
     ---------------------
+    correction_table : `~astropy.table.Table` or `str`, optional
+        Table of correction parameters or path to correction table file.
+        If not specified, it will be queried from JSOC. See
+        `~aiapy.calibrate.util.get_correction_table` for more information.
+        If you are processing many images, it is recommended to
+        read the correction table once and pass it with this argument to avoid
+        multiple redundant network calls.
     calibration_version : `int`, optional
         The version of the calibration to use when calculating the degradation.
         By default, this is the most recent version available from JSOC. If you
@@ -150,6 +159,8 @@ def degradation(channel: u.angstrom, obstime,
 
     See Also
     --------
+    degradation
+    aiapy.calibrate.get_correction_table
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """
