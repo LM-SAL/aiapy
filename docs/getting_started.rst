@@ -13,7 +13,6 @@ You can also install the development version from GitLab,
 
    git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
    cd aiapy
-   pip install -r requirements/requirements.txt
-   python setup.py install
+   pip install -e .
 
 If you will be developing aiapy, please see the :ref:`dev-guide`.
