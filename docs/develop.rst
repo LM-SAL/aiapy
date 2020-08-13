@@ -73,12 +73,7 @@ Next, install the needed dependencies,
    pip install -e .[test,docs]
 
 This includes all of the dependencies for the package as well as `pytest` for
-running tests and `sphinx` for building the docs. Finally, install the
-aiapy package,
-
-.. code-block:: shell
-
-   python setup.py install
+running tests and `sphinx` for building the docs.
 
 To make sure everything is working alright, you can run the tests,
 
