@@ -1,6 +1,8 @@
 """
 Functions for calibrating AIA images
 """
+import copy
+
 import numpy as np
 import astropy.units as u
 from sunpy.map.sources.sdo import AIAMap, HMIMap
@@ -8,7 +10,7 @@ from sunpy.map import contains_full_disk
 
 from .util import _select_epoch_from_table
 
-__all__ = ['register', 'correct_degradation', 'degradation']
+__all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
 
 
 def register(smap, missing=None, order=3, use_scipy=False):
@@ -175,3 +177,30 @@ def degradation(channel: u.angstrom, obstime,
             + table['EFFA_P3'][-1]*dt**3
             + 1.)
     return u.Quantity(poly * ratio)
+
+
+def normalize_exposure(smap):
+    """
+    Apply exposure normalization to an AIA map.
+
+    This function applies exposure normalization to an AIA observation by
+    dividing the observed intensity by the exposure value extracted from the
+    `smap` header.
+
+    Parameters
+    ----------
+    smap : `~sunpy.map.sources.sdo.AIAMap`
+
+    """
+    if not isinstance(smap, AIAMap):
+        raise ValueError("Input must be an AIAMap.")
+    if smap.exposure_time.to(u.s).value <= 0.0:
+        raise ValueError("Exposure time is less than or equal to 0.0 seconds.")
+
+    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value, copy.deepcopy(smap.meta))
+    newmap.meta['exptime'] = 1.0
+    # update the `pixlunit` keyword
+    newmap.meta['pixlunit'] = 'ct/s'
+    # include the `BUNIT` keyword describing the physical units.
+    newmap.meta['BUNIT'] = 'ct/s'
+    return newmap
