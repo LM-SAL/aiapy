@@ -15,7 +15,7 @@ import astropy.units as u
 from sunpy.net import Fido, attrs
 import sunpy.map
 
-from aiapy.calibrate import register, update_pointing
+from aiapy.calibrate import register, update_pointing, normalize_exposure
 
 ###########################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
@@ -75,12 +75,8 @@ print(m_registered.rotation_matrix)
 ###########################################################
 # Though it is not typically part of the level 1.5 "prep" data pipeline,
 # it is also common to normalize the image to the exposure time such that
-# the units of the image are DN / pixel / s. This is straightforward to do
-# using the information exposed by the `~sunpy.map.Map` API.
-m_normalized = sunpy.map.Map(
-    m_registered.data/m_registered.exposure_time.to(u.s).value,
-    m_registered.meta
-)
+# the units of the image are DN / pixel / s.
+m_normalized = normalize_exposure(m_registered)
 
 ###########################################################
 # Plot the exposure-normalized map

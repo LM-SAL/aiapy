@@ -2,6 +2,7 @@
 Tests for functions that calibrate/prep AIA image data
 """
 import tempfile
+import copy
 
 import numpy as np
 import pytest
@@ -12,7 +13,7 @@ import sunpy.data.test
 from sunpy.map import Map
 
 from aiapy.calibrate import (register, correct_degradation,
-                             degradation)
+                             degradation, normalize_exposure)
 from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 
@@ -127,3 +128,23 @@ def test_degradation(correction_table, version, time_correction_truth):
                                   correction_table=correction_table)
     assert u.allclose(time_correction, time_correction_truth,
                       rtol=1e-10, atol=0.)
+
+
+def test_normexptime(aia_171_map):
+    aia_171_map_norm = normalize_exposure(aia_171_map)
+    assert np.all(aia_171_map_norm.data == (aia_171_map.data/aia_171_map.exposure_time.to(u.s).value))
+    assert aia_171_map_norm.exposure_time == 1.0*u.s
+    assert aia_171_map_norm.meta['BUNIT'] == 'ct/s'
+    assert aia_171_map_norm.meta['pixlunit'] == 'ct/s'
+
+    # Test with exptime = 0.0
+    aia_171_map_exptime_zero = copy.deepcopy(aia_171_map)
+    aia_171_map_exptime_zero.meta['exptime'] = 0.0
+    with pytest.raises(ValueError):
+        _ = normalize_exposure(aia_171_map_exptime_zero)
+
+    # Test with non-AIA map:
+    non_aia_map = Map(sunpy.data.test.get_test_filepath(
+        'mdi_fd_Ic_6h_01d.5871.0000_s.fits'))
+    with pytest.raises(ValueError):
+        _ = normalize_exposure(non_aia_map)
