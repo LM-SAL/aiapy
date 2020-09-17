@@ -130,6 +130,20 @@ def test_degradation(correction_table, version, time_correction_truth):
                       rtol=1e-10, atol=0.)
 
 
+def test_degradation_time_array():
+    obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
+    obstime = obstime + np.linspace(0, 1, 100) * u.year
+    correction_table = get_test_filepath('aia_V8_20171210_050627_response_table.txt')
+    time_correction = degradation(94*u.angstrom, obstime,
+                                  correction_table=correction_table,
+                                  calibration_version=8)
+    assert time_correction.shape == obstime.shape
+    for o, tc in zip(obstime, time_correction):
+        assert tc == degradation(94*u.angstrom, o,
+                                 correction_table=correction_table,
+                                 calibration_version=8)
+
+
 def test_normexptime(aia_171_map):
     aia_171_map_norm = normalize_exposure(aia_171_map)
     assert np.all(aia_171_map_norm.data == (aia_171_map.data/aia_171_map.exposure_time.to(u.s).value))

@@ -56,9 +56,7 @@ time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
 # This is modeled as the ratio of the effective area measured at a particular
 # calibration epoch over the uncorrected effective area with a polynomial
 # interpolation to the exact time.
-deg = {}
-for c in channels:
-    deg[c] = [degradation(c, t, correction_table=correction_table) for t in time]
+deg = {c: degradation(c, time, correction_table=correction_table) for c in channels}
 
 ###########################################################
 # Plotting the different degradation curves as a function of time, we can
