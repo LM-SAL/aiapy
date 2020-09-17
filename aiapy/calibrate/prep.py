@@ -166,16 +166,21 @@ def degradation(channel: u.angstrom, obstime,
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """
-    table = _select_epoch_from_table(channel, obstime, **kwargs)
-    # Time difference between obstime and start of epoch
-    dt = (obstime - table['T_START'][-1]).to(u.day).value
-    # Correction to most recent epoch
-    ratio = table['EFF_AREA'][-1] / table['EFF_AREA'][0]
-    # Polynomial correction to interpolate within epoch
-    poly = (table['EFFA_P1'][-1]*dt
-            + table['EFFA_P2'][-1]*dt**2
-            + table['EFFA_P3'][-1]*dt**3
-            + 1.)
+    if obstime.shape == ():
+        obstime = obstime.reshape((1,))
+    ratio = np.zeros(obstime.shape)
+    poly = np.zeros(obstime.shape)
+    for i, t in enumerate(obstime):
+        table = _select_epoch_from_table(channel, t, **kwargs)
+        # Time difference between obstime and start of epoch
+        dt = (t - table['T_START'][-1]).to(u.day).value
+        # Correction to most recent epoch
+        ratio[i] = table['EFF_AREA'][-1] / table['EFF_AREA'][0]
+        # Polynomial correction to interpolate within epoch
+        poly[i] = (table['EFFA_P1'][-1]*dt
+                   + table['EFFA_P2'][-1]*dt**2
+                   + table['EFFA_P3'][-1]*dt**3
+                   + 1.)
     return u.Quantity(poly * ratio)
 
 
