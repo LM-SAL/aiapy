@@ -32,18 +32,27 @@ def channel(request, ssw_home):
     return Channel(94*u.angstrom, instrument_file=instrument_file)
 
 
-def test_has_instrument_data(channel):
-    assert hasattr(channel, '_instrument_data')
-    assert isinstance(channel._instrument_data, collections.OrderedDict)
+@pytest.fixture
+def channel_properties():
+    return [
+        'wavelength',
+        'primary_reflectance',
+        'secondary_reflectance',
+        'focal_plane_filter_efficiency',
+        'entrance_filter_efficiency',
+        'geometrical_collecting_area',
+        'quantum_efficiency',
+        'contamination',
+        'plate_scale',
+        'effective_area',
+        'gain',
+        'crosstalk',
+    ]
 
 
-def test_has_channel_data(channel):
-    assert hasattr(channel, '_data')
-    assert isinstance(channel._data, MetaDict)
-
-
-def test_channel_data_has_keys(channel):
-    required_keys = [
+@pytest.fixture
+def required_keys():
+    return [
         'wave',
         'primary',
         'secondary',
@@ -55,6 +64,19 @@ def test_channel_data_has_keys(channel):
         'elecperev',
         'elecperdn',
     ]
+
+
+def test_has_instrument_data(channel):
+    assert hasattr(channel, '_instrument_data')
+    assert isinstance(channel._instrument_data, collections.OrderedDict)
+
+
+def test_has_channel_data(channel):
+    assert hasattr(channel, '_data')
+    assert isinstance(channel._data, MetaDict)
+
+
+def test_channel_data_has_keys(channel, required_keys):
     assert all([k in channel._data for k in required_keys])
 
 
@@ -67,22 +89,14 @@ def test_channel_wavelength(channel):
     assert channel.name == '94'
 
 
-def test_channel_properties(channel):
-    """Test that expected properties are present and are quantities"""
-    properties = [
-        'wavelength',
-        'primary_reflectance',
-        'secondary_reflectance',
-        'focal_plane_filter_efficiency',
-        'entrance_filter_efficiency',
-        'geometrical_collecting_area',
-        'quantum_efficiency',
-        'contamination',
-        'plate_scale',
-        'effective_area',
-        'gain'
-    ]
-    for p in properties:
+def test_telescope_number(channel):
+    assert channel.telescope_number == 4
+
+
+def test_channel_properties(channel, channel_properties):
+    # Test that expected properties are present and are quantities.
+    # This does not test correctness
+    for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
 
 
@@ -127,9 +141,23 @@ def test_eve_correction(channel, correction_table, version, eve_correction_truth
                       rtol=1e-10, atol=0.)
 
 
-def test_gain(channel):
-    # FIXME: what is the best way to test this? do we even need to test this?
-    ...
+def test_wavelength_response_no_idl(channel):
+    # NOTE: this does not test correctness, but just that the method can
+    # be run with the various combinations of inputs. The tests below test the
+    # correctness of the output as evaluated by their similarity to those
+    # results from SSW.
+    r = channel.wavelength_response()
+    assert r.shape == channel.wavelength.shape
+    correction_table = get_test_filepath(
+        'aia_V8_20171210_050627_response_table.txt')
+    _ = channel.wavelength_response(include_crosstalk=False)
+    _ = channel.wavelength_response(obstime=astropy.time.Time.now(),
+                                    correction_table=correction_table,
+                                    calibration_version=8)
+    _ = channel.wavelength_response(obstime=astropy.time.Time.now(),
+                                    include_eve_correction=True,
+                                    correction_table=correction_table,
+                                    calibration_version=8)
 
 
 def test_wavelength_response_uncorrected(channel, idl_environment):
@@ -158,10 +186,13 @@ def test_wavelength_response_time(channel, idl_environment,
     now = astropy.time.Time.now()
     correction_table = get_test_filepath(
         'aia_V8_20171210_050627_response_table.txt')
+    calibration_version = 8
     r = channel.wavelength_response(
         obstime=now,
         include_eve_correction=include_eve_correction,
-        correction_table=correction_table)
+        correction_table=correction_table,
+        calibration_version=calibration_version,
+    )
     ssw = idl_environment.run(
         '''
         r = aia_get_response(/area,/dn,evenorm={{evenorm}}, $
@@ -169,10 +200,22 @@ def test_wavelength_response_time(channel, idl_environment,
         ''',
         save_vars=['r'],
         args={'obstime': now.tai.isot,
-              'version': VERSION_NUMBER,
+              'version': calibration_version,
               'evenorm': int(include_eve_correction),
               'respversion': '20171210_050627'},
         verbose=False
     )
     r_ssw = ssw['r'][f'A{channel.name}'][0]['ea'][0] * u.cm**2 * u.count / u.ph
     assert u.allclose(r, r_ssw, rtol=1e-4, atol=0. * u.cm**2 * u.count / u.ph)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize('channel_wavelength',
+                         [1600*u.angstrom, 1700*u.angstrom, 4500*u.angstrom])
+def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
+    # There are a few corner cases for the 1600, 1700, and 4500 channels
+    channel = Channel(channel_wavelength)
+    assert all([k in channel._data for k in required_keys])
+    for p in channel_properties:
+        assert isinstance(getattr(channel, p), u.Quantity)
+    assert channel.contamination == u.Quantity([1,])
