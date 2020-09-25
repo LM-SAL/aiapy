@@ -1,0 +1,1 @@
+.. include:: ../aiapy/CITATION.rst

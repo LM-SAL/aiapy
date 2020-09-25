@@ -17,3 +17,4 @@ response functions for the EUV channels.
   code_ref/index
   develop
   whatsnew/index
+  about

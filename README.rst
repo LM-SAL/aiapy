@@ -62,6 +62,11 @@ the `Astropy package template <https://github.com/astropy/package-template>`_
 which is licensed under the BSD 3-clause licence. See the licenses folder for
 more information.
 
+Citing
+------
+
+If you use aiapy in your scientific work, we would appreciate you citing it in your publications. The latest citation information can be found within the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/about.html>`_, or obtained with ``aiapy.__citation__``.
+
 Contributing
 ------------
 
