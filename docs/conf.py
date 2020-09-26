@@ -16,7 +16,7 @@ copyright = '2020, AIA Instrument Team'
 author = 'AIA Instrument Team'
 
 # The full version, including alpha/beta/rc tags
-from aiapy import __version__
+from aiapy import __version__  # NOQA
 release = __version__
 is_development = '.dev' in __version__
 
@@ -73,19 +73,15 @@ intersphinx_mapping = {
     'astropy': ('http://docs.astropy.org/en/stable/', None),
     'sunpy': ('https://docs.sunpy.org/en/stable/', None),
     'skimage': ('https://scikit-image.org/docs/stable/', None),
-    'cupy': ('https://docs-cupy.chainer.org/en/stable/', None)}
+    'cupy': ('https://docs-cupy.chainer.org/en/stable/', None),
+}
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-try:
-    html_theme = 'sphinx_rtd_theme'
-    import sphinx_rtd_theme
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-except ImportError:
-    html_theme = 'default'
+from sunpy_sphinx_theme.conf import *  # NOQA
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
