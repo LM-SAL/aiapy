@@ -8,7 +8,7 @@ import astropy.io.ascii
 from astropy.table import QTable
 from sunpy.net import jsoc, attrs
 
-__all__ = ['get_correction_table']
+__all__ = ['get_correction_table', 'get_pointing_table']
 
 # Default version of the degradation calibration curve to use. This
 # needs to be incremented as the calibration is updated in JSOC.
@@ -100,3 +100,42 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
         raise IndexError(f'No valid calibration epoch for {obstime}')
     # Create new table with only first and obstime epochs
     return QTable(table[[0, np.where(obstime_in_epoch)[0][0]]])
+
+
+def get_pointing_table(start, end):
+    """
+    Query JSOC for the most up-to-date pointing information.
+
+    This function queries `JSOC <http://jsoc.stanford.edu/>`_ for
+    the 3-hourly pointing information in the interval defined by
+    `start` and `end`.
+
+    Parameters
+    ----------
+    start : `~astropy.time.Time`
+    end : `~astropy.time.Time`
+
+    Returns
+    -------
+    table : `~astropy.table.QTable`
+
+    See Also
+    --------
+    aiapy.calibrate.update_pointing
+    """
+    q = jsoc.JSOCClient().search_metadata(
+        attrs.Time(start, end=end),
+        attrs.jsoc.Series('aia.master_pointing3h'),
+        attrs.jsoc.Keys('**ALL**'),
+    )
+    table = QTable.from_pandas(q)
+    table['T_START'] = Time(table['T_START'], scale='utc')
+    table['T_STOP'] = Time(table['T_STOP'], scale='utc')
+    for c in table.colnames:
+        if 'X0' in c or 'Y0' in c:
+            table[c].unit = 'arcsecond'
+        if 'IMSCALE' in c:
+            table[c].unit = 'arcsecond / pixel'
+        if 'INSTROT' in c:
+            table[c].unit = 'degree'
+    return table
