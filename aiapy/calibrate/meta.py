@@ -11,6 +11,8 @@ from astropy.coordinates import (SkyCoord, HeliocentricMeanEcliptic,
                                  CartesianRepresentation)
 from sunpy.net import jsoc, attrs
 
+from aiapy.calibrate.util import get_pointing_table
+
 __all__ = ['fix_observer_location', 'update_pointing']
 
 
@@ -52,48 +54,52 @@ def fix_observer_location(smap):
                               mask=smap.mask)
 
 
-def update_pointing(smap):
+def update_pointing(smap, pointing_table=None):
     """
-    Update map header to use the most recent 3-hourly pointing information
-    from JSOC.
+    Update pointing information in the map header
 
-    This function queries JSOC for the 3-hour pointing table and updates the
-    ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords in the map header.
+    This function updates the pointing information in the map by
+    updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
+    in the header using the information provided in `pointing_table`.
+    If `pointing_table` is not specified, the 3-hour pointing
+    information is queried from `JSOC <http://jsoc.stanford.edu/>`_.
+
+    .. note:: The method removes any ``PCi_j`` matrix keys in the header, and
+              updates the ``CROTA2``.
+
+    .. note:: If correcting pointing information for a large number of images,
+              it is strongly recommended to query the table once for the
+              appropriate interval and then pass this table in rather than
+              executing repeated queries.
 
     Parameters
     ----------
     smap : `~sunpy.map.Map`
+    pointing_table : `~astropy.table.QTable`, optional
+        Table of pointing information. If not specified, the table
+        will be retrieved from JSOC.
 
-    Notes
-    -----
-    The method removes any ``PCi_j`` matrix keys in the header, and updates the
-    ``CROTA2``.
-
+    See Also
+    --------
+    aiapy.calibrate.util.get_pointing_table
     """
-    # Query 3h pointing table from JSOC
-    # NOTE: should this be a separate function?
-    w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
-    q = jsoc.JSOCClient().search_metadata(
+    if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
-        attrs.Time(smap.date - 3*u.h, end=smap.date + 3*u.h),
-        attrs.jsoc.Series('aia.master_pointing3h'),
-        attrs.jsoc.Keys(['T_START',
-                         f'A_{w_str}_X0',
-                         f'A_{w_str}_Y0',
-                         f'A_{w_str}_INSTROT',
-                         f'A_{w_str}_IMSCALE']),
-    )
+        pointing_table = get_pointing_table(smap.date - 3*u.h, smap.date + 3*u.h)
     # Find row closest to obstime
-    table = Table.from_pandas(q)
-    table['T_START'] = Time(table['T_START'], scale='utc')
-    i_nearest = np.fabs((table['T_START'] - smap.date).to(u.s)).argmin()
+    i_nearest = np.fabs((pointing_table['T_START'] - smap.date).to(u.s)).argmin()
     # Update headers
+    w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
     new_meta = copy.deepcopy(smap.meta)
-    new_meta['CRPIX1'] = table[f'A_{w_str}_X0'][i_nearest]
-    new_meta['CRPIX2'] = table[f'A_{w_str}_Y0'][i_nearest]
-    new_meta['CDELT1'] = table[f'A_{w_str}_IMSCALE'][i_nearest]
-    new_meta['CDELT2'] = table[f'A_{w_str}_IMSCALE'][i_nearest]
-    new_meta['CROTA2'] = table[f'A_{w_str}_INSTROT'][i_nearest]
+    new_meta['CRPIX1'] = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
+    new_meta['CRPIX2'] = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
+    new_meta['CDELT1'] = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
+    new_meta['CDELT2'] = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
+    # CROTA2 is the sum of INSTROT and SAT_ROT.
+    # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
+    # NOTE: Is the value of SAT_ROT in the header accurate?
+    crota2 = pointing_table[f'A_{w_str}_INSTROT'][i_nearest] + smap.meta['SAT_ROT'] * u.degree
+    new_meta['CROTA2'] = crota2.to('degree').value
 
     # SunPy map converts crota to a PCi_j matrix, so we remove it to force the
     # re-conversion.
