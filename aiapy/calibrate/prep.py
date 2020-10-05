@@ -2,13 +2,15 @@
 Functions for calibrating AIA images
 """
 import copy
+import warnings
 
 import numpy as np
 import astropy.units as u
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.map import contains_full_disk
 
-from .util import _select_epoch_from_table
+from aiapy.util import AiapyUserWarning
+from .util import _select_epoch_from_table, get_correction_table
 
 __all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
 
@@ -21,7 +23,7 @@ def register(smap, missing=None, order=3, use_scipy=False):
     Rotates, scales and translates the image so that solar North is aligned
     with the y axis, each pixel is 0.6 arcsec across, and the center of the
     Sun is at the center of the image. The actual transformation is done by
-    `~sunpy.map.mapbase.GenericMap.rotate` method.
+    the `~sunpy.map.mapbase.GenericMap.rotate` method.
 
 
     .. note:: This routine modifies the header information to the standard
@@ -63,7 +65,7 @@ def register(smap, missing=None, order=3, use_scipy=False):
             and smap.data.shape != (4096, 4096)):
         scale = (smap.scale[0] / 0.6).round() * 0.6 * u.arcsec
     else:
-        scale = 0.6 * u.arcsec  # pragma: no cover # can't test this because it needs a full res image
+        scale = 0.6 * u.arcsec  # pragma: no cover # needs a full res image
     scale_factor = smap.scale[0] / scale
 
     missing = smap.min() if missing is None else missing
@@ -102,6 +104,10 @@ def correct_degradation(smap, **kwargs):
     Parameters
     ----------
     smap : `~sunpy.map.sources.sdo.AIAMap`
+
+    Returns
+    -------
+    `~sunpy.map.sources.sdo.AIAMap`
 
     See Also
     --------
@@ -170,8 +176,11 @@ def degradation(channel: u.angstrom, obstime,
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
+    # Do this outside of the loop to avoid repeated queries
+    correction_table = get_correction_table(correction_table=kwargs.get('correction_table'))
     for i, t in enumerate(obstime):
-        table = _select_epoch_from_table(channel, t, **kwargs)
+        table = _select_epoch_from_table(channel, t, correction_table,
+                                         version=kwargs.get('calibration_version'))
         # Time difference between obstime and start of epoch
         dt = (t - table['T_START'][-1]).to(u.day).value
         # Correction to most recent epoch
@@ -198,14 +207,12 @@ def normalize_exposure(smap):
 
     """
     if not isinstance(smap, AIAMap):
-        raise ValueError("Input must be an AIAMap.")
-    if smap.exposure_time.to(u.s).value <= 0.0:
-        raise ValueError("Exposure time is less than or equal to 0.0 seconds.")
-
-    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value, copy.deepcopy(smap.meta))
+        raise ValueError("Input must be an AIAMap")
+    if smap.exposure_time <= 0.0 * u.s:
+        warnings.warn("Exposure time is less than or equal to 0.0 seconds.",
+                      AiapyUserWarning)
+    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value,
+                                copy.deepcopy(smap.meta))
     newmap.meta['exptime'] = 1.0
-    # update the `pixlunit` keyword
-    newmap.meta['pixlunit'] = 'ct/s'
-    # include the `BUNIT` keyword describing the physical units.
-    newmap.meta['BUNIT'] = 'ct/s'
+    newmap.meta['BUNIT'] = 'ct / s'
     return newmap

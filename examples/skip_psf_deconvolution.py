@@ -25,7 +25,7 @@ import aiapy.psf
 # To remove these artifacts, the PSF must be deconvolved from the image.
 #
 # First, we'll download a single level 1 image from the 171 Å channel from
-# 7 June 2011. Note that deconvolution should be performend on level 1 images
+# 7 June 2011. Note that deconvolution should be performed on level 1 images
 # only. This is because, as with the level 1 data, the PSF model is defined
 # on the CCD grid. Once deconvolved, the image can be passed to
 # `~aiapy.calibrate.register`

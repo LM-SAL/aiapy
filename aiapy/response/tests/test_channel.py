@@ -19,13 +19,11 @@ from aiapy.tests.data import get_test_filepath
 @pytest.fixture(params=[pytest.param(None, marks=pytest.mark.remote_data)])
 def channel(request, ssw_home):
     if ssw_home is not None:
-        instrument_file = os.path.join(
-            ssw_home,
-            'sdo',
-            'aia',
-            'response',
-            f'aia_V{VERSION_NUMBER}_all_fullinst.genx'
-        )
+        instrument_file = os.path.join(ssw_home,
+                                       'sdo',
+                                       'aia',
+                                       'response',
+                                       f'aia_V{VERSION_NUMBER}_all_fullinst.genx')
     else:
         instrument_file = None
 

@@ -16,14 +16,14 @@ from aiapy.calibrate import respike, fetch_spikes
 
 ####################################################
 # AIA level 1 images have been corrected for hot-pixels (commonly referred to
-# as "spikes") using an automated correction algorithm, which detects them,
-# removes them and replaces the "holes" left in the image via interpolation.
+# as "spikes") using an automated correction algorithm which detects them,
+# removes them, and replaces the "holes" left in the image via interpolation.
 # However, for certain research topics, this automated hot-pixel removal
 # process may result in unwanted removal of bright points which may be
 # physically meaningful. In this example, we will demonstrate how to revert
 # this removal by putting back all the removed pixel values with the
 # `~aiapy.calibrate.respike` in function. This corresponds to the
-# aia_respike.pro` IDL procedure as described in the
+# `aia_respike.pro` IDL procedure as described in the
 # `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
 #
 # The header keywords `LVL_NUM` and `NSPIKES` describe the level number of the
@@ -34,8 +34,8 @@ from aiapy.calibrate import respike, fetch_spikes
 # separate segment of the `aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series
 
 ####################################################
-# First, let's fetch a level 1 AIA image read it into a `~sunpy.map.Map`. For
-# our demonstration we use a 193 Å image taken on 15 March 2013.
+# First, let's fetch a level 1 AIA image and read it into a `~sunpy.map.Map`. For
+# our demonstration, we use a 193 Å image taken on 15 March 2013.
 q = Fido.search(attrs.Time('2013-03-15T12:01:00', '2013-03-15T12:01:10'),
                 attrs.Wavelength(193*u.angstrom),
                 attrs.Instrument('AIA'))
@@ -49,7 +49,7 @@ m = sunpy.map.Map(f)
 # removed and the three dimensions correspond to the the 1-D pixel index
 # of the spike, intensity value of the removed spikes, and the intensity value
 # used in replacing the removed spike (via interpolation).
-# The spike pixel positions are given with respect to the level 0.5 full-disk
+# The spike pixel positions are given with respect to the level 1 full-disk
 # image.
 #
 # We can use the `~aiapy.calibrate.fetch_spikes` function to query the JSOC
@@ -61,9 +61,9 @@ positions, values = fetch_spikes(m)
 
 ###########################################################
 # Now we are ready to respike the level 1 AIA image. The
-# `~aiapy.calibrate.respike` performs the respike operation on the given
+# `~aiapy.calibrate.respike` function performs the respike operation on the given
 # input image and returns a `~sunpy.map.Map` with the respiked image. This
-# operation also alters both the metadata by updating the `LVL_NUM`, `NSPIKES`
+# operation also alters the metadata by updating the `LVL_NUM`, `NSPIKES`,
 # and `COMMENTS` keywords.
 #
 # Note that explicitly specifying the spike positions and values is optional.

@@ -4,7 +4,7 @@ Registering and Aligning Level 1 Data
 =======================================
 
 This example demonstrates how to convert AIA images to a common pointing,
-rescale them to a common plate scale , and remove the roll angle. This process
+rescale them to a common plate scale, and remove the roll angle. This process
 is often referred to as "aia_prep" and the resulting data are typically
 referred to as level 1.5 data. In this example, we will demonstrate how to do
 this with `aiapy`. This corresponds to the `aia_prep.pro` procedure as
@@ -53,20 +53,20 @@ m_updated_pointing = update_pointing(m)
 
 ###########################################################
 # If we take a look at the plate scale and rotation matrix of the map, we
-# find that the scale is slightly off from the expected value of 0.6" per
+# find that the scale is slightly off from the expected value of :math:`0.6''` per
 # pixel and that the rotation matrix has off-diagonal entries.
 print(m_updated_pointing.scale)
 print(m_updated_pointing.rotation_matrix)
 
 ###########################################################
 # We can use the `~aiapy.calibrate.register` function to scale the image to
-# the 0.6" per pixel and derotate the image such that the y-axis is aligned
+# the :math:`0.6''` per pixel and derotate the image such that the y-axis is aligned
 # with solar North.
 m_registered = register(m_updated_pointing)
 
 ###########################################################
 # If we look again at the plate scale and rotation matrix, we
-# should find that the plate scale in each direction is 0.6 arcseconds
+# should find that the plate scale in each direction is :math:`0.6''`
 # per pixel and that the rotation matrix is diagonalized.
 # The image in `m_registered` is now a level 1.5 data product.
 print(m_registered.scale)
@@ -79,8 +79,8 @@ print(m_registered.rotation_matrix)
 m_normalized = normalize_exposure(m_registered)
 
 ###########################################################
-# Plot the exposure-normalized map
-# Note: Small negative pixel values are possible because
+# Finally, we can plot the exposure-normalized map.
+# Note that small negative pixel values are possible because
 # CCD images were taken with a pedestal set at ~ 100 DN.
 # This pedestal is then subtracted when the JSOC pipeline
 # performs dark (+pedestal) subtraction and flatfielding

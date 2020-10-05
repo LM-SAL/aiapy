@@ -18,11 +18,11 @@ from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
 
 ###########################################################
-# The sensitivity of AIA channels degrade over time. Possible causes include
+# The sensitivity of the AIA channels degrade over time. Possible causes include
 # the deposition of organic molecules from the telescope structure onto the
 # optical elements and the decrease in detector sensitivity following (E)UV
 # exposure. When looking at AIA images over the lifetime of the mission, it
-# isimportant to understand how the degradation of the instrument impacts the
+# is important to understand how the degradation of the instrument impacts the
 # measured intensity. For monitoring brightness changes over months and years,
 # degradation correction is an important step in the data normalization proces.
 # For instance, the SDO Machine Learning Dataset
@@ -34,7 +34,7 @@ from aiapy.calibrate.util import get_correction_table
 # the table of correction parameters is publicly available via the
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
 #
-# First, fetch this correction table. It is not strictly necessary to do this,
+# First, fetch this correction table. It is not strictly necessary to do this explicitly,
 # but will significantly speed up the calculation by only fetching the table
 # once.
 correction_table = get_correction_table()
@@ -46,7 +46,7 @@ channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 ###########################################################
 # We can use the `~astropy.time` subpackage to create an array of times
 # between now and the start of the mission with a cadence of one week.
-time_0 = astropy.time.Time('2010-06-01T00:00:00', scale='utc')
+time_0 = astropy.time.Time('2010-03-25T00:00:00', scale='utc')
 now = astropy.time.Time.now()
 time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
 
@@ -61,7 +61,7 @@ deg = {c: degradation(c, time, correction_table=correction_table) for c in chann
 ###########################################################
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
-time_support()  # Pass astropy.time.Time directly to matplotlib
+time_support()  # This lets you pass astropy.time.Time objects directly to matplotlib
 fig = plt.figure()
 ax = fig.gca()
 for c in channels:

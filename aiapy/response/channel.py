@@ -10,7 +10,7 @@ from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 from sunpy.data import manager
 
-from aiapy.calibrate.util import _select_epoch_from_table
+from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table
 from aiapy.calibrate import degradation
 
 __all__ = ['Channel']
@@ -34,8 +34,11 @@ URL_HASH = {
 
 class Channel(object):
     """
-    Object for accessing AIA channel properties and calculating response
-    functions
+    Interface to AIA channel properties and response functions.
+
+    This class provides an interface to the AIA channels and methods
+    for calculating the effective area and wavelength response functions
+    as a function of wavelength.
 
     Parameters
     ----------
@@ -44,6 +47,18 @@ class Channel(object):
     instrument_file : `str`, optional
         Path to AIA instrument file. If not specified, the latest version will
         be downloaded from SolarSoft.
+
+    Examples
+    ---------
+    >>> import astropy.units as u
+    >>> from aiapy.response import Channel
+    >>> c = Channel(171*u.angstrom)  # doctest: +REMOTE_DATA
+    >>> c.telescope_number  # doctest: +REMOTE_DATA
+    3
+    >>> c.name  # doctest: +REMOTE_DATA
+    '171'
+    >>> c.channel  # doctest: +REMOTE_DATA
+    <Quantity 171. Angstrom>
     """
 
     @u.quantity_input
@@ -54,7 +69,7 @@ class Channel(object):
     @property
     def is_fuv(self):
         """
-        Returns True for UV and visible channels: 1600, 1700, 4500 |AA|.
+        Returns True for UV and visible channels 1600, 1700, 4500 |AA|.
 
         .. |AA| unicode:: x212B .. angstrom
         """
@@ -270,13 +285,32 @@ class Channel(object):
 
         Other Parameters
         ---------------------
+        correction_table : `~astropy.table.Table` or `str`, optional
+            Table of correction parameters or path to correction table file.
+            If not specified, it will be queried from JSOC.
+            If you are calling this function repeatedly, it is recommended to
+            read the correction table once and pass it with this argument to avoid
+            multiple redundant network calls.
         calibration_version : `int`, optional
             The version of the calibration to use when calculating the
             degradation. By default, this is the most recent version available
             from JSOC. If you are using a specific calibration response file,
             you may need to specify this according to the version in that file.
+
+        Returns
+        -------
+        `~astropy.units.Quantity`
+
+        See Also
+        --------
+        aiapy.calibrate.util.get_correction_table
         """
-        table = _select_epoch_from_table(self.channel, obstime, **kwargs)
+        table = _select_epoch_from_table(
+            self.channel,
+            obstime,
+            get_correction_table(correction_table=kwargs.get('correction_table')),
+            version=kwargs.get('calibration_version'),
+        )
         effective_area_interp = np.interp(table['EFF_WVLN'][-1],
                                           self.wavelength,
                                           self.effective_area)
@@ -358,6 +392,10 @@ class Channel(object):
             Table of correction parameters or path to correction table file.
             If not specified, it will be queried from JSOC. See
             `~aiapy.calibrate.util.get_correction_table` for more information.
+
+        Returns
+        -------
+        `~astropy.units.Quantity`
 
         See Also
         --------

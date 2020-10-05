@@ -16,12 +16,12 @@ from aiapy.response import Channel
 
 
 ##################################################
-# Since AIA uses wide-band filters, other wavelengths (outside of the nominal
+# Since AIA uses narrow-band filters, other wavelengths (outside of the nominal
 # wavelength attributed to each filter) contribute to the image data.
 # Computing these response functions allow us to see which other wavelengths
-# contribute to the image data.
+# contribute to the total intensity in each image.
 #
-# First, create a channel object by specifying the
+# First, create a `~aiapy.response.Channel` object by specifying the
 # wavelength of the channel. In this case, we'll
 # choose the 335 Å channel, but this same workflow
 # can be applied to any of the EUV or UV channels

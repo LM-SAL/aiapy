@@ -5,11 +5,7 @@ import copy
 
 import numpy as np
 import astropy.units as u
-from astropy.time import Time
-from astropy.table import Table
-from astropy.coordinates import (SkyCoord, HeliocentricMeanEcliptic,
-                                 CartesianRepresentation)
-from sunpy.net import jsoc, attrs
+from astropy.coordinates import SkyCoord, HeliocentricMeanEcliptic, CartesianRepresentation
 
 from aiapy.calibrate.util import get_pointing_table
 
@@ -31,7 +27,7 @@ def fix_observer_location(smap):
 
     Parameters
     ----------
-    smap : `~sunpy.map.Map`
+    smap : `~sunpy.map.source.sdo.AIAMap`
     """
     # Create observer coordinate from HAE coordinates
     coord = SkyCoord(
@@ -64,8 +60,8 @@ def update_pointing(smap, pointing_table=None):
     If `pointing_table` is not specified, the 3-hour pointing
     information is queried from `JSOC <http://jsoc.stanford.edu/>`_.
 
-    .. note:: The method removes any ``PCi_j`` matrix keys in the header, and
-              updates the ``CROTA2``.
+    .. note:: The method removes any ``PCi_j`` matrix keys in the header and
+              updates the ``CROTA2`` keyword.
 
     .. note:: If correcting pointing information for a large number of images,
               it is strongly recommended to query the table once for the
@@ -74,10 +70,14 @@ def update_pointing(smap, pointing_table=None):
 
     Parameters
     ----------
-    smap : `~sunpy.map.Map`
+    smap : `~sunpy.map.sources.sdo.AIAMap`
     pointing_table : `~astropy.table.QTable`, optional
         Table of pointing information. If not specified, the table
         will be retrieved from JSOC.
+
+    Returns
+    -------
+    `~sunpy.map.sources.sdo.AIAMap`
 
     See Also
     --------
@@ -93,8 +93,9 @@ def update_pointing(smap, pointing_table=None):
     new_meta = copy.deepcopy(smap.meta)
     new_meta['CRPIX1'] = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
     new_meta['CRPIX2'] = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
-    new_meta['CDELT1'] = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
-    new_meta['CDELT2'] = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
+    cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
+    new_meta['CDELT1'] = cdelt
+    new_meta['CDELT2'] = cdelt
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
