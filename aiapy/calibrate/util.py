@@ -1,6 +1,8 @@
 """
 Utilities for computing intensity corrections
 """
+import pathlib
+
 import numpy as np
 from astropy.time import Time
 import astropy.units as u
@@ -29,15 +31,25 @@ def get_correction_table(correction_table=None):
 
     Parameters
     ----------
-    correction_table: `str`, optional
-        Path to correction table file
+    correction_table: `str` or `~astropy.table.QTable`, optional
+        Path to correction table file or an existing correction table. If None,
+        the table will be queried from JSOC.
+
+    Returns
+    -------
+    `~astropy.table.QTable`
 
     See Also
     --------
     aiapy.calibrate.degradation
     """
+    if isinstance(correction_table, astropy.table.QTable):
+        return correction_table
     if correction_table is not None:
-        table = astropy.io.ascii.read(correction_table)
+        if isinstance(correction_table, (str, pathlib.Path)):
+            table = QTable(astropy.io.ascii.read(correction_table))
+        else:
+            raise ValueError('correction_table must be a file path, an existing table, or None.')
     else:
         now = Time.now()
         q = jsoc.JSOCClient().search_metadata(
@@ -45,12 +57,18 @@ def get_correction_table(correction_table=None):
             attrs.Time(start=now-100*u.year, end=now+100*u.year),
             # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
             # the query to find records that are ordinarily considered
-            # identical (because the PrimeKeys for this series are WAVE_STR
-            # and T_START, so without the !1=1! the query only returns the
-            # latest record for each unique combination of those keywords
+            # identical because the PrimeKeys for this series are WAVE_STR
+            # and T_START. Without the !1=1! the query only returns the
+            # latest record for each unique combination of those keywords.
             attrs.jsoc.Series('aia.response[!1=1!]'),
-            attrs.jsoc.Keys(['VER_NUM', 'WAVE_STR', 'T_START', 'T_STOP',
-                             'EFFA_P1', 'EFFA_P2', 'EFFA_P3', 'EFF_AREA',
+            attrs.jsoc.Keys(['VER_NUM',
+                             'WAVE_STR',
+                             'T_START',
+                             'T_STOP',
+                             'EFFA_P1',
+                             'EFFA_P2',
+                             'EFFA_P3',
+                             'EFF_AREA',
                              'EFF_WVLN']),
         )
         table = QTable.from_pandas(q)
@@ -65,21 +83,19 @@ def get_correction_table(correction_table=None):
 
 
 @u.quantity_input
-def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
+def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
     """
     Return correction table with only the first epoch and the epoch in
     which `obstime` falls and for only one given calibration version.
 
     Parameters
     ----------
-    channel: `~astropy.units.Quantity`
-    obstime: `~astropy.time.Time`
+    channel : `~astropy.units.Quantity`
+    obstime : `~astropy.time.Time`
+    table : `~astropy.table.QTable`
+    version : `int`
     """
-    correction_table = kwargs.get('correction_table', None)
-    if isinstance(correction_table, astropy.table.Table):
-        table = correction_table
-    else:
-        table = get_correction_table(correction_table=correction_table)
+    version = CALIBRATION_VERSION if version is None else version
     # Select only this channel
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
     # non-EUV channels do not have a thick/thin designation
@@ -87,9 +103,8 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, **kwargs):
     wave = channel.to(u.angstrom).value
     table = table[table['WAVE_STR'] == f'{wave:.0f}{thin}']
     if len(table) == 0:
-        raise IndexError(f'Correction table does not contain calibration for wavelength {wave:.0f}')
-    version = kwargs.get('calibration_version')
-    version = CALIBRATION_VERSION if version is None else version
+        raise IndexError(
+            f'Correction table does not contain calibration for wavelength {wave:.0f}')
     table = table[table['VER_NUM'] == version]
     if len(table) == 0:
         raise IndexError(f'Correction table does not contain calibration for version {version}')
@@ -117,7 +132,7 @@ def get_pointing_table(start, end):
 
     Returns
     -------
-    table : `~astropy.table.QTable`
+    `~astropy.table.QTable`
 
     See Also
     --------

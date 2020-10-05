@@ -36,7 +36,7 @@ def spikes(despiked_map):
 
 
 @pytest.mark.remote_data
-def test_respike(respiked_map, despiked_map, spikes):
+def test_respike(respiked_map, spikes):
     coords, values = spikes
     for x, y, v in zip(coords.x.value, coords.y.value, values):
         assert v == respiked_map.data[int(y), int(x)]
@@ -62,10 +62,10 @@ def test_cutout(respiked_map, despiked_map):
         SkyCoord(*blc, frame=respiked_map.coordinate_frame),
         top_right=SkyCoord(*trc, frame=respiked_map.coordinate_frame),
     )
-    cutout_map_respiked = respike(despiked_map.submap(
-        SkyCoord(*blc, frame=despiked_map.coordinate_frame),
-        top_right=SkyCoord(*trc, frame=despiked_map.coordinate_frame),
-    ))
+    cutout_map_respiked = respike(
+        despiked_map.submap(SkyCoord(*blc, frame=despiked_map.coordinate_frame),
+                            top_right=SkyCoord(*trc, frame=despiked_map.coordinate_frame))
+    )
     assert np.all(respiked_map_cutout.data == cutout_map_respiked.data)
 
 

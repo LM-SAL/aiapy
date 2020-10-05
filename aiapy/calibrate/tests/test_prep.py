@@ -12,6 +12,7 @@ from astropy.io.fits.verify import VerifyWarning
 import sunpy.data.test
 from sunpy.map import Map
 
+from aiapy.util import AiapyUserWarning
 from aiapy.calibrate import (register, correct_degradation,
                              degradation, normalize_exposure)
 from aiapy.calibrate.util import get_correction_table
@@ -95,7 +96,8 @@ def test_correct_degradation(aia_171_map, correction_table, version):
     original_corrected = correct_degradation(aia_171_map,
                                              correction_table=correction_table,
                                              calibration_version=version)
-    d = degradation(aia_171_map.wavelength, aia_171_map.date,
+    d = degradation(aia_171_map.wavelength,
+                    aia_171_map.date,
                     correction_table=correction_table,
                     calibration_version=version)
     uncorrected_over_corrected = aia_171_map.data / original_corrected.data
@@ -134,30 +136,41 @@ def test_degradation_time_array():
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
     obstime = obstime + np.linspace(0, 1, 100) * u.year
     correction_table = get_test_filepath('aia_V8_20171210_050627_response_table.txt')
-    time_correction = degradation(94*u.angstrom, obstime,
+    time_correction = degradation(94*u.angstrom,
+                                  obstime,
                                   correction_table=correction_table,
                                   calibration_version=8)
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction):
-        assert tc == degradation(94*u.angstrom, o,
+        assert tc == degradation(94*u.angstrom,
+                                 o,
                                  correction_table=correction_table,
                                  calibration_version=8)
 
 
-def test_normexptime(aia_171_map):
+def test_normalize_exposure(aia_171_map):
     aia_171_map_norm = normalize_exposure(aia_171_map)
-    assert np.all(aia_171_map_norm.data == (aia_171_map.data/aia_171_map.exposure_time.to(u.s).value))
+    data_norm = aia_171_map.data / aia_171_map.exposure_time.to(u.s).value
+    assert np.all(aia_171_map_norm.data == data_norm)
     assert aia_171_map_norm.exposure_time == 1.0*u.s
-    assert aia_171_map_norm.meta['BUNIT'] == 'ct/s'
-    assert aia_171_map_norm.meta['pixlunit'] == 'ct/s'
+    assert aia_171_map_norm.meta['BUNIT'] == 'ct / s'
 
-    # Test with exptime = 0.0
+
+def test_normalize_exposure_twice(aia_171_map):
+    # Test that additional normalizations have no effect
+    aia_171_map_norm = normalize_exposure(aia_171_map)
+    aia_171_map_norm_norm = normalize_exposure(aia_171_map_norm)
+    assert np.all(aia_171_map_norm.data == aia_171_map_norm_norm.data)
+
+
+def test_normalize_exposure_zero(aia_171_map):
     aia_171_map_exptime_zero = copy.deepcopy(aia_171_map)
     aia_171_map_exptime_zero.meta['exptime'] = 0.0
-    with pytest.raises(ValueError):
+    with pytest.warns(AiapyUserWarning):
         _ = normalize_exposure(aia_171_map_exptime_zero)
 
-    # Test with non-AIA map:
+
+def test_normalize_exposure_non_aia_map(aia_171_map):
     non_aia_map = Map(sunpy.data.test.get_test_filepath(
         'mdi_fd_Ic_6h_01d.5871.0000_s.fits'))
     with pytest.raises(ValueError):

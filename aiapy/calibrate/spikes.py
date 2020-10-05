@@ -1,12 +1,12 @@
+import copy
 import warnings
 
 import numpy as np
+from astropy.io import fits
 import astropy.units as u
 from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.sources.sdo import AIAMap
 from sunpy.map.mapbase import PixelPair
-import copy
-from astropy.io import fits
 import drms
 
 from aiapy.util import AiapyUserWarning
@@ -18,7 +18,7 @@ def respike(smap, spikes=None):
     """
     Re-insert "spikes" or "hot pixels" into level 1 AIA images
 
-    Level 1 AIA images are, by default, "de-spiked" for hot-pixels
+    Level 1 AIA images are, by default, "de-spiked"
     to remove erroneously high intensity values, e.g. due to cosmic
     ray hits. This function re-inserts these "spikes" back into the
     image using spike location and intensity values either provided
@@ -43,7 +43,7 @@ def respike(smap, spikes=None):
 
     Parameters
     ----------
-    smap : `~sunpy.map.Map`
+    smap : `~sunpy.map.sources.sdo.AIAMap`
         Level 1 AIA image. This can be a cutout or a full-frame image.
     spikes : array-like, with shape ``(2, N)``, optional
         Tuple of pixel positions of the spikes in the coordinate system of
@@ -54,7 +54,7 @@ def respike(smap, spikes=None):
 
     Returns
     -------
-    : `~sunpy.map.Map`
+    `~sunpy.map.sources.sdo.AIAMap`
         A level 0.5 version of `smap` with the spike data re-inserted at the
         appropriate pixels
 
@@ -64,7 +64,6 @@ def respike(smap, spikes=None):
     """
     if not isinstance(smap, AIAMap):
         raise ValueError("Input must be an AIAMap.")
-
     if smap.meta['lvl_num'] != 1.0:
         raise ValueError('Can only apply respike procedure to level 1 data')
 
@@ -131,13 +130,12 @@ def fetch_spikes(smap, as_coords=False):
 
     Returns
     -------
-    : `~astropy.coordinates.SkyCoord` or `~sunpy.map.mapbase.PixelPair`
+    `~astropy.coordinates.SkyCoord` or `~sunpy.map.mapbase.PixelPair`
         Locations of the removed spikes. By default, these are represented as
         pixel coordinates. If `as_coords=True`, the locations are returned in
         the projected coordinate system of the image.
-    : array-like
+    array-like
         Original intensity values of the spikes
-
     """
     if smap.wavelength not in (1600, 1700, 4500)*u.angstrom:
         series = r"aia.lev1_euv_12s"
@@ -150,15 +148,14 @@ def fetch_spikes(smap, as_coords=False):
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     spikes = spikes.data
 
+    shape_full_frame = (4096, 4096)
     values = spikes[1, :]
-    x_coords = spikes[0, :] % 4096
-    y_coords = spikes[0, :] // 4096
+    y_coords, x_coords = np.unravel_index(spikes[0, :], shape=shape_full_frame)
     # If this is a cutout, need to transform the full-frame pixel
     # coordinates into the cutout pixel coordinates and then only select
     # those in the FOV of the cutout
-    if not all(d == (4096*u.pixel) for d in smap.dimensions):
+    if not all(d == (s*u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
         # Construct WCS for full frame
-        shape_full_frame = (4096, 4096)
         meta_full_frame = copy.deepcopy(smap.meta)
         meta_full_frame['crval1'] = 0.0
         meta_full_frame['crval2'] = 0.0
