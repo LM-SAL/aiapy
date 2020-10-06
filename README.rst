@@ -65,7 +65,10 @@ more information.
 Citing
 ------
 
-If you use aiapy in your scientific work, we would appreciate you citing it in your publications. The latest citation information can be found within the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/about.html>`_, or obtained with ``aiapy.__citation__``.
+If you use aiapy in your scientific work, we would appreciate you citing it in
+your publications. The latest citation information can be found in the
+`documentation <https://aiapy.readthedocs.io/en/latest/about.html>`_,
+or obtained with ``aiapy.__citation__``.
 
 Contributing
 ------------
