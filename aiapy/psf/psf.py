@@ -3,6 +3,9 @@ Calculate the point spread function (PSF) for the AIA telescopes
 """
 import numpy as np
 import astropy.units as u
+
+from aiapy.util.decorators import validate_channel
+
 try:
     import cupy
     HAS_CUPY = True
@@ -150,6 +153,7 @@ def filter_mesh_parameters(use_preflightcore=False):
 
 
 @u.quantity_input
+@validate_channel('channel', valid_channels=[94, 131, 171, 193, 211, 304, 335]*u.angstrom)
 def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     """
     Calculate the composite PSF for a given channel, including diffraction and

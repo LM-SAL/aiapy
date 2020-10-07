@@ -66,8 +66,8 @@ def test_invalid_correction_table_input():
 
 
 def test_invalid_wavelength_raises_exception():
-    with pytest.raises(IndexError,
-                       match='Correction table does not contain calibration for wavelength 1800'):
+    with pytest.raises(ValueError,
+                       match='channel "1800.0 Angstrom" not in list of valid channels'):
         _select_epoch_from_table(1800*u.angstrom, obstime, table_local)
 
 

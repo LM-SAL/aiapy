@@ -12,6 +12,7 @@ from sunpy.data import manager
 
 from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table
 from aiapy.calibrate import degradation
+from aiapy.util.decorators import validate_channel
 
 __all__ = ['Channel']
 
@@ -62,6 +63,7 @@ class Channel(object):
     """
 
     @u.quantity_input
+    @validate_channel('channel')
     def __init__(self, channel: u.angstrom, instrument_file=None):
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
