@@ -10,6 +10,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.map import contains_full_disk
 
 from aiapy.util import AiapyUserWarning
+from aiapy.util.decorators import validate_channel
 from .util import _select_epoch_from_table, get_correction_table
 
 __all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
@@ -118,6 +119,7 @@ def correct_degradation(smap, **kwargs):
 
 
 @u.quantity_input
+@validate_channel('channel')
 def degradation(channel: u.angstrom, obstime,
                 **kwargs) -> u.dimensionless_unscaled:
     """

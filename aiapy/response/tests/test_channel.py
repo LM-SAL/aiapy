@@ -91,6 +91,12 @@ def test_telescope_number(channel):
     assert channel.telescope_number == 4
 
 
+def test_invalid_channel():
+    with pytest.raises(ValueError, match='channel "1.0 Angstrom" not in '
+                                         'list of valid channels'):
+        Channel(1*u.angstrom)
+
+
 def test_channel_properties(channel, channel_properties):
     # Test that expected properties are present and are quantities.
     # This does not test correctness

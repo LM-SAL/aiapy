@@ -10,6 +10,9 @@ import astropy.io.ascii
 from astropy.table import QTable
 from sunpy.net import jsoc, attrs
 
+from aiapy.util.decorators import validate_channel
+
+
 __all__ = ['get_correction_table', 'get_pointing_table']
 
 # Default version of the degradation calibration curve to use. This
@@ -83,6 +86,7 @@ def get_correction_table(correction_table=None):
 
 
 @u.quantity_input
+@validate_channel('channel')
 def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
     """
     Return correction table with only the first epoch and the epoch in
@@ -102,9 +106,6 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
     thin = '_THIN' if channel not in (1600, 1700, 4500)*u.angstrom else ''
     wave = channel.to(u.angstrom).value
     table = table[table['WAVE_STR'] == f'{wave:.0f}{thin}']
-    if len(table) == 0:
-        raise IndexError(
-            f'Correction table does not contain calibration for wavelength {wave:.0f}')
     table = table[table['VER_NUM'] == version]
     if len(table) == 0:
         raise IndexError(f'Correction table does not contain calibration for version {version}')
