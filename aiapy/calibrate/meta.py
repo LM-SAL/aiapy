@@ -85,7 +85,7 @@ def update_pointing(smap, pointing_table=None):
     """
     if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
-        pointing_table = get_pointing_table(smap.date - 3*u.h, smap.date + 3*u.h)
+        pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
     # Find row closest to obstime
     i_nearest = np.fabs((pointing_table['T_START'] - smap.date).to(u.s)).argmin()
     # Update headers
