@@ -139,11 +139,18 @@ def get_pointing_table(start, end):
     --------
     aiapy.calibrate.update_pointing
     """
-    q = jsoc.JSOCClient().search_metadata(
-        attrs.Time(start, end=end),
-        attrs.jsoc.Series('aia.master_pointing3h'),
-        attrs.jsoc.Keys('**ALL**'),
-    )
+    try:
+        q = jsoc.JSOCClient().search_metadata(
+            attrs.Time(start, end=end),
+            attrs.jsoc.Series('aia.master_pointing3h'),
+            attrs.jsoc.Keys('**ALL**'),
+        )
+    except KeyError as e:
+        # If there's no pointing information available between these times,
+        # JSOC will raise a cryptic KeyError
+        # (see https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/issues/84)
+        raise RuntimeError('Could not find any pointing information between '
+                           f'{start} and {end}') from e
     table = QTable.from_pandas(q)
     table['T_START'] = Time(table['T_START'], scale='utc')
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')

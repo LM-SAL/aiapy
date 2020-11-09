@@ -1,0 +1,3 @@
+`aiapy.calibrate.util.get_pointing_table` now raises a more user-friendly
+`RuntimeError` if no pointing information can be found during the requested
+times. Previously it would raise a `KeyError`.
