@@ -15,7 +15,7 @@ from .psf import psf as calculate_psf
 __all__ = ['deconvolve']
 
 
-def deconvolve(smap, psf=None, iterations=25):
+def deconvolve(smap, psf=None, iterations=25, use_gpu=True):
     """
     Deconvolve an AIA image with the point spread function
 
@@ -36,8 +36,11 @@ def deconvolve(smap, psf=None, iterations=25):
         An AIA image
     psf : `~numpy.ndarray`, optional
         The point spread function. If None, it will be calculated
-    iterations: `int`
+    iterations : `int`, optional
         Number of iterations in the Richardson-Lucy algorithm
+    use_gpu : `bool`, optional
+        If True and `~cupy` is installed, do PSF deconvolution on the GPU
+        with `~cupy`.
 
     Returns
     -------
@@ -57,7 +60,7 @@ def deconvolve(smap, psf=None, iterations=25):
     img = smap.data
     if psf is None:
         psf = calculate_psf(smap.wavelength)
-    if HAS_CUPY:
+    if HAS_CUPY and use_gpu:
         img = cupy.array(img)
         psf = cupy.array(psf)
 
@@ -75,7 +78,7 @@ def deconvolve(smap, psf=None, iterations=25):
         img_decon = img_decon*np.fft.irfft2(np.fft.rfft2(ratio)*psf_conj)
 
     return smap._new_instance(
-        cupy.asnumpy(img_decon) if HAS_CUPY else img_decon,
+        cupy.asnumpy(img_decon) if (HAS_CUPY and use_gpu) else img_decon,
         copy.deepcopy(smap.meta),
         plot_settings=copy.deepcopy(smap.plot_settings),
         mask=smap.mask,
