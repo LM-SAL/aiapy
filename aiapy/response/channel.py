@@ -417,8 +417,3 @@ class Channel(object):
                 * self.gain
                 * time_correction
                 * eve_correction)
-
-    @u.quantity_input
-    def temperature_response(self,) -> u.count / u.pixel / u.s * u.cm**5:
-        raise NotImplementedError(
-            'Temperature response calculation has not yet been implemented')
