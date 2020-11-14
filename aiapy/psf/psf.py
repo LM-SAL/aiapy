@@ -154,7 +154,7 @@ def filter_mesh_parameters(use_preflightcore=False):
 
 @u.quantity_input
 @validate_channel('channel', valid_channels=[94, 131, 171, 193, 211, 304, 335]*u.angstrom)
-def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
+def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
     """
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
@@ -229,6 +229,9 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     diffraction_orders : array-like, optional
         The diffraction orders to sum over. If None, the full
         range from -100 to +100 in steps of 1 will be used.
+    use_gpu : `bool`, optional
+        If True and `~cupy` is installed, do PSF deconvolution on the GPU
+        with `~cupy`.
 
     Returns
     -------
@@ -255,9 +258,9 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     if diffraction_orders is None:
         diffraction_orders = np.arange(-100, 101, 1)
 
-    psf_entrance = _psf(meshinfo, angles_entrance, diffraction_orders)
+    psf_entrance = _psf(meshinfo, angles_entrance, diffraction_orders, use_gpu=use_gpu)
     psf_focal_plane = _psf(meshinfo, angles_focal_plane, diffraction_orders,
-                           focal_plane=True)
+                           focal_plane=True, use_gpu=use_gpu)
 
     # Composite PSF
     psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane)
@@ -270,16 +273,16 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None):
     # Normalize by total number of pixels
     psf = psf/(psf.shape[0]*psf.shape[1])
     # If using cupy, cast back to a normal numpy array
-    if HAS_CUPY:
+    if HAS_CUPY and use_gpu:
         psf = cupy.asnumpy(psf)
 
     return psf
 
 
-def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
+def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
     psf = np.zeros((4096, 4096), dtype=float)
     # If cupy is available, cast to a cupy array
-    if HAS_CUPY:
+    if HAS_CUPY and use_gpu:
         psf = cupy.array(psf)
     Nx, Ny = psf.shape
     width_x = meshinfo['width'].value
@@ -287,7 +290,7 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False):
     # x and y position grids
     x = np.outer(np.ones(Ny), np.arange(Nx) + 0.5)
     y = np.outer(np.arange(Ny) + 0.5, np.ones(Nx))
-    if HAS_CUPY:
+    if HAS_CUPY and use_gpu:
         x = cupy.array(x)
         y = cupy.array(y)
 
