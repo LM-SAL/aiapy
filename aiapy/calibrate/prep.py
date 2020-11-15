@@ -59,6 +59,12 @@ def register(smap, missing=None, order=3, use_scipy=False):
         raise ValueError("Input must be an AIAMap or HMIMap.")
     if not contains_full_disk(smap):
         raise ValueError("Input must be a full disk image.")
+    # FIXME: this should not be needed. Additional prep calls should
+    # not have any effect. This is a precaution in case additional
+    # calls to rotate introduce artifacts.
+    if smap.processing_level is None or smap.processing_level > 1:
+        warnings.warn('Image registration should only be applied to level 1 data',
+                      AiapyUserWarning)
 
     # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
     # map has already been rescaled.

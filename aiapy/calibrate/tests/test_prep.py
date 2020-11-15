@@ -87,6 +87,18 @@ def test_register_unsupported_maps(aia_171_map):
         _ = register(non_sdo_map)
 
 
+def test_register_level_15(lvl_15_map):
+    with pytest.warns(AiapyUserWarning,
+                      match='Image registration should only be applied to level 1 data'):
+        _ = register(lvl_15_map)
+    new_meta = copy.deepcopy(lvl_15_map.meta)
+    # Test case where processing_level is missing and returns None
+    del new_meta['lvl_num']
+    with pytest.warns(AiapyUserWarning,
+                      match='Image registration should only be applied to level 1 data'):
+        _ = register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
+
+
 @pytest.mark.parametrize('correction_table,version', [
     pytest.param(None, None, marks=pytest.mark.remote_data),
     (get_correction_table(correction_table=get_test_filepath(

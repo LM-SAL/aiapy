@@ -1,0 +1,2 @@
+`aiapy.calibrate.register` now raises a warning if the level number
+is missing or is greater than 1.
