@@ -1,3 +1,13 @@
+Aiapy 0.3.1 (2020-11-15)
+========================
+
+Features
+--------
+
+- `aiapy.calibrate.register` now raises a warning if the level number
+  is missing or is greater than 1. (`#94 <https://github.com/sunpy/aiapy/pull/94>`__)
+
+
 aiapy v0.3.0 (2020-10-06)
 =========================
 
