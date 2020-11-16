@@ -8,21 +8,24 @@ Please add the following line within your methods, conclusion or acknowledgement
    *This research used version X.Y.Z (software citation) of the aiapy open source
    software package.*
 
-The software citation should be the specific `Zenodo DOI`_ for the version used within your work.
+The project citation should be to the `aiapy paper`_ and the software citation should be the specific `Zenodo DOI`_ for the version used within your work.
 
 .. code:: bibtex
 
-    @software{barnes_w_t_2020_4016983,
-      author = {Barnes, W. T. and Cheung, M. C. M and Padmanabhan, N. and Chintzoglou, G. and Mumford, S. and Wright, P. J. and Shih, A. Y. and Bobra, M. G. and Shirman, N. and Kocher, M.},
-      title        = {aiapy},
-      month        = jul,
-      year         = 2020,
-      publisher    = {Zenodo},
-      version      = {v0.2.0},
-      doi          = {10.5281/zenodo.4016983},
-      url          = {https://doi.org/10.5281/zenodo.4016983}
-      }
+   @article{Barnes2020,
+      doi = {10.21105/joss.02801},
+      url = {https://doi.org/10.21105/joss.02801},
+      year = {2020},
+      publisher = {The Open Journal},
+      volume = {5},
+      number = {55},
+      pages = {2801},
+      author = {Will T. Barnes and Mark C. m. Cheung and Monica G. Bobra and Paul F. Boerner and Georgios Chintzoglou and Drew Leonard and Stuart J. Mumford and Nicholas Padmanabhan and Albert Y. Shih and Nina Shirman and David Stansby and Paul J. Wright},
+      title = {aiapy: A Python Package for Analyzing Solar EUV Image Data from AIA},
+      journal = {Journal of Open Source Software}
+   }
 
 You can also obtain this information with ``aiapy.__citation__``.
 
-.. _Zenodo DOI: https://zenodo.org/record/4016983
+.. _Zenodo DOI: https://zenodo.org/record/4274931
+.. _aiapy paper: https://joss.theoj.org/papers/10.21105/joss.02801
