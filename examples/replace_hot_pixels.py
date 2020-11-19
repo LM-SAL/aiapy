@@ -108,6 +108,7 @@ lon, lat = ax.coords
 lon.set_axislabel('HPC Longitude')
 lat.set_axislabel(' ')
 lat.set_ticklabel_visible(False)
+plt.show()
 
 ###########################################################
 # Lastly, let's check the metadata in both the level 1 and resulting

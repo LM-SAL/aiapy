@@ -78,6 +78,7 @@ ax.set_ylabel(r'Quantum Efficiency, $Q(\lambda)$')
 ax.set_xlim(50, 800)
 ax.set_xlabel(r'$\lambda$ [Å]')
 plt.tight_layout()
+plt.show()
 
 ##################################################
 # Additionally, `~aiapy.response.Channel` provides a method for calculating
@@ -95,6 +96,7 @@ ax.set_xlim((c.channel + [-10, 10]*u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
+plt.show()
 
 ##################################################
 # On telescopes 1, 3, and 4, both channels are always illuminated.
@@ -117,6 +119,7 @@ ax.set_xlim(50, 350)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=1, frameon=False)
+plt.show()
 
 ###################################################
 # We can also incorporate various corrections to the
@@ -143,3 +146,4 @@ ax.set_ylim(0, 0.03)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=2, frameon=False)
+plt.show()
