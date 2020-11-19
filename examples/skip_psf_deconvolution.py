@@ -61,6 +61,7 @@ lc_x, lc_y = psf.shape[0]//2 - fov//2, psf.shape[1]//2 - fov//2
 plt.imshow(psf[lc_x:lc_x+fov, lc_y:lc_y+fov],
            norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()))
 plt.colorbar()
+plt.show()
 
 ###############################################
 # Now that we've downloaded our image and computed the PSF, we can deconvolve
@@ -85,6 +86,7 @@ m_deconvolved.plot(axes=ax, annotate=False, norm=norm)
 ax.coords[0].set_axislabel(' ')
 ax.coords[1].set_axislabel(' ')
 ax.coords[1].set_ticklabel_visible(False)
+plt.show()
 
 #################################################
 # The differences become a bit more obvious when we zoom in. Note that the
@@ -107,3 +109,4 @@ m_deconvolved_sub.plot(axes=ax, annotate=False, norm=norm)
 ax.coords[0].set_axislabel(' ')
 ax.coords[1].set_axislabel(' ')
 ax.coords[1].set_ticklabel_visible(False)
+plt.show()
