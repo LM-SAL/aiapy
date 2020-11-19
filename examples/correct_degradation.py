@@ -55,7 +55,7 @@ table['DATAMEAN_DEG'] = table['DATAMEAN'] / deg
 ###########################################################
 # The effect of the degradation correction is more easily seen in the
 # total flux as a function of time.
-time_support()
+time_support(format='jyear')
 quantity_support()
 plt.plot(table['DATE_OBS'], table['DATAMEAN'], label='mean', marker='o')
 plt.plot(table['DATE_OBS'], table['DATAMEAN_DEG'], label='mean, corrected', marker='o')
