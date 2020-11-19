@@ -29,7 +29,7 @@ from aiapy.calibrate import degradation
 channel = 335*u.angstrom
 q = jsoc.JSOCClient().search(
     attrs.Time('2010-06-01T00:00:00', '2020-06-01T00:00:00'),
-    attrs.Sample(1*u.day),
+    attrs.Sample(30*u.day),
     jsoc.attrs.Series.aia_lev1_euv_12s,
     jsoc.attrs.Wavelength(channel),
 )
