@@ -57,7 +57,7 @@ def get_correction_table(correction_table=None):
             raise ValueError('correction_table must be a file path, an existing table, or None.')
     else:
         now = Time.now()
-        q = jsoc.JSOCClient().search_metadata(
+        q = jsoc.JSOCClient().search(
             # FIXME: more accurate time range?
             attrs.Time(start=now-100*u.year, end=now+100*u.year),
             # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
@@ -66,17 +66,18 @@ def get_correction_table(correction_table=None):
             # and T_START. Without the !1=1! the query only returns the
             # latest record for each unique combination of those keywords.
             attrs.jsoc.Series('aia.response[!1=1!]'),
-            attrs.jsoc.Keys(['VER_NUM',
-                             'WAVE_STR',
-                             'T_START',
-                             'T_STOP',
-                             'EFFA_P1',
-                             'EFFA_P2',
-                             'EFFA_P3',
-                             'EFF_AREA',
-                             'EFF_WVLN']),
         )
-        table = QTable.from_pandas(q)
+        table = q.show(
+            'VER_NUM',
+            'WAVE_STR',
+            'T_START',
+            'T_STOP',
+            'EFFA_P1',
+            'EFFA_P2',
+            'EFFA_P3',
+            'EFF_AREA',
+            'EFF_WVLN',
+        )
 
     table['T_START'] = Time(table['T_START'], scale='utc')
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')
@@ -149,10 +150,9 @@ def get_pointing_table(start, end):
     aiapy.calibrate.update_pointing
     """
     try:
-        q = jsoc.JSOCClient().search_metadata(
+        q = jsoc.JSOCClient().search(
             attrs.Time(start, end=end),
-            attrs.jsoc.Series('aia.master_pointing3h'),
-            attrs.jsoc.Keys('**ALL**'),
+            attrs.jsoc.Series.aia_master_pointing3h,
         )
     except KeyError as e:
         # If there's no pointing information available between these times,
@@ -160,7 +160,7 @@ def get_pointing_table(start, end):
         # (see https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/issues/84)
         raise RuntimeError('Could not find any pointing information between '
                            f'{start} and {end}') from e
-    table = QTable.from_pandas(q)
+    table = q.show()
     table['T_START'] = Time(table['T_START'], scale='utc')
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')
     for c in table.colnames:
