@@ -119,6 +119,8 @@ def test_correct_degradation(aia_171_map, correction_table, version):
 
 
 @pytest.mark.parametrize('correction_table,version,time_correction_truth', [
+    pytest.param(None, 10, 0.9031773242843387 * u.dimensionless_unscaled,
+                 marks=pytest.mark.remote_data),
     pytest.param(None, 9, 0.8658650561969473 * u.dimensionless_unscaled,
                  marks=pytest.mark.remote_data),
     pytest.param(None, 8, 0.7667012041798814 * u.dimensionless_unscaled,
@@ -135,6 +137,7 @@ def test_degradation(correction_table, version, time_correction_truth):
     # the specific correction table file.
     # NOTE: If the first test starts failing, it may be because the correction
     # table parameters have been updated in JSOC.
+    # TODO: Test this over multiple wavelengths
     obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
     time_correction = degradation(94*u.angstrom,
                                   obstime,

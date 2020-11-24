@@ -2,6 +2,7 @@
 Utilities for computing intensity corrections
 """
 import pathlib
+import warnings
 
 import numpy as np
 from astropy.time import Time
@@ -11,13 +12,14 @@ from astropy.table import QTable
 from sunpy.net import jsoc, attrs
 
 from aiapy.util.decorators import validate_channel
+from aiapy.util.exceptions import AiapyUserWarning
 
 
 __all__ = ['get_correction_table', 'get_pointing_table']
 
 # Default version of the degradation calibration curve to use. This
 # needs to be incremented as the calibration is updated in JSOC.
-CALIBRATION_VERSION = 9
+CALIBRATION_VERSION = 10
 
 
 def get_correction_table(correction_table=None):
@@ -107,6 +109,7 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
     wave = channel.to(u.angstrom).value
     table = table[table['WAVE_STR'] == f'{wave:.0f}{thin}']
     table = table[table['VER_NUM'] == version]
+    table.sort('DATE')  # Newest entries will be last
     if len(table) == 0:
         raise IndexError(f'Correction table does not contain calibration for version {version}')
     # Select the epoch for the given observation time
@@ -114,8 +117,14 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
                                       obstime < table['T_STOP'])
     if not obstime_in_epoch.any():
         raise IndexError(f'No valid calibration epoch for {obstime}')
+    # NOTE: In some cases, there may be multiple entries for a single epoch. We want to
+    # use the most up-to-date one.
+    i_epoch = np.where(obstime_in_epoch)[0]
+    if i_epoch.shape[0] > 1:
+        warnings.warn(f'Multiple valid epochs for {obstime}. Using the most recent one',
+                      AiapyUserWarning)
     # Create new table with only first and obstime epochs
-    return QTable(table[[0, np.where(obstime_in_epoch)[0][0]]])
+    return QTable(table[[0, i_epoch[-1]]])
 
 
 def get_pointing_table(start, end):
