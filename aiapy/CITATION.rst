@@ -6,7 +6,7 @@ If you use aiapy in your scientific work, we would appreciate you citing it in y
 Please add the following line within your methods, conclusion or acknowledgements sections:
 
    *This research used version X.Y.Z (software citation) of the aiapy open source
-   software package.*
+   software package (project citation).*
 
 The project citation should be to the `aiapy paper`_ and the software citation should be the specific `Zenodo DOI`_ for the version used within your work.
 
@@ -20,7 +20,7 @@ The project citation should be to the `aiapy paper`_ and the software citation s
       volume = {5},
       number = {55},
       pages = {2801},
-      author = {Will T. Barnes and Mark C. m. Cheung and Monica G. Bobra and Paul F. Boerner and Georgios Chintzoglou and Drew Leonard and Stuart J. Mumford and Nicholas Padmanabhan and Albert Y. Shih and Nina Shirman and David Stansby and Paul J. Wright},
+      author = {Will T. Barnes and Mark C. M. Cheung and Monica G. Bobra and Paul F. Boerner and Georgios Chintzoglou and Drew Leonard and Stuart J. Mumford and Nicholas Padmanabhan and Albert Y. Shih and Nina Shirman and David Stansby and Paul J. Wright},
       title = {aiapy: A Python Package for Analyzing Solar EUV Image Data from AIA},
       journal = {Journal of Open Source Software}
    }
