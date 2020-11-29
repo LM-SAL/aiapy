@@ -7,6 +7,7 @@ stages:
 - Install
 - Test
 - Static
+- Deploy
 
 install:
   stage: Install
@@ -64,3 +65,18 @@ codestyle:
   stage: Static
   script:
     - tox -e codestyle
+
+# Upload to PyPI when we push to a tag
+pypi:
+  stage: Deploy
+  # only run on parent tags with semantic versioning names, excluding dev tags
+  only:
+    - /v\d+\.\d+\.\d+(?!(dev))/@LMSAL_HUB/aia_hub/aiapy
+  except:
+    - branches
+    - merge_requests
+  before_script:
+    - pip install --upgrade twine pep517
+  script:
+    - python -m pep517.build --source --out-dir dist .
+    - twine upload dist/aiapy*.tar.gz
