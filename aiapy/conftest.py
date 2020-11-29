@@ -1,9 +1,7 @@
 import pytest
-import hissw
 import astropy.units as u
 import sunpy.map
 import sunpy.data.test
-from astropy.tests.helper import enable_deprecations_as_exceptions
 
 # Force MPL to use non-gui backends for testing.
 try:
@@ -12,6 +10,12 @@ except ImportError:
     pass
 else:
     matplotlib.use('Agg')
+
+# Do not require hissw for tests
+try:
+    import hissw
+except ImportError:
+    pass
 
 
 @pytest.fixture
@@ -40,8 +44,9 @@ def ssw_home():
 
 def idl_available():
     try:
+        import hissw
         _ = hissw.Environment().run('')
-    except (FileNotFoundError, ValueError):
+    except (ImportError, FileNotFoundError, ValueError):
         return False
     else:
         return True
