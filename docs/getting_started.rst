@@ -1,11 +1,17 @@
 Getting Started
 ================
 
-The recommended way to install aiapy is with `pip`,
+The stable version of `aiapy` is available through both PyPI via `pip`,
 
 .. code-block:: shell
 
    pip install aiapy
+
+as well as through the Anaconda distribution via `conda-forge`,
+
+.. code-block:: shell
+
+   conda install -c conda-forge aiapy
 
 You can also install the development version from GitLab,
 
