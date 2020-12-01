@@ -11,14 +11,21 @@ For some examples of using aiapy, see
 Installation
 ------------
 
-aiapy is available through the Python Package Index and can be installed via `pip`
+The current stable version of aiapy is available through the Python Package
+Index and can be installed via `pip`
 
 .. code-block:: shell
 
    pip install aiapy
 
-This is the recommended way to obtain and install aiapy. Alternatively, you can
-install the current development version from GitLab,
+or through the Anaconda distribution via `conda-forge`,
+
+.. code-block:: shell
+
+   conda install -c conda-forge aiapy
+
+These are the recommended ways to obtain and install aiapy.
+Alternatively, you can install the current development version directly from GitLab,
 
 .. code-block:: shell
 
