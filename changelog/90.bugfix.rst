@@ -1,2 +1,0 @@
-Fixed a bug where an out of date calibration epoch was used if there were older
-duplicate versions available in the same epoch.
