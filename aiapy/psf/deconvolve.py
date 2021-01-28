@@ -2,6 +2,7 @@
 Deconvolve an AIA image with the channel point spread function
 """
 import copy
+import warnings
 
 import numpy as np
 try:
@@ -11,11 +12,12 @@ except ImportError:
     HAS_CUPY = False
 
 from .psf import psf as calculate_psf
+from aiapy.util import AiapyUserWarning
 
 __all__ = ['deconvolve']
 
 
-def deconvolve(smap, psf=None, iterations=25, use_gpu=True):
+def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
     """
     Deconvolve an AIA image with the point spread function
 
@@ -38,6 +40,8 @@ def deconvolve(smap, psf=None, iterations=25, use_gpu=True):
         The point spread function. If None, it will be calculated
     iterations : `int`, optional
         Number of iterations in the Richardson-Lucy algorithm
+    clip_negative : `bool`, optional
+        If the image has negative intensity values, set them to zero.
     use_gpu : `bool`, optional
         If True and `~cupy` is installed, do PSF deconvolution on the GPU
         with `~cupy`.
@@ -58,6 +62,12 @@ def deconvolve(smap, psf=None, iterations=25, use_gpu=True):
     """
     # TODO: do we need a check to make sure this is a full-frame image?
     img = smap.data
+    if clip_negative:
+        img = np.where(img < 0, 0, img)
+    if np.any(img < 0):
+        warnings.warn(
+            'Image contains negative intensity values. Consider setting clip_negative to True',
+            AiapyUserWarning)
     if psf is None:
         psf = calculate_psf(smap.wavelength)
     if HAS_CUPY and use_gpu:
