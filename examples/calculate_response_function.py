@@ -52,6 +52,8 @@ c = Channel(335*u.angstrom)
 # The `~aiapy.response.Channel` object provides an interface to all of these
 # properties of the telescope. Below, we show how to plot several of these
 # properties as a function of wavelength.
+
+# Reflectance
 fig = plt.figure()
 ax = fig.add_subplot(221)
 ax.plot(c.wavelength, c.primary_reflectance, label=r'$R_P$')
@@ -60,6 +62,8 @@ ax.set_ylabel(r'Reflectance')
 ax.set_xlim(50, 400)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.legend(frameon=False)
+
+# Transmittance
 ax = fig.add_subplot(222)
 ax.plot(c.wavelength, c.entrance_filter_efficiency, label=r'$T_E$')
 ax.plot(c.wavelength, c.focal_plane_filter_efficiency, label=r'$T_F$')
@@ -67,11 +71,15 @@ ax.set_ylabel(r'Transmittance')
 ax.set_xlim(50, 400)
 ax.set_xlabel(r'$\lambda$ [Å]')
 ax.legend(frameon=False)
+
+# Contamination
 ax = fig.add_subplot(223)
 ax.plot(c.wavelength, c.contamination)
 ax.set_ylabel(r'Contamination, $D(\lambda)$')
 ax.set_xlim(50, 400)
 ax.set_xlabel(r'$\lambda$ [Å]')
+
+# Quantumn efficiency
 ax = fig.add_subplot(224)
 ax.plot(c.wavelength, c.quantum_efficiency)
 ax.set_ylabel(r'Quantum Efficiency, $Q(\lambda)$')
