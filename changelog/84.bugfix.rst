@@ -1,3 +1,0 @@
-The `CROTA2` keyword update in :func:`~aiapy.calibrate.update_pointing` now includes
-the value of `SAT_ROT` from the FITS header. Previously, the keyword was only being
-updated with `INSTROT`.
