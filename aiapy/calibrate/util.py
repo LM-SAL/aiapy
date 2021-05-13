@@ -70,6 +70,7 @@ def get_correction_table(correction_table=None):
         table = q.show(
             'VER_NUM',
             'WAVE_STR',
+            'WAVELNTH',
             'T_START',
             'T_STOP',
             'EFFA_P1',
