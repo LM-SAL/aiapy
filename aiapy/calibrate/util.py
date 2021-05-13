@@ -68,6 +68,7 @@ def get_correction_table(correction_table=None):
             attrs.jsoc.Series('aia.response[!1=1!]'),
         )
         table = q.show(
+            'DATE',
             'VER_NUM',
             'WAVE_STR',
             'WAVELNTH',
