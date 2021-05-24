@@ -155,11 +155,16 @@ def get_pointing_table(start, end):
     aiapy.calibrate.update_pointing
     """
     try:
-        q = jsoc.JSOCClient().search_metadata(
-            attrs.Time(start, end=end),
-            attrs.jsoc.Series('aia.master_pointing3h'),
-            attrs.jsoc.Keys('**ALL**'),
-        )
+        with warnings.catch_warnings():
+            # Support up to sunpy v3.0, but ignore the deprectation warning here
+            # as this functionality was deprecated in v2.1 and will be removed
+            # in v3.1
+            warnings.filterwarnings('ignore', category=SunpyDeprecationWarning)
+            q = jsoc.JSOCClient().search_metadata(
+                attrs.Time(start, end=end),
+                attrs.jsoc.Series('aia.master_pointing3h'),
+                attrs.jsoc.Keys('**ALL**'),
+            )
     except KeyError as e:
         # If there's no pointing information available between these times,
         # JSOC will raise a cryptic KeyError
