@@ -1,4 +1,4 @@
-image: python:3.7
+image: python:3.8
 
 before_script:
   - pip install tox
@@ -14,46 +14,45 @@ install:
   script:
     - pip install .
 
-py36-online:
+py39-online:
   stage: Test
-  image: python:3.6
+  image: python:3.9
   script:
-    - tox -e py36-online
+    - tox -e py39-online
 
 py37-online:
   stage: Test
+  image: python:3.7
   script:
     - tox -e py37-online
 
 py38-online:
   stage: Test
-  image: python:3.8
   script:
     - tox -e py38-online
 
-py37-devdeps-online:
+py38-devdeps-online:
   allow_failure: true
   stage: Test
   script:
-    - tox -e py37-devdeps-online
+    - tox -e py38-devdeps-online
 
-py37:
+py38:
   stage: Test
   script:
-    - tox -e py37
+    - tox -e py38
 
-py37-coverage:
+py38-coverage:
   stage: Test
   #only:
   #- master@LMSAL_HUB/aia_hub/aiapy  # only run on parent master
   script:
-  - tox -e py37-online
+  - tox -e py38-online
   - pip install --upgrade codecov
   - codecov
 
 build_docs:
   stage: Static
-  image: python:3.8
   # Need graphviz binary for generating inheritance diagrams
   before_script:
     - apt-get update -qq && apt-get install -y -qq graphviz
