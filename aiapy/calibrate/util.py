@@ -10,6 +10,7 @@ import astropy.units as u
 import astropy.io.ascii
 from astropy.table import QTable
 from sunpy.net import jsoc, attrs
+from sunpy.util.exceptions import SunpyDeprecationWarning
 
 from aiapy.util.decorators import validate_channel
 from aiapy.util.exceptions import AiapyUserWarning
@@ -57,25 +58,30 @@ def get_correction_table(correction_table=None):
             raise ValueError('correction_table must be a file path, an existing table, or None.')
     else:
         now = Time.now()
-        q = jsoc.JSOCClient().search_metadata(
-            # FIXME: more accurate time range?
-            attrs.Time(start=now-100*u.year, end=now+100*u.year),
-            # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
-            # the query to find records that are ordinarily considered
-            # identical because the PrimeKeys for this series are WAVE_STR
-            # and T_START. Without the !1=1! the query only returns the
-            # latest record for each unique combination of those keywords.
-            attrs.jsoc.Series('aia.response[!1=1!]'),
-            attrs.jsoc.Keys(['VER_NUM',
-                             'WAVE_STR',
-                             'T_START',
-                             'T_STOP',
-                             'EFFA_P1',
-                             'EFFA_P2',
-                             'EFFA_P3',
-                             'EFF_AREA',
-                             'EFF_WVLN']),
-        )
+        with warnings.catch_warnings():
+            # Support up to sunpy v3.0, but ignore the deprectation warning here
+            # as this functionality was deprecated in v2.1 and will be removed
+            # in v3.1
+            warnings.filterwarnings('ignore', category=SunpyDeprecationWarning)
+            q = jsoc.JSOCClient().search_metadata(
+                # FIXME: more accurate time range?
+                attrs.Time(start=now-100*u.year, end=now+100*u.year),
+                # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
+                # the query to find records that are ordinarily considered
+                # identical because the PrimeKeys for this series are WAVE_STR
+                # and T_START. Without the !1=1! the query only returns the
+                # latest record for each unique combination of those keywords.
+                attrs.jsoc.Series('aia.response[!1=1!]'),
+                attrs.jsoc.Keys(['VER_NUM',
+                                 'WAVE_STR',
+                                 'T_START',
+                                 'T_STOP',
+                                 'EFFA_P1',
+                                 'EFFA_P2',
+                                 'EFFA_P3',
+                                 'EFF_AREA',
+                                 'EFF_WVLN']),
+            )
         table = QTable.from_pandas(q)
 
     table['T_START'] = Time(table['T_START'], scale='utc')
@@ -149,11 +155,16 @@ def get_pointing_table(start, end):
     aiapy.calibrate.update_pointing
     """
     try:
-        q = jsoc.JSOCClient().search_metadata(
-            attrs.Time(start, end=end),
-            attrs.jsoc.Series('aia.master_pointing3h'),
-            attrs.jsoc.Keys('**ALL**'),
-        )
+        with warnings.catch_warnings():
+            # Support up to sunpy v3.0, but ignore the deprectation warning here
+            # as this functionality was deprecated in v2.1 and will be removed
+            # in v3.1
+            warnings.filterwarnings('ignore', category=SunpyDeprecationWarning)
+            q = jsoc.JSOCClient().search_metadata(
+                attrs.Time(start, end=end),
+                attrs.jsoc.Series('aia.master_pointing3h'),
+                attrs.jsoc.Keys('**ALL**'),
+            )
     except KeyError as e:
         # If there's no pointing information available between these times,
         # JSOC will raise a cryptic KeyError
