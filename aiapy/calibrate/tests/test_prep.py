@@ -81,8 +81,7 @@ def test_register_unsupported_maps(aia_171_map):
     with pytest.raises(ValueError):
         _ = register(original_cutout)
     # A Map besides AIA or HMI
-    non_sdo_map = Map(sunpy.data.test.get_test_filepath(
-        'mdi_fd_Ic_6h_01d.5871.0000_s.fits'))
+    non_sdo_map = Map(sunpy.data.test.get_test_filepath('swap_lv1_20140606_000113.fits'))
     with pytest.raises(ValueError):
         _ = register(non_sdo_map)
 
@@ -186,7 +185,6 @@ def test_normalize_exposure_zero(aia_171_map):
 
 
 def test_normalize_exposure_non_aia_map(aia_171_map):
-    non_aia_map = Map(sunpy.data.test.get_test_filepath(
-        'mdi_fd_Ic_6h_01d.5871.0000_s.fits'))
+    non_aia_map = Map(sunpy.data.test.get_test_filepath('swap_lv1_20140606_000113.fits'))
     with pytest.raises(ValueError):
         _ = normalize_exposure(non_aia_map)
