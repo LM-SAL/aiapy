@@ -12,10 +12,10 @@ described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDO
 """
 
 import astropy.units as u
-from sunpy.net import Fido, attrs
 import sunpy.map
+from sunpy.net import Fido, attrs
 
-from aiapy.calibrate import register, update_pointing, normalize_exposure
+from aiapy.calibrate import normalize_exposure, register, update_pointing
 
 ###########################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as

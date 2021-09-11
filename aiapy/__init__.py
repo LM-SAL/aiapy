@@ -1,10 +1,6 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
 import os
 
-try:
-    from .version import __version__
-except ImportError:
-    __version__ = "unknown"
+from .version import version as __version__
 
 
 def _get_bibtex():
@@ -26,4 +22,4 @@ def _get_bibtex():
 
 __citation__ = __bibtex__ = _get_bibtex()
 
-__all__ = []
+__all__ = ["__version__", "__citation__"]

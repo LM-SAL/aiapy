@@ -9,11 +9,11 @@ well as explore the different properties of the
 telescope channels.
 """
 import matplotlib.pyplot as plt
-import astropy.units as u
+
 import astropy.time
+import astropy.units as u
 
 from aiapy.response import Channel
-
 
 ##################################################
 # Since AIA uses narrow-band filters, other wavelengths (outside of the nominal
@@ -103,7 +103,7 @@ ax.plot(c.wavelength, r)
 ax.set_xlim((c.channel + [-10, 10]*u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r'$\lambda$ [Å]')
-ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
+ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 plt.show()
 
 ##################################################
@@ -125,7 +125,7 @@ ax.plot(c.wavelength, r, label='crosstalk')
 ax.plot(c.wavelength, r_no_cross, label='no crosstalk')
 ax.set_xlim(50, 350)
 ax.set_xlabel(r'$\lambda$ [Å]')
-ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
+ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=1, frameon=False)
 plt.show()
 
@@ -152,6 +152,6 @@ ax.plot(c.wavelength, r_eve, label='EVE correction')
 ax.set_xlim((c.channel + [-20, 20]*u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r'$\lambda$ [Å]')
-ax.set_ylabel(f'$R(\lambda)$ [{r.unit.to_string("latex")}]')
+ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=2, frameon=False)
 plt.show()

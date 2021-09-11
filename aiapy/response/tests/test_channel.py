@@ -1,17 +1,15 @@
-"""
-Tests for Channel class that holds response function and channel data
-"""
 import os
 import collections
 
 import pytest
-import astropy.units as u
+
 import astropy.time
+import astropy.units as u
 from sunpy.util.metadata import MetaDict
 
+from aiapy.calibrate.util import get_correction_table
 from aiapy.response import Channel
 from aiapy.response.channel import VERSION_NUMBER
-from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 
 
@@ -222,4 +220,4 @@ def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     assert all([k in channel._data for k in required_keys])
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
-    assert channel.contamination == u.Quantity([1,])
+    assert channel.contamination == u.Quantity([1, ])

@@ -8,15 +8,15 @@ to account for the degradation of the telescopes over time.
 """
 
 import matplotlib.pyplot as plt
-import astropy.units as u
+
 import astropy.time
+import astropy.units as u
+import sunpy.map
 from astropy.visualization import ImageNormalize, SqrtStretch, time_support
 from sunpy.net import Fido, attrs
-import sunpy.map
 
 from aiapy.calibrate import correct_degradation
 from aiapy.calibrate.util import get_correction_table
-
 
 ###########################################################
 # The performance of the AIA telescope is degrading over time,

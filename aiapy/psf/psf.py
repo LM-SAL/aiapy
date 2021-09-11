@@ -1,7 +1,8 @@
 """
-Calculate the point spread function (PSF) for the AIA telescopes
+Calculate the point spread function (PSF) for the AIA telescopes.
 """
 import numpy as np
+
 import astropy.units as u
 
 from aiapy.util.decorators import validate_channel
@@ -36,8 +37,7 @@ def filter_mesh_parameters(use_preflightcore=False):
         * `angle_arm`: Angles of the four entrance filter arms
         * `error_angle_arm`: Error in angle of the four entrance filter arms
         * `spacing_e`: Distance between diffraction spikes from entrance filter
-        * `spacing_fp`: Distance between diffraction spikes from focal plane
-          filter
+        * `spacing_fp`: Distance between diffraction spikes from focal plane filter
         * `mesh_pitch`: Pitch of the mesh
         * `mesh_width`: Width of the mesh
         * `width`: Width applied to the Gaussian such that *after*
@@ -140,14 +140,14 @@ def filter_mesh_parameters(use_preflightcore=False):
             'CDELT': [0.600165, 0.600165]*u.arcsec,
         },
         335 * u.angstrom: {
-           'angle_arm': [50.40, 39.80, -39.64, -50.25] * u.degree,
-           'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-           'spacing_e': 31.83 * u.pixel,
-           'mesh_pitch': 363.0 * u.um,
-           'mesh_width': 34.0 * u.um,
-           'spacing_fp': 0.738 * u.pixel,
-           'width': (0.962 if use_preflightcore else 4.5) * u.pixel,
-           'CDELT': [0.600737, 0.600737]*u.arcsec,
+            'angle_arm': [50.40, 39.80, -39.64, -50.25] * u.degree,
+            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
+            'spacing_e': 31.83 * u.pixel,
+            'mesh_pitch': 363.0 * u.um,
+            'mesh_width': 34.0 * u.um,
+            'spacing_fp': 0.738 * u.pixel,
+            'width': (0.962 if use_preflightcore else 4.5) * u.pixel,
+            'CDELT': [0.600737, 0.600737]*u.arcsec,
         },
     }
 
@@ -155,7 +155,7 @@ def filter_mesh_parameters(use_preflightcore=False):
 @u.quantity_input
 @validate_channel('channel', valid_channels=[94, 131, 171, 193, 211, 304, 335]*u.angstrom)
 def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
-    """
+    r"""
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
 
@@ -247,25 +247,20 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     ----------
     .. [1] `Grigis, P., Su, Y., Weber M., et al., 2012,
             AIA PSF Characterization and Deconvolution
-            <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
+            <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`__
     """
     meshinfo = filter_mesh_parameters(use_preflightcore=use_preflightcore)
     meshinfo = meshinfo[channel]
-
     angles_entrance = meshinfo['angle_arm']
     angles_focal_plane = u.Quantity([45.0, -45.0], 'deg')
-
     if diffraction_orders is None:
         diffraction_orders = np.arange(-100, 101, 1)
-
     psf_entrance = _psf(meshinfo, angles_entrance, diffraction_orders, use_gpu=use_gpu)
     psf_focal_plane = _psf(meshinfo, angles_focal_plane, diffraction_orders,
                            focal_plane=True, use_gpu=use_gpu)
-
     # Composite PSF
     psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane)
                           * np.fft.fft2(psf_entrance)))
-
     # Center PSF in the middle of the image
     psf = np.roll(np.roll(psf, psf.shape[1]//2, axis=1),
                   psf.shape[0]//2,
@@ -275,7 +270,6 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     # If using cupy, cast back to a normal numpy array
     if HAS_CUPY and use_gpu:
         psf = cupy.asnumpy(psf)
-
     return psf
 
 
@@ -293,13 +287,11 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
     if HAS_CUPY and use_gpu:
         x = cupy.array(x)
         y = cupy.array(y)
-
     area_not_mesh = 0.82  # fractional area not covered by the mesh
     spacing = meshinfo['spacing_fp'] if focal_plane else meshinfo['spacing_e']
     mesh_ratio = (meshinfo['mesh_pitch'] / meshinfo['mesh_width']).decompose().value
     spacing_x = spacing * np.cos(angles)
     spacing_y = spacing * np.sin(angles)
-
     for order in diffraction_orders:
         if order == 0:
             continue
@@ -310,12 +302,9 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
             # NOTE: this step is the bottleneck and is VERY slow on a CPU
             psf += np.exp(-width_x*x_centered*x_centered
                           - width_y*y_centered*y_centered)*intensity
-
     # Contribution from core
     psf_core = np.exp(-width_x*(x - 0.5*Nx - 0.5)**2
                       - width_y*(y - 0.5*Ny - 0.5)**2)
-
     psf_total = ((1 - area_not_mesh) * psf / psf.sum()
                  + area_not_mesh * psf_core / psf_core.sum())
-
     return psf_total

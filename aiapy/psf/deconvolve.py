@@ -1,25 +1,26 @@
 """
-Deconvolve an AIA image with the channel point spread function
+Deconvolve an AIA image with the channel point spread function.
 """
 import copy
 import warnings
 
 import numpy as np
+
 try:
     import cupy
     HAS_CUPY = True
 except ImportError:
     HAS_CUPY = False
 
-from .psf import psf as calculate_psf
 from aiapy.util import AiapyUserWarning
+from .psf import psf as calculate_psf
 
 __all__ = ['deconvolve']
 
 
 def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
     """
-    Deconvolve an AIA image with the point spread function
+    Deconvolve an AIA image with the point spread function.
 
     Perform image deconvolution on an AIA image with the instrument
     point spread function using the Richardson-Lucy deconvolution
@@ -58,7 +59,7 @@ def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
     References
     ----------
     .. [1] https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
-    .. [2] Cheung, M., 2015, *GPU Technology Conference Silicon Valley*, `GPU-Accelerated Image Processing for NASA's Solar Dynamics Observatory <https://on-demand-gtc.gputechconf.com/gtcnew/sessionview.php?sessionName=s5209-gpu-accelerated+imaging+processing+for+nasa%27s+solar+dynamics+observatory>`_
+    .. [2] Cheung, M., 2015, *GPU Technology Conference Silicon Valley*, `GPU-Accelerated Image Processing for NASA's Solar Dynamics Observatory <https://on-demand-gtc.gputechconf.com/gtcnew/sessionview.php?sessionName=s5209-gpu-accelerated+imaging+processing+for+nasa%27s+solar+dynamics+observatory>`__
     """
     # TODO: do we need a check to make sure this is a full-frame image?
     img = smap.data
@@ -73,7 +74,6 @@ def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
     if HAS_CUPY and use_gpu:
         img = cupy.array(img)
         psf = cupy.array(psf)
-
     # Center PSF at pixel (0,0)
     psf = np.roll(np.roll(psf, psf.shape[0]//2, axis=0),
                   psf.shape[1]//2,

@@ -1,2 +1,2 @@
-from .psf import *
 from .deconvolve import *
+from .psf import *

@@ -1,4 +1,4 @@
 """
-Subpackage for AIA response functions
+Subpackage for AIA response functions.
 """
 from .channel import *
