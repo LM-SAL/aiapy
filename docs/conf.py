@@ -5,20 +5,30 @@
 # http://www.sphinx-doc.org/en/master/config
 
 
-
 # -- Project information -----------------------------------------------------
-
+import os
+import warnings
 project = 'aiapy'
-copyright = '2020, AIA Instrument Team'
+copyright = '2021, AIA Instrument Team'
 author = 'AIA Instrument Team'
+
+os.environ['HIDE_PARFIVE_PROGESS'] = 'True'
 
 # The full version, including alpha/beta/rc tags
 from aiapy import __version__  # NOQA
 release = __version__
 is_development = '.dev' in __version__
 
-# -- General configuration ---------------------------------------------------
+from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning  # NOQA
+from astropy.utils.exceptions import AstropyDeprecationWarning  # NOQA
+# We want to ignore all warnings in a release version.
+if not is_development:
+    warnings.simplefilter("ignore")
+warnings.filterwarnings("error", category=SunpyDeprecationWarning)
+warnings.filterwarnings("error", category=SunpyPendingDeprecationWarning)
+warnings.filterwarnings("error", category=AstropyDeprecationWarning)
 
+# -- General configuration ---------------------------------------------------
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
