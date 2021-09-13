@@ -4,9 +4,16 @@ import functools
 import astropy.units as u
 
 _all_channels = [
-    94*u.angstrom, 131*u.angstrom, 171*u.angstrom, 193*u.angstrom,
-    211*u.angstrom, 304*u.angstrom, 335*u.angstrom,
-    1600*u.angstrom, 1700*u.angstrom, 4500*u.angstrom
+    94*u.angstrom,
+    131*u.angstrom,
+    171*u.angstrom,
+    193*u.angstrom,
+    211*u.angstrom,
+    304*u.angstrom,
+    335*u.angstrom,
+    1600*u.angstrom,
+    1700*u.angstrom,
+    4500*u.angstrom
 ]
 
 
