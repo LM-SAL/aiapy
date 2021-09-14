@@ -1,7 +1,6 @@
 image: python:3.8
 
 before_script:
-  - pip install codecov
   - pip install tox
 
 stages:
@@ -21,32 +20,24 @@ py39:
   script:
     - tox -e py39
 
-py39-online:
-  stage: Test
-  image: python:3.9
-  script:
-    - tox -e py39-online
-    - codecov
-
-py37-online:
+py37:
   stage: Test
   image: python:3.7
   script:
-    - tox -e py37-online
-    - codecov
+    - tox -e py37
 
 py38-online:
   stage: Test
   script:
     - tox -e py38-online
+    - pip install --upgrade codecov
     - codecov
 
-py38-devdeps-online:
+py38-devdeps:
   allow_failure: true
   stage: Extra
   script:
-    - tox -e py38-devdeps-online
-    - codecov
+    - tox -e py38-devdeps
 
 build_docs:
   stage: Extra
