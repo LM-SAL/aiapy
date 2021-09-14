@@ -1,3 +1,0 @@
-`aiapy.calibrate.update_pointing` now searches 12 hours either side of the map
-date for pointing information. This allows for some very rare instances where
-more than 3 hours elapses between pointing information updates.

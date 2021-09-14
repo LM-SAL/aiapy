@@ -1,3 +1,0 @@
-The pointing table can now be passsed in as a keyword argument to :func:`~aiapy.calibrate.update_pointing`.
-Added a :func:`~aiapy.calibrate.util.get_pointing_table` to retrieve the 3-hour pointing table
-from JSOC over a given time interval.

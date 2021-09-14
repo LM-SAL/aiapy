@@ -1,3 +1,0 @@
-:func:`~aiapy.calibrate.degradation` can now accept `~astropy.time.Time` objects with
-length greater than 1. This makes it easier to compute the channel degradation over
-long intervals.
