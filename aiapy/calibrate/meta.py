@@ -4,8 +4,9 @@ Functions for updating/fixing header keywords
 import copy
 
 import numpy as np
+
 import astropy.units as u
-from astropy.coordinates import SkyCoord, HeliocentricMeanEcliptic, CartesianRepresentation
+from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
 
 from aiapy.calibrate.util import get_pointing_table
 
@@ -44,10 +45,12 @@ def fix_observer_location(smap):
     new_meta['hglt_obs'] = coord.lat.to(u.degree).value
     new_meta['dsun_obs'] = coord.radius.to(u.m).value
 
-    return smap._new_instance(smap.data,
-                              new_meta,
-                              plot_settings=smap.plot_settings,
-                              mask=smap.mask)
+    return smap._new_instance(
+        smap.data,
+        new_meta,
+        plot_settings=smap.plot_settings,
+        mask=smap.mask
+    )
 
 
 def update_pointing(smap, pointing_table=None):
@@ -101,15 +104,15 @@ def update_pointing(smap, pointing_table=None):
     # NOTE: Is the value of SAT_ROT in the header accurate?
     crota2 = pointing_table[f'A_{w_str}_INSTROT'][i_nearest] + smap.meta['SAT_ROT'] * u.degree
     new_meta['CROTA2'] = crota2.to('degree').value
-
-    # SunPy map converts crota to a PCi_j matrix, so we remove it to force the
+    # sunpy map converts crota to a PCi_j matrix, so we remove it to force the
     # re-conversion.
     new_meta.pop('PC1_1')
     new_meta.pop('PC1_2')
     new_meta.pop('PC2_1')
     new_meta.pop('PC2_2')
-
-    return smap._new_instance(smap.data,
-                              new_meta,
-                              plot_settings=smap.plot_settings,
-                              mask=smap.mask)
+    return smap._new_instance(
+        smap.data,
+        new_meta,
+        plot_settings=smap.plot_settings,
+        mask=smap.mask
+    )

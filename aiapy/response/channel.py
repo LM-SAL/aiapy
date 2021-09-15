@@ -1,22 +1,24 @@
 """
-Class for accessing response function data from each channel
+Class for accessing response function data from each channel.
 """
 import collections
 
 import numpy as np
-import astropy.units as u
+
 import astropy.constants as const
+import astropy.units as u
+from sunpy.data import manager
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
-from sunpy.data import manager
 
-from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table
 from aiapy.calibrate import degradation
+from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table
 from aiapy.util.decorators import validate_channel
 
 __all__ = ['Channel']
 
-AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'  # What changes with version?
+# TODO: Work out what changes with version.
+AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'
 VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
 # The URLs are left as a list so that possible mirrors for these files
@@ -44,10 +46,10 @@ class Channel(object):
     Parameters
     ----------
     channel : `~astropy.units.Quantity`
-        Wavelength of AIA channel
+        Wavelength of AIA channel.
     instrument_file : `str`, optional
-        Path to AIA instrument file. If not specified, the latest version will
-        be downloaded from SolarSoft.
+        Path to AIA instrument file.
+        If not specified, the latest version will be downloaded from SolarSoft.
 
     Examples
     ---------
@@ -79,8 +81,7 @@ class Channel(object):
 
     def _get_instrument_data(self, instrument_file):
         """
-        Read the raw instrument data for all channels from the `.genx` files
-        in SSW
+        Read the raw instrument data for all channels from the `.genx` files in SSW.
         """
         if isinstance(instrument_file, collections.OrderedDict):
             return instrument_file
@@ -102,7 +103,7 @@ class Channel(object):
     @property
     def _data(self,):
         """
-        Instrument data for this channel
+        Instrument data for this channel.
         """
         return MetaDict(self._instrument_data[f'A{self.name}_FULL'])
 
@@ -110,7 +111,7 @@ class Channel(object):
     @u.quantity_input
     def channel(self,) -> u.angstrom:
         """
-        Nominal wavelength at which the bandpass of the channel is centered
+        Nominal wavelength at which the bandpass of the channel is centered.
         """
         return self._channel
 
@@ -141,7 +142,7 @@ class Channel(object):
     @u.quantity_input
     def wavelength(self,) -> u.angstrom:
         """
-        Array of wavelengths over which channel properties are calculated
+        Array of wavelengths over which channel properties are calculated.
         """
         return u.Quantity(self._data['wave'], u.angstrom)
 
@@ -192,8 +193,8 @@ class Channel(object):
     @property
     @u.quantity_input
     def effective_area(self,) -> u.cm**2:
-        """
-        Uncorrected effective area as a function of wavelength
+        r"""
+        Uncorrected effective area as a function of wavelength.
 
         According to Section 2 of [boerner]_, the effective area is given by,
 
@@ -204,21 +205,17 @@ class Channel(object):
         where,
 
         - :math:`A_{geo}`: geometrical collecting area
-        - :math:`R_P`, :math:`R_S`: reflectances of primary and secondary
-          mirrors, respectively
-        - :math:`T_E`, :math:`T_F`: transmission efficiency of the entrance
-          and focal-plane filters, respectively
+        - :math:`R_P`, :math:`R_S`: reflectances of primary and secondary mirrors, respectively
+        - :math:`T_E`, :math:`T_F`: transmission efficiency of the entrance and focal-plane filters, respectively
         - :math:`D`: contaminant transmittance of optics
         - :math:`Q`: quantum efficiency of the CCD
 
-        The effective area contains information about the efficiency of the
-        telescope optics and its sensitivity as a function of wavelength. All
-        of the telescope properties are read from the AIA instrument files
-        available in SolarSoft.
+        The effective area contains information about the efficiency of the telescope optics and its sensitivity as a function of wavelength.
+        All of the telescope properties are read from the AIA instrument files available in SolarSoft.
 
         References
         ----------
-        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         return (self.primary_reflectance
                 * self.secondary_reflectance
@@ -234,14 +231,14 @@ class Channel(object):
         """
         Contamination of effective area from crosstalk  between channels.
 
-        On telescopes 1, 3, and 4, both channels are always illuminated. This
-        can lead to contamination in a channel from the channel with which it
-        shares a telescope. This impacts the 94 and 304 channels as well as
-        131 and 335. See Section 2.2.1 of [1]_ for more details.
+        On telescopes 1, 3, and 4, both channels are always illuminated.
+        This can lead to contamination in a channel from the channel with which it shares a telescope.
+        This impacts the 94 and 304 channels as well as 131 and 335.
+        See Section 2.2.1 of [1]_ for more details.
 
         References
         ----------
-        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         crosstalk_lookup = {
             94*u.angstrom: 304*u.angstrom,
@@ -264,8 +261,8 @@ class Channel(object):
 
     @u.quantity_input
     def eve_correction(self, obstime, **kwargs) -> u.dimensionless_unscaled:
-        """
-        Correct effective area to give good agreement with full-disk EVE data
+        r"""
+        Correct effective area to give good agreement with full-disk EVE data.
 
         The EVE correction factor is given by,
 
@@ -276,17 +273,15 @@ class Channel(object):
         where :math:`A_{eff}(\lambda_n,t_0)` is the effective area at the
         nominal wavelength of the channel (:math:`\lambda_n`) at the first
         calibration epoch and :math:`A_{eff}(\lambda_E,t_e)` is the effective
-        area at the `obstime` calibration epoch interpolated to the effective
+        area at the ``obstime`` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`). This function is adapted directly from
-        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`__
         routine in SolarSoft.
 
         Parameters
         ----------
         obstime : `~astropy.time.Time`
-
-        Other Parameters
-        ---------------------
+            The time of the observation.
         correction_table : `~astropy.table.Table` or `str`, optional
             Table of correction parameters or path to correction table file.
             If not specified, it will be queried from JSOC.
@@ -313,15 +308,17 @@ class Channel(object):
             get_correction_table(correction_table=kwargs.get('correction_table')),
             version=kwargs.get('calibration_version'),
         )
-        effective_area_interp = np.interp(table['EFF_WVLN'][-1],
-                                          self.wavelength,
-                                          self.effective_area)
+        effective_area_interp = np.interp(
+            table['EFF_WVLN'][-1],
+            self.wavelength,
+            self.effective_area
+        )
         return table['EFF_AREA'][0] / effective_area_interp
 
     @property
     @u.quantity_input
     def gain(self,) -> u.count / u.ph:
-        """
+        r"""
         Gain of the CCD camera system.
 
         According to Section 2 of [boerner1]_, the gain of the CCD-camera system, in
@@ -336,7 +333,7 @@ class Channel(object):
 
         References
         ----------
-        .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`_
+        .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         _e = u.electron  # Avoid rewriting u.electron a lot
         electron_per_ev = self._data['elecperev'] * _e / u.eV
@@ -354,7 +351,7 @@ class Channel(object):
                             include_eve_correction=False,
                             include_crosstalk=True,
                             **kwargs) -> u.count / u.ph * u.cm**2:
-        """
+        r"""
         The wavelength response function is the product of the gain and the
         effective area.
 
@@ -379,21 +376,16 @@ class Channel(object):
         Parameters
         ----------
         obstime : `~astropy.time.Time`, optional
-            If specified, a time-dependent correction is applied to account
-            for degradation
+            If specified, a time-dependent correction is applied to account for degradation.
         include_eve_correction : `bool`, optional
-            If true and `obstime` is not `None`, include correction to EVE
-            calibration. The time-dependent correction is also included.
+            If true and `obstime` is not `None`, include correction to EVE calibration.
+            The time-dependent correction is also included.
         include_crosstalk : `bool`, optional
-            If true, include the effect of crosstalk between channels that
-            share a telescope
-
-        Other Parameters
-        ----------------
+            If true, include the effect of crosstalk between channels that share a telescope
         correction_table : `~astropy.table.Table` or `str`, optional
             Table of correction parameters or path to correction table file.
-            If not specified, it will be queried from JSOC. See
-            `~aiapy.calibrate.util.get_correction_table` for more information.
+            If not specified, it will be queried from JSOC.
+            See `~aiapy.calibrate.util.get_correction_table` for more information.
 
         Returns
         -------

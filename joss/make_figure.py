@@ -2,19 +2,19 @@
 Make the figure for the JOSS paper
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-import astropy.units as u
-from astropy.coordinates import SkyCoord
+import numpy as np
+
 import astropy.time
-from astropy.visualization import time_support, ImageNormalize, AsinhStretch
+import astropy.units as u
 import sunpy.map
+from astropy.coordinates import SkyCoord
+from astropy.visualization import AsinhStretch, ImageNormalize, time_support
 from sunpy.net import Fido, attrs
 
-from aiapy.response import Channel
 from aiapy.calibrate import degradation
 from aiapy.psf import deconvolve
-
+from aiapy.response import Channel
 
 channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 

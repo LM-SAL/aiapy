@@ -5,13 +5,11 @@ include LICENSE.rst
 include pyproject.toml
 
 recursive-include aiapy *.pyx *.c *.pxd
-recursive-include docs *
-recursive-include licenses *
-recursive-include cextern *
-recursive-include scripts *
 
+prune .codecov.yml
+prune .gitlab-ci.yml
 prune build
-prune docs/_build
-prune docs/api
+prune docs/*
+prune joss
 
 global-exclude *.pyc *.o

@@ -6,13 +6,14 @@ Re-spiking Level 1 Images
 This example demonstrates how to "re-spike" AIA level 1 images
 """
 
-import astropy.units as u
 import matplotlib.pyplot as plt
+
+import astropy.units as u
+import sunpy.map
 from astropy.coordinates import SkyCoord
 from sunpy.net import Fido, attrs
-import sunpy.map
-from aiapy.calibrate import respike, fetch_spikes
 
+from aiapy.calibrate import fetch_spikes, respike
 
 ####################################################
 # AIA level 1 images have been corrected for hot-pixels (commonly referred to

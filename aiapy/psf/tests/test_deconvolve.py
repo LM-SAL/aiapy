@@ -1,8 +1,6 @@
-"""
-Test deconvolution
-"""
-import pytest
 import numpy as np
+import pytest
+
 import sunpy.data.test
 import sunpy.map
 

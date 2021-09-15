@@ -1,22 +1,19 @@
-"""
-Tests for functions that calibrate/prep AIA image data
-"""
-import tempfile
 import copy
+import tempfile
 
 import numpy as np
 import pytest
+
 import astropy.time
 import astropy.units as u
-from astropy.io.fits.verify import VerifyWarning
 import sunpy.data.test
+from astropy.io.fits.verify import VerifyWarning
 from sunpy.map import Map
 
-from aiapy.util import AiapyUserWarning
-from aiapy.calibrate import (register, correct_degradation,
-                             degradation, normalize_exposure)
+from aiapy.calibrate import correct_degradation, degradation, normalize_exposure, register
 from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
+from aiapy.util import AiapyUserWarning
 
 
 @pytest.fixture

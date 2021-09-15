@@ -1,1 +1,0 @@
-Added a function (:func:`~aiapy.calibrate.respike`) for reinserting hot pixels into level 1 images.

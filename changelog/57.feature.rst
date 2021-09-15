@@ -1,1 +1,0 @@
-Added a function (:func:`~aiapy.util.sdo_location`) to obtain the SDO location at a given time.

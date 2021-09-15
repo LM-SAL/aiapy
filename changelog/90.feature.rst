@@ -1,2 +1,0 @@
-Updated default calibration version to 10
-Added test for version 10
