@@ -6,9 +6,8 @@ Re-spiking Level 1 Images
 This example demonstrates how to "re-spike" AIA level 1 images
 """
 
-import matplotlib.pyplot as plt
-
 import astropy.units as u
+import matplotlib.pyplot as plt
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from sunpy.net import Fido, attrs
@@ -37,9 +36,11 @@ from aiapy.calibrate import fetch_spikes, respike
 ####################################################
 # First, let's fetch a level 1 AIA image and read it into a `~sunpy.map.Map`. For
 # our demonstration, we use a 193 Å image taken on 15 March 2013.
-q = Fido.search(attrs.Time('2013-03-15T12:01:00', '2013-03-15T12:01:10'),
-                attrs.Wavelength(193*u.angstrom),
-                attrs.Instrument('AIA'))
+q = Fido.search(
+    attrs.Time("2013-03-15T12:01:00", "2013-03-15T12:01:10"),
+    attrs.Wavelength(193 * u.angstrom),
+    attrs.Instrument("AIA"),
+)
 f = Fido.fetch(q)
 m = sunpy.map.Map(f)
 
@@ -74,10 +75,8 @@ m_respiked = respike(m, spikes=(positions, values))
 ###########################################################
 # Now let's create a cutouts of the original level 1 and "re-spiked" (i.e.
 # level 0.5) images for a region with hot pixels.
-top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec,
-                     frame=m.coordinate_frame)
-bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec,
-                       frame=m.coordinate_frame)
+top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec, frame=m.coordinate_frame)
+bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec, frame=m.coordinate_frame)
 m_cutout = m.submap(bottom_left, top_right=top_right)
 m_respiked_cutout = m_respiked.submap(bottom_left, top_right=top_right)
 
@@ -94,26 +93,24 @@ spike_coords, _ = fetch_spikes(m_cutout, as_coords=True)
 # circles.
 fig = plt.figure()
 ax = fig.add_subplot(121, projection=m_cutout)
-ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
-              markersize=15)
+ax.plot_coord(spike_coords, "o", color="white", fillstyle="none", markersize=15)
 m_cutout.plot(axes=ax, title='Level 1 "de-spiked" data')
 lon, lat = ax.coords
-lon.set_axislabel('HPC Longitude')
-lat.set_axislabel('HPC Latitude')
+lon.set_axislabel("HPC Longitude")
+lat.set_axislabel("HPC Latitude")
 ax = fig.add_subplot(122, projection=m_respiked_cutout)
-ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
-              markersize=15)
+ax.plot_coord(spike_coords, "o", color="white", fillstyle="none", markersize=15)
 m_respiked_cutout.plot(axes=ax, annotate=False)
 ax.set_title('Level 0.5 "re-spiked" data')
 lon, lat = ax.coords
-lon.set_axislabel('HPC Longitude')
-lat.set_axislabel(' ')
+lon.set_axislabel("HPC Longitude")
+lat.set_axislabel(" ")
 lat.set_ticklabel_visible(False)
 plt.show()
 
 ###########################################################
 # Lastly, let's check the metadata in both the level 1 and resulting
 # 0.5 images to double check that the appropriate keywords have been updated.
-for k in ['lvl_num', 'nspikes', 'comments']:
-    print(f'Level 1: {k}: {m_cutout.meta.get(k)}')
-    print(f'Level 0.5: {k}: {m_respiked_cutout.meta.get(k)}')
+for k in ["lvl_num", "nspikes", "comments"]:
+    print(f"Level 1: {k}: {m_cutout.meta.get(k)}")
+    print(f"Level 0.5: {k}: {m_respiked_cutout.meta.get(k)}")

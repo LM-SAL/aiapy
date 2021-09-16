@@ -38,9 +38,9 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map`
 # object.
 q = Fido.search(
-    attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=94*u.angstrom),
+    attrs.Time("2019-01-01T00:00:00", "2019-01-01T00:00:11"),
+    attrs.Instrument("AIA"),
+    attrs.Wavelength(wavemin=94 * u.angstrom, wavemax=94 * u.angstrom),
 )
 m = sunpy.map.Map(Fido.fetch(q))
 

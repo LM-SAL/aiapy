@@ -6,9 +6,8 @@ Deconvolving Images with the Instrument Point Spread Function
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
-import matplotlib.pyplot as plt
-
 import astropy.units as u
+import matplotlib.pyplot as plt
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize, LogStretch
@@ -31,14 +30,16 @@ import aiapy.psf
 # `~aiapy.calibrate.register`
 # (see the :ref:`sphx_glr_generated_gallery_prepping_level_1_data.py` example).
 q = Fido.search(
-    attrs.Time('2011-06-07T06:52:00', '2011-06-07T06:52:10'),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=171*u.angstrom, wavemax=171*u.angstrom),
+    attrs.Time("2011-06-07T06:52:00", "2011-06-07T06:52:10"),
+    attrs.Instrument("AIA"),
+    attrs.Wavelength(wavemin=171 * u.angstrom, wavemax=171 * u.angstrom),
 )
 m = sunpy.map.Map(Fido.fetch(q))
 fig = plt.figure()
 ax = fig.add_subplot(111, projection=m)
-m.plot(axes=ax,)
+m.plot(
+    axes=ax,
+)
 
 #######################################
 # Next, we'll calculate the PSF using `~aiapy.psf.psf` for the 171 Å channel.
@@ -57,9 +58,11 @@ psf = aiapy.psf.psf(m.wavelength)
 # diffraction "arms" extending from the center pixel can often be seen in
 # flare observations due to the intense, small-scale brightening.
 fov = 500
-lc_x, lc_y = psf.shape[0]//2 - fov//2, psf.shape[1]//2 - fov//2
-plt.imshow(psf[lc_x:lc_x+fov, lc_y:lc_y+fov],
-           norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()))
+lc_x, lc_y = psf.shape[0] // 2 - fov // 2, psf.shape[1] // 2 - fov // 2
+plt.imshow(
+    psf[lc_x : lc_x + fov, lc_y : lc_y + fov],
+    norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()),
+)
 plt.colorbar()
 plt.show()
 
@@ -83,30 +86,30 @@ ax = fig.add_subplot(121, projection=m)
 m.plot(axes=ax, norm=norm)
 ax = fig.add_subplot(122, projection=m_deconvolved)
 m_deconvolved.plot(axes=ax, annotate=False, norm=norm)
-ax.coords[0].set_axislabel(' ')
-ax.coords[1].set_axislabel(' ')
+ax.coords[0].set_axislabel(" ")
+ax.coords[1].set_axislabel(" ")
 ax.coords[1].set_ticklabel_visible(False)
 plt.show()
 
 #################################################
 # The differences become a bit more obvious when we zoom in. Note that the
 # deconvolution has the effect of "deblurring" the image.
-left_corner = 500*u.arcsec, -600*u.arcsec
-right_corner = 1000*u.arcsec, -100*u.arcsec
+left_corner = 500 * u.arcsec, -600 * u.arcsec
+right_corner = 1000 * u.arcsec, -100 * u.arcsec
 fig = plt.figure()
 m_sub = m.submap(
     SkyCoord(*left_corner, frame=m.coordinate_frame),
-    SkyCoord(*right_corner, frame=m.coordinate_frame)
+    SkyCoord(*right_corner, frame=m.coordinate_frame),
 )
 ax = fig.add_subplot(121, projection=m_sub)
 m_sub.plot(axes=ax, norm=norm)
 m_deconvolved_sub = m_deconvolved.submap(
     SkyCoord(*left_corner, frame=m_deconvolved.coordinate_frame),
-    SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame)
+    SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame),
 )
 ax = fig.add_subplot(122, projection=m_deconvolved_sub)
 m_deconvolved_sub.plot(axes=ax, annotate=False, norm=norm)
-ax.coords[0].set_axislabel(' ')
-ax.coords[1].set_axislabel(' ')
+ax.coords[0].set_axislabel(" ")
+ax.coords[1].set_axislabel(" ")
 ax.coords[1].set_ticklabel_visible(False)
 plt.show()

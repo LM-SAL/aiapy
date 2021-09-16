@@ -1,15 +1,14 @@
 """
 Miscellaneous utility functions.
 """
+import astropy.units as u
 import drms
 import numpy as np
-
-import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from sunpy.time import parse_time
 
-__all__ = ['sdo_location']
+__all__ = ["sdo_location"]
 
 
 def sdo_location(time):
@@ -33,15 +32,22 @@ def sdo_location(time):
     t = parse_time(time)
     # Query for +/- 3 seconds around the given time
     keys = drms.Client().query(
-        f'aia.lev1[{(t - 3*u.s).utc.isot}/6s]',
-        key='T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS'
+        f"aia.lev1[{(t - 3*u.s).utc.isot}/6s]",
+        key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS",
     )
     if keys is None or len(keys) == 0:
-        raise ValueError('No DRMS records near this time')
+        raise ValueError("No DRMS records near this time")
     # Linear interpolation between the nearest records within the returned set
-    times = Time(list(keys['T_OBS']), scale='utc')
-    x = np.interp(t.mjd, times.mjd, keys['HAEX_OBS'])
-    y = np.interp(t.mjd, times.mjd, keys['HAEY_OBS'])
-    z = np.interp(t.mjd, times.mjd, keys['HAEZ_OBS'])
-    return SkyCoord(x=x, y=y, z=z, unit=u.m, representation_type='cartesian',
-                    frame='heliocentricmeanecliptic', obstime=t)
+    times = Time(list(keys["T_OBS"]), scale="utc")
+    x = np.interp(t.mjd, times.mjd, keys["HAEX_OBS"])
+    y = np.interp(t.mjd, times.mjd, keys["HAEY_OBS"])
+    z = np.interp(t.mjd, times.mjd, keys["HAEZ_OBS"])
+    return SkyCoord(
+        x=x,
+        y=y,
+        z=z,
+        unit=u.m,
+        representation_type="cartesian",
+        frame="heliocentricmeanecliptic",
+        obstime=t,
+    )

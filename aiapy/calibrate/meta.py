@@ -3,14 +3,17 @@ Functions for updating/fixing header keywords
 """
 import copy
 
-import numpy as np
-
 import astropy.units as u
-from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
+import numpy as np
+from astropy.coordinates import (
+    CartesianRepresentation,
+    HeliocentricMeanEcliptic,
+    SkyCoord,
+)
 
 from aiapy.calibrate.util import get_pointing_table
 
-__all__ = ['fix_observer_location', 'update_pointing']
+__all__ = ["fix_observer_location", "update_pointing"]
 
 
 def fix_observer_location(smap):
@@ -32,24 +35,21 @@ def fix_observer_location(smap):
     """
     # Create observer coordinate from HAE coordinates
     coord = SkyCoord(
-        x=smap.meta['haex_obs'] * u.m,
-        y=smap.meta['haey_obs'] * u.m,
-        z=smap.meta['haez_obs'] * u.m,
+        x=smap.meta["haex_obs"] * u.m,
+        y=smap.meta["haey_obs"] * u.m,
+        z=smap.meta["haez_obs"] * u.m,
         representation_type=CartesianRepresentation,
         frame=HeliocentricMeanEcliptic,
         obstime=smap.date,
     ).heliographic_stonyhurst
     # Update header
     new_meta = copy.deepcopy(smap.meta)
-    new_meta['hgln_obs'] = coord.lon.to(u.degree).value
-    new_meta['hglt_obs'] = coord.lat.to(u.degree).value
-    new_meta['dsun_obs'] = coord.radius.to(u.m).value
+    new_meta["hgln_obs"] = coord.lon.to(u.degree).value
+    new_meta["hglt_obs"] = coord.lat.to(u.degree).value
+    new_meta["dsun_obs"] = coord.radius.to(u.m).value
 
     return smap._new_instance(
-        smap.data,
-        new_meta,
-        plot_settings=smap.plot_settings,
-        mask=smap.mask
+        smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask
     )
 
 
@@ -88,31 +88,37 @@ def update_pointing(smap, pointing_table=None):
     """
     if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
-        pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
+        pointing_table = get_pointing_table(smap.date - 12 * u.h, smap.date + 12 * u.h)
     # Find row closest to obstime
-    i_nearest = np.fabs((pointing_table['T_START'] - smap.date).to(u.s)).argmin()
+    i_nearest = np.fabs((pointing_table["T_START"] - smap.date).to(u.s)).argmin()
     # Update headers
-    w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
+    w_str = f"{smap.wavelength.to(u.angstrom).value:03.0f}"
     new_meta = copy.deepcopy(smap.meta)
-    new_meta['CRPIX1'] = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
-    new_meta['CRPIX2'] = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
-    cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
-    new_meta['CDELT1'] = cdelt
-    new_meta['CDELT2'] = cdelt
+    new_meta["CRPIX1"] = (
+        pointing_table[f"A_{w_str}_X0"][i_nearest].to("arcsecond").value
+    )
+    new_meta["CRPIX2"] = (
+        pointing_table[f"A_{w_str}_Y0"][i_nearest].to("arcsecond").value
+    )
+    cdelt = (
+        pointing_table[f"A_{w_str}_IMSCALE"][i_nearest].to("arcsecond / pixel").value
+    )
+    new_meta["CDELT1"] = cdelt
+    new_meta["CDELT2"] = cdelt
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
-    crota2 = pointing_table[f'A_{w_str}_INSTROT'][i_nearest] + smap.meta['SAT_ROT'] * u.degree
-    new_meta['CROTA2'] = crota2.to('degree').value
+    crota2 = (
+        pointing_table[f"A_{w_str}_INSTROT"][i_nearest]
+        + smap.meta["SAT_ROT"] * u.degree
+    )
+    new_meta["CROTA2"] = crota2.to("degree").value
     # sunpy map converts crota to a PCi_j matrix, so we remove it to force the
     # re-conversion.
-    new_meta.pop('PC1_1')
-    new_meta.pop('PC1_2')
-    new_meta.pop('PC2_1')
-    new_meta.pop('PC2_2')
+    new_meta.pop("PC1_1")
+    new_meta.pop("PC1_2")
+    new_meta.pop("PC2_1")
+    new_meta.pop("PC2_2")
     return smap._new_instance(
-        smap.data,
-        new_meta,
-        plot_settings=smap.plot_settings,
-        mask=smap.mask
+        smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask
     )
