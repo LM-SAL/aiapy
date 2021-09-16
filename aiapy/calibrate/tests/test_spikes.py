@@ -1,17 +1,15 @@
-"""
-Tests for respiking algorithm
-"""
 import copy
 
-import pytest
 import numpy as np
+import pytest
+
 import astropy.units as u
-from astropy.coordinates import SkyCoord
 import sunpy.map
+from astropy.coordinates import SkyCoord
 from sunpy.map.mapbase import PixelPair
 from sunpy.net import Fido, attrs
 
-from aiapy.calibrate import respike, fetch_spikes
+from aiapy.calibrate import fetch_spikes, respike
 from aiapy.util import AiapyUserWarning
 
 

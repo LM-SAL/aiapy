@@ -1,19 +1,19 @@
 """
-Utilities for computing intensity corrections
+Utilities for computing intensity corrections.
 """
 import pathlib
 import warnings
 
 import numpy as np
-from astropy.time import Time
-import astropy.units as u
+
 import astropy.io.ascii
+import astropy.units as u
 from astropy.table import QTable
-from sunpy.net import jsoc, attrs
+from astropy.time import Time
+from sunpy.net import attrs, jsoc
 
 from aiapy.util.decorators import validate_channel
 from aiapy.util.exceptions import AiapyUserWarning
-
 
 __all__ = ['get_correction_table', 'get_pointing_table']
 
@@ -80,13 +80,11 @@ def get_correction_table(correction_table=None):
             'EFF_AREA',
             'EFF_WVLN',
         )
-
     table['T_START'] = Time(table['T_START'], scale='utc')
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')
     table['WAVELNTH'].unit = 'Angstrom'
     table['EFF_WVLN'].unit = 'Angstrom'
     table['EFF_AREA'].unit = 'cm2'
-
     return table
 
 
@@ -116,16 +114,14 @@ def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
     if len(table) == 0:
         raise IndexError(f'Correction table does not contain calibration for version {version}')
     # Select the epoch for the given observation time
-    obstime_in_epoch = np.logical_and(obstime >= table['T_START'],
-                                      obstime < table['T_STOP'])
+    obstime_in_epoch = np.logical_and(obstime >= table['T_START'], obstime < table['T_STOP'])
     if not obstime_in_epoch.any():
         raise IndexError(f'No valid calibration epoch for {obstime}')
     # NOTE: In some cases, there may be multiple entries for a single epoch. We want to
     # use the most up-to-date one.
     i_epoch = np.where(obstime_in_epoch)[0]
     if i_epoch.shape[0] > 1:
-        warnings.warn(f'Multiple valid epochs for {obstime}. Using the most recent one',
-                      AiapyUserWarning)
+        warnings.warn(f'Multiple valid epochs for {obstime}. Using the most recent one', AiapyUserWarning)
     # Create new table with only first and obstime epochs
     return QTable(table[[0, i_epoch[-1]]])
 
@@ -134,7 +130,7 @@ def get_pointing_table(start, end):
     """
     Query JSOC for the most up-to-date pointing information.
 
-    This function queries `JSOC <http://jsoc.stanford.edu/>`_ for
+    This function queries `JSOC <http://jsoc.stanford.edu/>`__ for
     the 3-hourly pointing information in the interval defined by
     `start` and `end`.
 

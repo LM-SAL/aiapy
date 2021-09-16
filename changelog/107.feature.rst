@@ -1,2 +1,0 @@
-Add a flag to :func:`aiapy.psf.deconvolve` that sets negative intensity values
-to zero before performing the deconvolution.

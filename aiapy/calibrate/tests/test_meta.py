@@ -1,7 +1,5 @@
-"""
-Tests for function that update FITS keywords
-"""
 import pytest
+
 import astropy.units as u
 
 from aiapy.calibrate import fix_observer_location, update_pointing
@@ -22,7 +20,6 @@ def test_fix_pointing(aia_171_map):
     # Remove keys to at least test that they get set
     for k in keys:
         _ = aia_171_map.meta.pop(k)
-
     aia_map_updated = update_pointing(aia_171_map)
     # FIXME: how do we check these values are accurate?
     assert all([k in aia_map_updated.meta for k in keys])

@@ -1,7 +1,8 @@
 import pytest
+
 import astropy.units as u
-import sunpy.map
 import sunpy.data.test
+import sunpy.map
 
 # Force MPL to use non-gui backends for testing.
 try:
@@ -30,23 +31,22 @@ def idl_environment():
     if idl_available():
         return hissw.Environment(ssw_packages=['sdo/aia'], ssw_paths=['aia'])
     else:
-        pytest.skip('''A working IDL installation is not available. You will
-                       not be able to run portions of the test suite.''')
+        pytest.skip(
+            "A working IDL installation is not available. You will not be able to run portions of the test suite."
+        )
 
 
 @pytest.fixture(scope='session')
 def ssw_home():
     if idl_available():
         return hissw.Environment().ssw_home
-    else:
-        return None
+    return None
 
 
 def idl_available():
     try:
         import hissw
         _ = hissw.Environment().run('')
-    except (ImportError, FileNotFoundError, ValueError):
-        return False
-    else:
         return True
+    except Exception:
+        return False

@@ -10,10 +10,10 @@ position.
 """
 
 import astropy.units as u
-from sunpy.net import Fido, attrs
 import sunpy.map
+from sunpy.net import Fido, attrs
 
-from aiapy.calibrate import update_pointing, fix_observer_location
+from aiapy.calibrate import fix_observer_location, update_pointing
 
 ###########################################################
 # An AIA FITS header contains various pieces of

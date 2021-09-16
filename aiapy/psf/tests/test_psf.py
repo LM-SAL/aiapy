@@ -1,6 +1,3 @@
-"""
-Test PSF calculation
-"""
 import numpy as np
 import pytest
 
@@ -25,7 +22,7 @@ def psf_full(channels):
 @pytest.fixture(scope='module')
 def psf_idl(idl_environment, channels):
     """
-    The point spread function as calculated by `aia_calc_psf.pro`
+    The point spread function as calculated by aia_calc_psf.pro
     """
     r = idl_environment.run('psf = aia_calc_psf({{channel}},/use_preflightcore)',
                             args={'channel': f'{channels[0].value:.0f}'},
