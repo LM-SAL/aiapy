@@ -8,11 +8,10 @@ of the AIA channels as a function of time over the entire
 lifetime of the instrument.
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 import astropy.time
 import astropy.units as u
+import matplotlib.pyplot as plt
+import numpy as np
 from astropy.visualization import time_support
 
 from aiapy.calibrate import degradation
@@ -47,7 +46,7 @@ channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 ###########################################################
 # We can use the `~astropy.time` subpackage to create an array of times
 # between now and the start of the mission with a cadence of one week.
-time_0 = astropy.time.Time('2010-03-25T00:00:00', scale='utc')
+time_0 = astropy.time.Time("2010-03-25T00:00:00", scale="utc")
 now = astropy.time.Time.now()
 time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
 
@@ -62,13 +61,15 @@ deg = {c: degradation(c, time, correction_table=correction_table) for c in chann
 ###########################################################
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
-time_support(format='jyear')  # This lets you pass astropy.time.Time objects directly to matplotlib
+time_support(
+    format="jyear"
+)  # This lets you pass astropy.time.Time objects directly to matplotlib
 fig = plt.figure()
 ax = fig.gca()
 for c in channels:
-    ax.plot(time, deg[c], label=f'{c.value:.0f} Å')
+    ax.plot(time, deg[c], label=f"{c.value:.0f} Å")
 ax.set_xlim(time[[0, -1]])
-ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc='lower center')
-ax.set_xlabel('Time')
-ax.set_ylabel('Degradation')
+ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc="lower center")
+ax.set_xlabel("Time")
+ax.set_ylabel("Degradation")
 plt.show()

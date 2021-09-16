@@ -8,10 +8,9 @@ wavelength response function of the 335 Å channel as
 well as explore the different properties of the
 telescope channels.
 """
-import matplotlib.pyplot as plt
-
 import astropy.time
 import astropy.units as u
+import matplotlib.pyplot as plt
 
 from aiapy.response import Channel
 
@@ -29,7 +28,7 @@ from aiapy.response import Channel
 # this as the most recent instrument data file will
 # need to be downloaded from a remote server. Subsequent
 # calls will know that the data has been downloaded.
-c = Channel(335*u.angstrom)
+c = Channel(335 * u.angstrom)
 
 ##################################################
 # From `Boerner et al. (2012) <https://doi.org/10.1007/s11207-011-9804-8>`_,
@@ -56,35 +55,35 @@ c = Channel(335*u.angstrom)
 # Reflectance
 fig = plt.figure()
 ax = fig.add_subplot(221)
-ax.plot(c.wavelength, c.primary_reflectance, label=r'$R_P$')
-ax.plot(c.wavelength, c.secondary_reflectance, label=r'$R_S$')
-ax.set_ylabel(r'Reflectance')
+ax.plot(c.wavelength, c.primary_reflectance, label=r"$R_P$")
+ax.plot(c.wavelength, c.secondary_reflectance, label=r"$R_S$")
+ax.set_ylabel(r"Reflectance")
 ax.set_xlim(50, 400)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 ax.legend(frameon=False)
 
 # Transmittance
 ax = fig.add_subplot(222)
-ax.plot(c.wavelength, c.entrance_filter_efficiency, label=r'$T_E$')
-ax.plot(c.wavelength, c.focal_plane_filter_efficiency, label=r'$T_F$')
-ax.set_ylabel(r'Transmittance')
+ax.plot(c.wavelength, c.entrance_filter_efficiency, label=r"$T_E$")
+ax.plot(c.wavelength, c.focal_plane_filter_efficiency, label=r"$T_F$")
+ax.set_ylabel(r"Transmittance")
 ax.set_xlim(50, 400)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 ax.legend(frameon=False)
 
 # Contamination
 ax = fig.add_subplot(223)
 ax.plot(c.wavelength, c.contamination)
-ax.set_ylabel(r'Contamination, $D(\lambda)$')
+ax.set_ylabel(r"Contamination, $D(\lambda)$")
 ax.set_xlim(50, 400)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 
 # Quantumn efficiency
 ax = fig.add_subplot(224)
 ax.plot(c.wavelength, c.quantum_efficiency)
-ax.set_ylabel(r'Quantum Efficiency, $Q(\lambda)$')
+ax.set_ylabel(r"Quantum Efficiency, $Q(\lambda)$")
 ax.set_xlim(50, 800)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 plt.tight_layout()
 plt.show()
 
@@ -100,9 +99,9 @@ print(r)
 fig = plt.figure()
 ax = fig.gca()
 ax.plot(c.wavelength, r)
-ax.set_xlim((c.channel + [-10, 10]*u.angstrom).value)
+ax.set_xlim((c.channel + [-10, 10] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 plt.show()
 
@@ -121,10 +120,10 @@ r_no_cross = c.wavelength_response(include_crosstalk=False)
 # 335 Å response function.
 fig = plt.figure()
 ax = fig.gca()
-ax.plot(c.wavelength, r, label='crosstalk')
-ax.plot(c.wavelength, r_no_cross, label='no crosstalk')
+ax.plot(c.wavelength, r, label="crosstalk")
+ax.plot(c.wavelength, r_no_cross, label="no crosstalk")
 ax.set_xlim(50, 350)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=1, frameon=False)
 plt.show()
@@ -137,7 +136,7 @@ plt.show()
 # time-dependent correction. As an example, to apply the
 # two aforementioned corrections given the degradation as
 # of 1 January 2019,
-obstime = astropy.time.Time('2019-01-01T00:00:00')
+obstime = astropy.time.Time("2019-01-01T00:00:00")
 r_time = c.wavelength_response(obstime=obstime)
 r_eve = c.wavelength_response(obstime=obstime, include_eve_correction=True)
 
@@ -146,12 +145,12 @@ r_eve = c.wavelength_response(obstime=obstime, include_eve_correction=True)
 # functions to the uncorrected case.
 fig = plt.figure()
 ax = fig.gca()
-ax.plot(c.wavelength, r, label='uncorrected')
-ax.plot(c.wavelength, r_time, label='degradation correction')
-ax.plot(c.wavelength, r_eve, label='EVE correction')
-ax.set_xlim((c.channel + [-20, 20]*u.angstrom).value)
+ax.plot(c.wavelength, r, label="uncorrected")
+ax.plot(c.wavelength, r_time, label="degradation correction")
+ax.plot(c.wavelength, r_eve, label="EVE correction")
+ax.set_xlim((c.channel + [-20, 20] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
-ax.set_xlabel(r'$\lambda$ [Å]')
+ax.set_xlabel(r"$\lambda$ [Å]")
 ax.set_ylabel(f'$R(\\lambda)$ [{r.unit.to_string("latex")}]')
 ax.legend(loc=2, frameon=False)
 plt.show()

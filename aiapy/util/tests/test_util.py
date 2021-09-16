@@ -1,5 +1,4 @@
 import pytest
-
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.util
@@ -17,4 +16,4 @@ def test_sdo_location(aia_171_map):
 def test_sdo_location_raises_error():
     # Confirm that an error is raised for a time without records
     with pytest.raises(ValueError):
-        aiapy.util.sdo_location('2001-01-01')
+        aiapy.util.sdo_location("2001-01-01")

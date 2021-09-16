@@ -34,10 +34,10 @@ from aiapy.calibrate import fix_observer_location, update_pointing
 # As an example, let's first query the VSO for a single 171 Å AIA observation
 # on 1 January 2019, download it, and create a `~sunpy.map.Map`
 q = Fido.search(
-    attrs.Time('2019-01-01T00:00:00', '2019-01-01T01:00:00'),
-    attrs.Sample(1*u.h),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(171*u.angstrom),
+    attrs.Time("2019-01-01T00:00:00", "2019-01-01T01:00:00"),
+    attrs.Sample(1 * u.h),
+    attrs.Instrument("AIA"),
+    attrs.Wavelength(171 * u.angstrom),
 )
 file = Fido.fetch(q)
 m = sunpy.map.Map(file)
@@ -68,8 +68,8 @@ print(m_updated_pointing.rotation_matrix)
 # location in the header are inaccurate. If we check the HGS longitude keyword
 # in the header, we find that it is 0 degrees which is not the HGS longitude
 # coordinate of SDO.
-print(m_updated_pointing.meta['hgln_obs'])
-print(m_updated_pointing.meta['hglt_obs'])
+print(m_updated_pointing.meta["hgln_obs"])
+print(m_updated_pointing.meta["hglt_obs"])
 
 ############################################################
 # To update the HGS observer coordinates, we can use the
@@ -82,8 +82,8 @@ m_observer_fixed = fix_observer_location(m_updated_pointing)
 ############################################################
 # Looking again at the HGS longitude and latitude keywords, we can see that
 # they have been updated.
-print(m_observer_fixed.meta['hgln_obs'])
-print(m_observer_fixed.meta['hglt_obs'])
+print(m_observer_fixed.meta["hgln_obs"])
+print(m_observer_fixed.meta["hglt_obs"])
 
 ############################################################
 # Note that in `~sunpy.map.AIAMap`, the `~sunpy.map.Map.observer_coordinate`
