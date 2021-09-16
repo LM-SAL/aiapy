@@ -1,7 +1,8 @@
 """
-Shared fixtures for PSF tests
+Shared fixtures for PSF tests.
 """
 import pytest
+
 import astropy.units as u
 
 import aiapy.psf
@@ -14,6 +15,8 @@ def channels():
 
 @pytest.fixture
 def psf(channels):
-    return aiapy.psf.psf(channels[0],
-                         use_preflightcore=True,
-                         diffraction_orders=[-1, 0, 1])
+    return aiapy.psf.psf(
+        channels[0],
+        use_preflightcore=True,
+        diffraction_orders=[-1, 0, 1]
+    )

@@ -6,15 +6,15 @@ Deconvolving Images with the Instrument Point Spread Function
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
-import astropy.units as u
-from astropy.coordinates import SkyCoord
-from astropy.visualization import ImageNormalize, LogStretch, AsinhStretch
-from sunpy.net import Fido, attrs
-import sunpy.map
 import matplotlib.pyplot as plt
 
-import aiapy.psf
+import astropy.units as u
+import sunpy.map
+from astropy.coordinates import SkyCoord
+from astropy.visualization import AsinhStretch, ImageNormalize, LogStretch
+from sunpy.net import Fido, attrs
 
+import aiapy.psf
 
 #########################################
 # AIA images are subject to convolution with the instrument point-spread

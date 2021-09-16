@@ -5,8 +5,8 @@ If you use aiapy in your scientific work, we would appreciate you citing it in y
 
 Please add the following line within your methods, conclusion or acknowledgements sections:
 
-   *This research used version X.Y.Z (software citation) of the aiapy open source
-   software package (project citation).*
+*This research used version X.Y.Z (software citation) of the aiapy open source
+software package (project citation).*
 
 The project citation should be to the `aiapy paper`_ and the software citation should be the specific `Zenodo DOI`_ for the version used within your work.
 

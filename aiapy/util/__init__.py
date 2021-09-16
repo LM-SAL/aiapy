@@ -1,5 +1,5 @@
 """
-Subpackage with miscellaneous utility functions
+Subpackage with miscellaneous utility functions.
 """
-from .util import *
 from .exceptions import *
+from .util import *

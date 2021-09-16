@@ -7,7 +7,7 @@ default_context:
   license: BSD 3-Clause
   project_url: https://gitlab.com/LMSAL_HUB/aia_hub/aiapy
   github_repo: sunpy/aiapy
-  minimum_python_version: 3.6
+  minimum_python_version: 3.7
   use_compiled_extensions: n
   include_example_code: n
   _sphinx_theme: sphinx_rtd_theme

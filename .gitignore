@@ -146,6 +146,9 @@ static
 docs/_build
 docs/generated
 docs/api
-docs/whatsnew/latest_changelog.txt
-aiapy/version.py
+aiapy/_version.py
 htmlcov/
+
+# VS Code
+.history/
+.vscode/

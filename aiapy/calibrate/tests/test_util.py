@@ -1,14 +1,11 @@
-"""
-Tests for utility functions in response subpackage
-"""
 import pytest
-import astropy.time
+
 import astropy.table
+import astropy.time
 import astropy.units as u
 
-from aiapy.calibrate.util import get_correction_table, _select_epoch_from_table, get_pointing_table
+from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table, get_pointing_table
 from aiapy.tests.data import get_test_filepath
-
 
 # These are not fixtures so that they can be easily used in the parametrize mark
 obstime = astropy.time.Time('2015-01-01T00:00:00', scale='utc')
@@ -40,10 +37,7 @@ def test_correction_table(correction_table):
 
 @pytest.mark.parametrize('wavelength', [94*u.angstrom, 1600*u.angstrom])
 def test_correction_table_selection(wavelength):
-    table = _select_epoch_from_table(wavelength,
-                                     obstime,
-                                     table_local,
-                                     version=8)
+    table = _select_epoch_from_table(wavelength, obstime, table_local, version=8)
     assert isinstance(table, astropy.table.QTable)
     expected_columns = ['VER_NUM',
                         'WAVE_STR',
@@ -60,27 +54,23 @@ def test_correction_table_selection(wavelength):
 
 
 def test_invalid_correction_table_input():
-    with pytest.raises(ValueError,
-                       match='correction_table must be a file path, an existing table, or None.'):
+    with pytest.raises(ValueError, match='correction_table must be a file path, an existing table, or None.'):
         get_correction_table(correction_table=-1)
 
 
 def test_invalid_wavelength_raises_exception():
-    with pytest.raises(ValueError,
-                       match='channel "1800.0 Angstrom" not in list of valid channels'):
+    with pytest.raises(ValueError, match='channel "1800.0 Angstrom" not in list of valid channels'):
         _select_epoch_from_table(1800*u.angstrom, obstime, table_local)
 
 
 def test_wrong_version_number_raises_exception():
-    with pytest.raises(IndexError,
-                       match='Correction table does not contain calibration for version -1'):
+    with pytest.raises(IndexError, match='Correction table does not contain calibration for version -1'):
         _select_epoch_from_table(94*u.angstrom, obstime, table_local, version=-1)
 
 
 def test_obstime_out_of_range():
     obstime_out_of_range = astropy.time.Time('2000-01-01T12:00:00', scale='utc')
-    with pytest.raises(IndexError,
-                       match=f'No valid calibration epoch for {obstime_out_of_range}'):
+    with pytest.raises(IndexError, match=f'No valid calibration epoch for {obstime_out_of_range}'):
         _select_epoch_from_table(94*u.angstrom, obstime_out_of_range, table_local, version=8)
 
 

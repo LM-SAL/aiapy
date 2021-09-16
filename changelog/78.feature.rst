@@ -1,2 +1,0 @@
-Added a function (:func:`~aiapy.calibrate.normalize_exposure`) to normalize an image
-by its exposure time.

@@ -1,4 +1,4 @@
-Copyright (c) 2020, AIA Instrument Team
+Copyright (c) 2020-2021, AIA Instrument Team
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,

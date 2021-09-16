@@ -1,27 +1,34 @@
-# -*- coding: utf-8 -*-
-#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-import os
-
 
 # -- Project information -----------------------------------------------------
-
+import os
+import warnings
 project = 'aiapy'
-copyright = '2020, AIA Instrument Team'
+copyright = '2021, AIA Instrument Team'
 author = 'AIA Instrument Team'
+
+os.environ['HIDE_PARFIVE_PROGESS'] = 'True'
 
 # The full version, including alpha/beta/rc tags
 from aiapy import __version__  # NOQA
 release = __version__
 is_development = '.dev' in __version__
 
-# -- General configuration ---------------------------------------------------
+from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning  # NOQA
+from astropy.utils.exceptions import AstropyDeprecationWarning  # NOQA
+# We want to ignore all warnings in a release version.
+if not is_development:
+    warnings.simplefilter("ignore")
+warnings.filterwarnings("error", category=SunpyDeprecationWarning)
+warnings.filterwarnings("error", category=SunpyPendingDeprecationWarning)
+warnings.filterwarnings("error", category=AstropyDeprecationWarning)
 
+# -- General configuration ---------------------------------------------------
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -37,6 +44,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.smart_resolver',
+    'sphinx_changelog',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -112,17 +120,3 @@ sphinx_gallery_conf = {
     'filename_pattern': '^((?!skip_).)*$',
     'default_thumb_file': '_static/sdo.png',
 }
-
-
-"""
-Write the latest changelog into the documentation.
-"""
-target_file = os.path.abspath("./whatsnew/latest_changelog.txt")
-try:
-    from sunpy.util.towncrier import generate_changelog_for_docs
-    if is_development:
-        generate_changelog_for_docs("../", target_file)
-except Exception as e:
-    print(f"Failed to add changelog to docs with error {e}.")
-# Make sure the file exists or else sphinx will complain.
-open(target_file, 'a').close()

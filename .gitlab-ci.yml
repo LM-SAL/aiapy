@@ -4,66 +4,49 @@ before_script:
   - pip install tox
 
 stages:
-- Install
-- Test
-- Static
-- Deploy
+  - Basic
+  - Test
+  - Extra
+  - Deploy
 
-install:
-  stage: Install
+codestyle:
+  stage: Basic
   script:
-    - pip install .
+    - tox -e codestyle
 
-py39-online:
-  stage: Test
+py39:
+  stage: Basic
   image: python:3.9
   script:
-    - tox -e py39-online
+    - tox -e py39
 
-py37-online:
+py37:
   stage: Test
   image: python:3.7
   script:
-    - tox -e py37-online
+    - tox -e py37
 
 py38-online:
   stage: Test
   script:
     - tox -e py38-online
+    - pip install --upgrade codecov
+    - codecov
 
-py38-devdeps-online:
+py38-devdeps:
   allow_failure: true
-  stage: Test
+  stage: Extra
   script:
-    - tox -e py38-devdeps-online
-
-py38:
-  stage: Test
-  script:
-    - tox -e py38
-
-py38-coverage:
-  stage: Test
-  #only:
-  #- master@LMSAL_HUB/aia_hub/aiapy  # only run on parent master
-  script:
-  - tox -e py38-online
-  - pip install --upgrade codecov
-  - codecov
+    - tox -e py38-devdeps
 
 build_docs:
-  stage: Static
-  # Need graphviz binary for generating inheritance diagrams
+  stage: Extra
   before_script:
+    # Need graphviz binary for generating inheritance diagrams
     - apt-get update -qq && apt-get install -y -qq graphviz
     - pip install tox
   script:
     - tox -e build_docs
-
-codestyle:
-  stage: Static
-  script:
-    - tox -e codestyle
 
 # Upload to PyPI when we push to a tag
 pypi:

@@ -1,13 +1,14 @@
 import copy
 import warnings
 
-import numpy as np
-from astropy.io import fits
-import astropy.units as u
-from astropy.wcs.utils import pixel_to_pixel
-from sunpy.map.sources.sdo import AIAMap
-from sunpy.map.mapbase import PixelPair
 import drms
+import numpy as np
+
+import astropy.units as u
+from astropy.io import fits
+from astropy.wcs.utils import pixel_to_pixel
+from sunpy.map.mapbase import PixelPair
+from sunpy.map.sources.sdo import AIAMap
 
 from aiapy.util import AiapyUserWarning
 
@@ -66,7 +67,6 @@ def respike(smap, spikes=None):
         raise ValueError("Input must be an AIAMap.")
     if smap.meta['lvl_num'] != 1.0:
         raise ValueError('Can only apply respike procedure to level 1 data')
-
     # Approximate check to make sure the input map has not been interpolated
     # in any way. Note that the level 1 plate scales are not exactly 0.6
     # ''/pixel, but should not differ by more than 0.1%. This is only a
@@ -82,30 +82,25 @@ def respike(smap, spikes=None):
              'reinserted in the incorrect pixel positions.'),
             AiapyUserWarning
         )
-
     # FIXME: Should raise an exception? Or just return with a warning?
     # Or better yet, why can't the logic below just handle the case of
     # no spikes?
     if smap.meta['nspikes'] == 0:
         raise ValueError('No spikes were present in the level 0 data.')
-
     if spikes is None:
         coords, values = fetch_spikes(smap, as_coords=False)
     else:
         coords, values = spikes
-
     new_data = np.copy(smap.data)
     # NOTE: the round() is needed as pixel coordinates returned by the WCS
     # transformation may be very slightly off their integer values and
     # casting them as int will sometimes result in an off-by-one error
     new_data[coords.y.value.round().astype(int),
              coords.x.value.round().astype(int)] = values
-    # Update metadata
     new_meta = copy.deepcopy(smap.meta)
     new_meta['lvl_num'] = 0.5
     new_meta['comments'] = f'Respike applied; {values.shape[0]} hot pixels reinserted.'
     new_meta['nspikes'] = 0
-
     return smap._new_instance(
         new_data, new_meta, plot_settings=smap.plot_settings,)
 
@@ -137,9 +132,8 @@ def fetch_spikes(smap, as_coords=False):
     array-like
         Original intensity values of the spikes
     """
-    if smap.wavelength not in (1600, 1700, 4500)*u.angstrom:
-        series = r"aia.lev1_euv_12s"
-    else:
+    series = r"aia.lev1_euv_12s"
+    if smap.wavelength in (1600, 1700, 4500)*u.angstrom:
         series = r"aia.lev1_uv_24s"
     file = drms.Client().query(
         f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]',
@@ -147,7 +141,6 @@ def fetch_spikes(smap, as_coords=False):
     )
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     spikes = spikes.data
-
     shape_full_frame = (4096, 4096)
     values = spikes[1, :]
     y_coords, x_coords = np.unravel_index(spikes[0, :], shape=shape_full_frame)
@@ -176,13 +169,11 @@ def fetch_spikes(smap, as_coords=False):
         # Find those indices which are still in the FOV
         match = np.where(np.logical_and(
             np.logical_and(x_coords >= 0, y_coords >= 0),
-            np.logical_and(x_coords < smap.dimensions.x.value,
-                           y_coords < smap.dimensions.y.value)
+            np.logical_and(x_coords < smap.dimensions.x.value, y_coords < smap.dimensions.y.value)
         ))
         x_coords = x_coords[match]
         y_coords = y_coords[match]
         values = values[match]
-
     coords = PixelPair(x_coords*u.pixel, y_coords*u.pixel)
     if as_coords:
         coords = smap.pixel_to_world(*coords)

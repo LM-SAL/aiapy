@@ -1,13 +1,13 @@
 Getting Started
-================
+===============
 
-The stable version of `aiapy` is available through both PyPI via `pip`,
+The stable version of ``aiapy`` is available through both PyPI via ``pip``,
 
 .. code-block:: shell
 
    pip install aiapy
 
-as well as through the Anaconda distribution via `conda-forge`,
+as well as through the Anaconda distribution via ``conda-forge``,
 
 .. code-block:: shell
 
