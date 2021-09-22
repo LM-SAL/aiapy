@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 
 import astropy.units as u
 import sunpy.map as smap
+from astropy.utils.data import download_file
 
 from aiapy.calibrate import correct_degradation, normalize_exposure, register, update_pointing
 from aiapy.calibrate.util import get_correction_table, get_pointing_table
@@ -103,8 +104,9 @@ print(results.reset_index(drop=True) == records.reset_index(drop=True))
 # From here you can now fetch the data.
 # We will avoid doing an export request here and get
 # the files directly from the JSOC.
-# sunpy.map.Map will handle the downloading for us.
-files = sorted([f"http://jsoc.stanford.edu{filename}" for filename in filenames["image"]])
+
+# We use a helper function from astropy to download these files for us.
+files = [download_file(f"http://jsoc.stanford.edu{filename}", cache=True) for filename in filenames["image"]]
 level_1_maps = smap.Map(files)
 
 #####################################################
