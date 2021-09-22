@@ -17,9 +17,11 @@ from pathlib import Path
 import drms
 import matplotlib.pyplot as plt
 
+import astropy.units as u
 import sunpy.map as smap
 
-from aiapy.calibrate import normalize_exposure, register, update_pointing
+from aiapy.calibrate import correct_degradation, normalize_exposure, register, update_pointing
+from aiapy.calibrate.util import get_pointing_table
 
 #####################################################
 # Exporting data from the JSOC requires registering your
@@ -28,7 +30,7 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # See `this page <http://jsoc.stanford.edu/ajax/register_email.html>`__
 # for more details.
 
-jsoc_email = os.environ.get("JSOC_EMAIL", "nabil.freij@gmail.com")
+jsoc_email = os.environ.get("JSOC_EMAIL")
 
 #####################################################
 # Our goal is to request data of a recent (of time of writing)
@@ -114,23 +116,29 @@ print(results.reset_index(drop=True) == records.reset_index(drop=True))
 #
 # Please be aware the script will hold until the export is complete.
 
-# TODO: Avoid downloading the spike data
 export = client.export(updated_qstr, method="url", protocol="fits")
 files = export.download(Path("~/sunpy/").expanduser().as_posix())
+print(files)
 
 #####################################################
 # Now we will "prep" the data to level 1.5 and plot the
 # data sequence using sunpy.
 
-img_files = sorted([f for f in files if f.endswith("image_lev1.fits")])
-maps = []
-for img_file in img_files:
-    basic_map = smap.Map(img_file)
-    map_updated_pointing = update_pointing(basic_map)
+# First we need to remove the spike files we also acquired.
+img_files = sorted([f for f in files.download if f.endswith("image_lev1.fits")])
+level_1_maps = smap.Map(img_files)
+
+# We get the pointing table outside of the loop for the relevant time range.
+# Otherwise you're making a call to the JSOC every single time.
+pointing_table = get_pointing_table(level_1_maps[0].date-3*u.h, level_1_maps[-1].date+3*u.h)
+level_15_maps = []
+for a_map in level_1_maps:
+    map_updated_pointing = update_pointing(a_map, pointing_table=pointing_table)
     map_registered = register(map_updated_pointing)
-    map_normalized = normalize_exposure(map_registered)
-    maps.append(map_normalized)
-sequence = smap.Map(maps, sequence=True)
+    map_degradation = correct_degradation(map_registered)
+    map_normalized = normalize_exposure(map_degradation)
+    level_15_maps.append(map_normalized)
+sequence = smap.Map(level_15_maps, sequence=True)
 sequence.peek()
 
 plt.show()
