@@ -11,8 +11,6 @@ Unfortunately, this can not be done using the sunpy downloader,
 `Fido <https://docs.sunpy.org/en/stable/api/sunpy.net.Fido.html>`__
 and instead we will use the `DRMS <https://docs.sunpy.org/projects/drms/en/stable/>`__ Python library.
 """
-import os
-from pathlib import Path
 
 import drms
 import matplotlib.pyplot as plt
@@ -21,23 +19,14 @@ import astropy.units as u
 import sunpy.map as smap
 
 from aiapy.calibrate import correct_degradation, normalize_exposure, register, update_pointing
-from aiapy.calibrate.util import get_pointing_table
-
-#####################################################
-# Exporting data from the JSOC requires registering your
-# email first. Please replace this with your email
-# address once you have registered.
-# See `this page <http://jsoc.stanford.edu/ajax/register_email.html>`__
-# for more details.
-
-jsoc_email = os.environ.get("JSOC_EMAIL")
+from aiapy.calibrate.util import get_correction_table, get_pointing_table
 
 #####################################################
 # Our goal is to request data of a recent (of time of writing)
 # X-class flare. However, we will request the explanation of
 # the keywords we want from the JSOC.
 
-client = drms.Client(email=jsoc_email)
+client = drms.Client()
 keys = [
     "EXPTIME",
     "QUALITY",
@@ -93,14 +82,16 @@ print(results)
 # We can filter and do analysis on the metadata that was returned.
 # The issue is is that if we only want this data, you can not use
 # this "filtered results" to download only the data we want.
-# To do this, we will have to do a second query to the JSOC.
-# This time using the query string syntax the
+# To do this, we will have to do a second query to the JSOC,
+# this time using the query string syntax the
 # `lookdata <http://jsoc.stanford.edu/ajax/lookdata.html>`__ web page.
 # You can use the website to validate the string before you export the query.
 
-updated_qstr = "aia.lev1_euv_12s[2021-07-03T14:25:00Z-2021-07-03T14:35:00Z][? EXPTIME<2.0 AND WAVELNTH=211 ?]"
+updated_qstr = "aia.lev1_euv_12s[2021-07-03T14:25:00Z-2021-07-03T14:35:00Z][? EXPTIME<2.0 AND WAVELNTH=211 ?]{image}"
 print(f"Querying data -> {updated_qstr}")
-records = client.query(updated_qstr, key=keys)
+# The trick here is to use the "image" keyword for ``seg`` to only download the
+# image data only and this gives us direct filenames as well.
+records, filenames = client.query(updated_qstr, key=keys, seg="image")
 print(f"{len(records)} records retrieved. \n")
 
 # We do a quick comparision to ensure the final results are the same.
@@ -109,33 +100,28 @@ print("Quick Comparison")
 print(results.reset_index(drop=True) == records.reset_index(drop=True))
 
 #####################################################
-# From here you can now request (export) the data.
-# This will download this specific subset of data to your
-# local machine when the export request has been completed.
-# Depending on the status of the JSOC, this might take a while.
-#
-# Please be aware the script will hold until the export is complete.
-
-export = client.export(updated_qstr, method="url", protocol="fits")
-files = export.download(Path("~/sunpy/").expanduser().as_posix())
-print(files)
+# From here you can now fetch the data.
+# We will avoid doing an export request here and get
+# the files directly from the JSOC.
+# sunpy.map.Map will handle the downloading for us.
+files = sorted([f"http://jsoc.stanford.edu{filename}" for filename in filenames["image"]])
+level_1_maps = smap.Map(files)
 
 #####################################################
-# Now we will "prep" the data to level 1.5 and plot the
-# data sequence using sunpy.
-
-# First we need to remove the spike files we also acquired.
-img_files = sorted([f for f in files.download if f.endswith("image_lev1.fits")])
-level_1_maps = smap.Map(img_files)
+# Now we will "prep" the data with every feature of
+# `aiapy` and plot the data sequence using `sunpy`.
 
 # We get the pointing table outside of the loop for the relevant time range.
 # Otherwise you're making a call to the JSOC every single time.
 pointing_table = get_pointing_table(level_1_maps[0].date-3*u.h, level_1_maps[-1].date+3*u.h)
+# The same applies for the correction table.
+correction_table = get_correction_table()
+
 level_15_maps = []
 for a_map in level_1_maps:
     map_updated_pointing = update_pointing(a_map, pointing_table=pointing_table)
     map_registered = register(map_updated_pointing)
-    map_degradation = correct_degradation(map_registered)
+    map_degradation = correct_degradation(map_registered, correction_table=correction_table)
     map_normalized = normalize_exposure(map_degradation)
     level_15_maps.append(map_normalized)
 sequence = smap.Map(level_15_maps, sequence=True)
