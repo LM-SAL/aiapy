@@ -9,7 +9,7 @@ We will be filtering the data we require by keywords and requesting short exposu
 
 Unfortunately, this can not be done using the sunpy downloader,
 `Fido <https://docs.sunpy.org/en/stable/api/sunpy.net.Fido.html>`__
-and instead we will use the `DRMS <https://docs.sunpy.org/projects/drms/en/stable/>`__ Python library.
+and instead we will use the `drms <https://docs.sunpy.org/projects/drms/en/stable/>`__ Python library directly.
 """
 
 import drms
