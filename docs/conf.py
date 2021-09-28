@@ -3,15 +3,13 @@
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
-
-
 # -- Project information -----------------------------------------------------
 import os
 import warnings
 project = 'aiapy'
 copyright = '2021, AIA Instrument Team'
 author = 'AIA Instrument Team'
-
+os.environ["JSOC_EMAIL"] = "jsoc@cadair.com"
 os.environ['HIDE_PARFIVE_PROGESS'] = 'True'
 
 # The full version, including alpha/beta/rc tags
