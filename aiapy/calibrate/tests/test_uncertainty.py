@@ -3,28 +3,18 @@ Tests for calculating uncertainties on intensities
 """
 import os
 
-from astropy.table.table import QTable
-import astropy.units as u
 import numpy as np
 import pytest
 
+import astropy.units as u
+
 from aiapy.calibrate import estimate_error
-from aiapy.calibrate.uncertainty import get_error_table
+from aiapy.calibrate.util import get_error_table
 from aiapy.tests.data import get_test_filepath
 
-CHANNELS = [94, 131, 171, 193, 211, 335, 1600, 1700, 4500] * u.angstrom
-
+# These are not fixtures so that they can be easily used in the parametrize mark
+CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 table_local = get_error_table(get_test_filepath('aia_V3_error_table.txt'))
-
-
-@pytest.mark.parametrize('error_table', [
-    pytest.param(None, marks=pytest.mark.remote_data),
-    get_test_filepath('aia_V3_error_table.txt'),
-    table_local,
-])
-def test_error_table(error_table):
-    table = get_error_table(error_table)
-    assert isinstance(table, QTable)
 
 
 @pytest.mark.parametrize('channel', CHANNELS)
@@ -35,11 +25,13 @@ def test_error_all_channels(channel):
 
 
 @pytest.mark.parametrize('counts', [
-    np.random.rand(1) * 1000 * u.ct / u.pix,
-    np.random.rand(10) * 1000 * u.ct / u.pix,
-    np.random.rand(100,200) * 1000 * u.ct / u.pix,
+    np.random.rand(1),
+    np.random.rand(10),
+    np.random.rand(100, 200),
+    np.random.rand(10, 10, 5),
 ])
 def test_counts_shapes(counts):
+    counts = counts * 1000 * u.ct / u.pix
     errors = estimate_error(counts, 171*u.angstrom, error_table=table_local)
     assert counts.shape == errors.shape
 
@@ -62,7 +54,8 @@ def test_flags(include_preflight, include_eve, include_chianti):
 
 @pytest.mark.parametrize(
     'channel,counts,include_eve,include_preflight,include_chianti',
-    [[c, 10*u.ct / u.pixel] + 3*[False] for c in CHANNELS] + [
+    [[c, 10*u.ct / u.pixel] + 3*[False] for c in CHANNELS] +
+    [
         [171*u.angstrom, 1000*u.ct/u.pix, True, False, False],
         [171*u.angstrom, 1000*u.ct/u.pix, False, False, True],
     ]
@@ -85,7 +78,7 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     ssw = idl_environment.run(
         idl,
         save_vars=['error'],
-        args = {
+        args={
             'channel': channel.to('angstrom').value,
             'data': counts.to('ct pixel-1').value,
             'error_table': error_table,
@@ -104,5 +97,6 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
                            include_eve=include_eve,
                            include_preflight=include_preflight,
                            include_chianti=include_chianti,
-                           error_table=error_table)
-    assert u.allclose(error, error_ssw)
+                           error_table=error_table,
+                           compare_idl=True)
+    assert u.allclose(error, error_ssw, rtol=1e-4)
