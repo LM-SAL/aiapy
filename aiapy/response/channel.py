@@ -12,7 +12,8 @@ from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
 from aiapy.calibrate import degradation
-from aiapy.calibrate.util import _select_epoch_from_table, get_correction_table
+from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
+from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
 
 __all__ = ['Channel']
@@ -125,18 +126,7 @@ class Channel(object):
         Label denoting the telescope to which the given channel is assigned.
         See `crosstalk` for context of why this is important.
         """
-        return {
-            94*u.angstrom: 4,
-            131*u.angstrom: 1,
-            171*u.angstrom: 3,
-            193*u.angstrom: 2,
-            211*u.angstrom: 2,
-            304*u.angstrom: 4,
-            335*u.angstrom: 1,
-            1600*u.angstrom: 3,
-            1700*u.angstrom: 3,
-            4500*u.angstrom: 3,
-        }[self.channel]
+        return telescope_number(self.channel)
 
     @property
     @u.quantity_input
@@ -302,7 +292,7 @@ class Channel(object):
         --------
         aiapy.calibrate.util.get_correction_table
         """
-        table = _select_epoch_from_table(
+        table = _select_epoch_from_correction_table(
             self.channel,
             obstime,
             get_correction_table(correction_table=kwargs.get('correction_table')),
