@@ -58,6 +58,7 @@ def telescope_number(channel: u.angstrom):
     Parameters
     ----------
     channel : `~astropy.units.Quantity`
+        Wavelength of AIA channel.
 
     Returns
     -------
