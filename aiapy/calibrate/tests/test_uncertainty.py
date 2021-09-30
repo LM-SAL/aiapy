@@ -1,6 +1,3 @@
-"""
-Tests for calculating uncertainties on intensities
-"""
 import os
 
 import numpy as np

@@ -33,16 +33,16 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
     counts : `~astropy.units.Quantity`
         Observed counts. These should NOT be divided by the exposure time.
     channel : `~astropy.units.Quantity`
-        The corresponding channel for the observed counts
+        The corresponding channel for the observed counts.
     n_sample : `int`, optional
         How many measurements (adjacent pixels, or consecutive images) were
         averaged to produce the measured counts.
     include_preflight : `bool`, optional
-        Use the preflight photometric calibration. If True, `include_eve` must be False.
+        Use the preflight photometric calibration. If True, ``include_eve`` must be False.
     include_eve : `bool`, optional
-        Use the EVE photometric calibration. If True, `include_preflight` must be False.
+        Use the EVE photometric calibration. If True, ``include_preflight`` must be False.
     include_chianti : `bool`, optional
-        If True, include the atomic data errors from CHIANTI in the uncertainty
+        If True, include the atomic data errors from CHIANTI in the uncertainty.
     error_table : `~astropy.table.QTable` or path-like, optional
         Error table to use. Can be an existing table or a path to a file. If an error table
         is not specified, the latest version will be downloaded from SolarSoft. Once you've
@@ -51,7 +51,7 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
 
     Returns
     -------
-    error_sum : `~astropy.units.Quantity`
+    `~astropy.units.Quantity`
 
     See Also
     --------
