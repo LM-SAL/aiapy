@@ -62,7 +62,8 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
     error_table = error_table[error_table['WAVELNTH'] == channel]
 
     # Shot noise
-    # TODO: Figure out what is going on with units here
+    # NOTE: pixel and photon are "unitless" so we multiply/divide by these
+    # units such that the shot noise has the same units as counts
     pix_per_photon = 1 * u.pixel / u.photon  # use this to get units right
     n_photon = counts / error_table['DNPERPHT'] * pix_per_photon
     shot = np.sqrt(n_photon) * error_table['DNPERPHT'] / np.sqrt(n_sample) / pix_per_photon
