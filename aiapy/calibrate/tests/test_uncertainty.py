@@ -1,4 +1,5 @@
 import os
+from contextlib import nullcontext
 
 import numpy as np
 import pytest
@@ -33,20 +34,22 @@ def test_counts_shapes(counts):
     assert counts.shape == errors.shape
 
 
-@pytest.mark.parametrize('include_preflight,include_eve,include_chianti', [
-    (False, True, False),
-    (True, False, False),
-    (False, False, False),
-    (False, False, True),
+@pytest.mark.parametrize('include_preflight,include_eve,include_chianti,expectation', [
+    (False, True, False, nullcontext()),
+    (True, False, False, nullcontext()),
+    (False, False, False, nullcontext()),
+    (False, False, True, nullcontext()),
+    (True, True, False, pytest.raises(ValueError, match='Cannot include both EVE and pre-flight correction.'))
 ])
-def test_flags(include_preflight, include_eve, include_chianti):
-    errors = estimate_error(1*u.ct / u.pix,
-                            94 * u.angstrom,
-                            error_table=table_local,
-                            include_eve=include_eve,
-                            include_preflight=include_preflight,
-                            include_chianti=include_chianti)
-    assert isinstance(errors, u.Quantity)
+def test_flags(include_preflight, include_eve, include_chianti, expectation):
+    with expectation:
+        errors = estimate_error(1*u.ct / u.pix,
+                                94 * u.angstrom,
+                                error_table=table_local,
+                                include_eve=include_eve,
+                                include_preflight=include_preflight,
+                                include_chianti=include_chianti)
+        assert isinstance(errors, u.Quantity)
 
 
 @pytest.mark.parametrize(
