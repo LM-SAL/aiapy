@@ -21,9 +21,10 @@ __all__ = ['get_correction_table', 'get_pointing_table', 'get_error_table']
 # Default version of the degradation calibration curve to use.
 # This needs to be incremented as the calibration is updated in JSOC.
 CALIBRATION_VERSION = 10
-# Error table filename and default version
-AIA_ERROR_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_error_table.txt'  # What changes with version?
-ERROR_VERSION = 3  # Most recent version number for error tables
+# Error table filename available from SSW
+AIA_ERROR_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_error_table.txt'
+# Most recent version number for error tables; increment as new versions become available
+ERROR_VERSION = 3
 # URLs and SHA-256 hashes for each version of the error tables
 # The URLs are left as a list so that possible mirrors for these files
 # can be specified

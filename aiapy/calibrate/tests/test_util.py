@@ -108,3 +108,8 @@ def test_pointing_table_unavailable():
 def test_error_table(error_table):
     table = get_error_table(error_table)
     assert isinstance(table, astropy.table.QTable)
+
+
+def test_invalid_error_table_input():
+    with pytest.raises(ValueError, match='error_table must be a file path, an existing table, or None.'):
+        get_error_table(error_table=-1)
