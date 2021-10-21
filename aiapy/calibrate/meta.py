@@ -2,6 +2,7 @@
 Functions for updating/fixing header keywords
 """
 import copy
+import warnings
 
 import numpy as np
 
@@ -9,6 +10,7 @@ import astropy.units as u
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
 
 from aiapy.calibrate.util import get_pointing_table
+from aiapy.util.exceptions import AiapyUserWarning
 
 __all__ = ['fix_observer_location', 'update_pointing']
 
@@ -91,19 +93,32 @@ def update_pointing(smap, pointing_table=None):
         pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
     # Find row closest to obstime
     i_nearest = np.fabs((pointing_table['T_START'] - smap.date).to(u.s)).argmin()
-    # Update headers
     w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
     new_meta = copy.deepcopy(smap.meta)
-    new_meta['CRPIX1'] = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
-    new_meta['CRPIX2'] = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
+    # Extract new pointing parameters
+    crpix1 = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
+    crpix2 = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
     cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
-    new_meta['CDELT1'] = cdelt
-    new_meta['CDELT2'] = cdelt
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
     crota2 = pointing_table[f'A_{w_str}_INSTROT'][i_nearest] + smap.meta['SAT_ROT'] * u.degree
-    new_meta['CROTA2'] = crota2.to('degree').value
+    crota2 = crota2.to('deg').value
+    # Update headers
+    for key, value in [('crpix1', crpix1),
+                       ('crpix2', crpix2),
+                       ('cdelt1', cdelt),
+                       ('cdelt2', cdelt),
+                       ('crota2', crota2)]:
+        if np.isnan(value):
+            # There are some entries in the pointing table returned from the JSOC that are marked as
+            # MISSING. These get converted to NaNs when we cast it to an astropy quantity table. In
+            # these cases, we just want to skip updating the pointing information.
+            warnings.warn(f'Missing value in pointing table for {key}. This key will not be updated.',
+                          AiapyUserWarning)
+        else:
+            new_meta[key] = value
+
     # sunpy map converts crota to a PCi_j matrix, so we remove it to force the
     # re-conversion.
     new_meta.pop('PC1_1')
