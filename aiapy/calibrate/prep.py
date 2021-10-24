@@ -12,7 +12,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
-from .util import _select_epoch_from_table, get_correction_table
+from .util import _select_epoch_from_correction_table, get_correction_table
 
 __all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
 
@@ -183,7 +183,7 @@ def degradation(channel: u.angstrom, obstime,
     # Do this outside of the loop to avoid repeated queries
     correction_table = get_correction_table(correction_table=kwargs.get('correction_table'))
     for i, t in enumerate(obstime):
-        table = _select_epoch_from_table(
+        table = _select_epoch_from_correction_table(
             channel, t, correction_table,
             version=kwargs.get('calibration_version')
         )

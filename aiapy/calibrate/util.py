@@ -10,16 +10,30 @@ import astropy.io.ascii
 import astropy.units as u
 from astropy.table import QTable
 from astropy.time import Time
+from sunpy.data import manager
 from sunpy.net import attrs, jsoc
 
 from aiapy.util.decorators import validate_channel
 from aiapy.util.exceptions import AiapyUserWarning
 
-__all__ = ['get_correction_table', 'get_pointing_table']
+__all__ = ['get_correction_table', 'get_pointing_table', 'get_error_table']
 
-# Default version of the degradation calibration curve to use. This
-# needs to be incremented as the calibration is updated in JSOC.
+# Default version of the degradation calibration curve to use.
+# This needs to be incremented as the calibration is updated in JSOC.
 CALIBRATION_VERSION = 10
+# Error table filename available from SSW
+AIA_ERROR_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_error_table.txt'
+# Most recent version number for error tables; increment as new versions become available
+ERROR_VERSION = 3
+# URLs and SHA-256 hashes for each version of the error tables
+# The URLs are left as a list so that possible mirrors for these files
+# can be specified
+URL_HASH = {
+    2: ((AIA_ERROR_FILE.format(2)),
+        'ac97ccc48057809723c27e3ef290c7d78ee35791d9054b2188baecfb5c290d0a'),
+    3: ((AIA_ERROR_FILE.format(3)),
+        '66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894'),
+}
 
 
 def get_correction_table(correction_table=None):
@@ -90,7 +104,7 @@ def get_correction_table(correction_table=None):
 
 @u.quantity_input
 @validate_channel('channel')
-def _select_epoch_from_table(channel: u.angstrom, obstime, table, version=None):
+def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, version=None):
     """
     Return correction table with only the first epoch and the epoch in
     which `obstime` falls and for only one given calibration version.
@@ -169,3 +183,25 @@ def get_pointing_table(start, end):
         if 'INSTROT' in c:
             table[c].unit = 'degree'
     return table
+
+
+def get_error_table(error_table=None):
+    if error_table is None:
+        error_table = fetch_error_table()
+    if isinstance(error_table, (str, pathlib.Path)):
+        table = astropy.io.ascii.read(error_table)
+    elif isinstance(error_table, QTable):
+        table = error_table
+    else:
+        raise ValueError('error_table must be a file path, an existing table, or None.')
+    table = QTable(table)
+    for col in ['DATE', 'T_START', 'T_STOP']:
+        table[col] = Time(table[col], scale='utc')
+    table['WAVELNTH'] = u.Quantity(table['WAVELNTH'], 'Angstrom')
+    table['DNPERPHT'] = u.Quantity(table['DNPERPHT'], 'ct photon-1')
+    return table
+
+
+@manager.require('error_table', *URL_HASH[ERROR_VERSION])
+def fetch_error_table():
+    return manager.get('error_table')
