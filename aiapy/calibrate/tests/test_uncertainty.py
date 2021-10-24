@@ -23,6 +23,7 @@ def test_error_all_channels(channel):
 
 
 @pytest.mark.parametrize('counts', [
+    1,
     np.random.rand(1),
     np.random.rand(10),
     np.random.rand(100, 200),
@@ -31,7 +32,10 @@ def test_error_all_channels(channel):
 def test_counts_shapes(counts):
     counts = counts * 1000 * u.ct / u.pix
     errors = estimate_error(counts, 171*u.angstrom, error_table=table_local)
-    assert counts.shape == errors.shape
+    if counts.shape == ():
+        assert errors.shape == (1,)
+    else:
+        assert counts.shape == errors.shape
 
 
 @pytest.mark.parametrize('include_preflight,include_eve,include_chianti,expectation', [
