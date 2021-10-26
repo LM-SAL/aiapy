@@ -7,27 +7,25 @@ import astropy.units as u
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from sunpy.map.mapbase import PixelPair
-from sunpy.net import Fido, attrs
 
 from aiapy.calibrate import fetch_spikes, respike
 from aiapy.util import AiapyUserWarning
 
 
+@pytest.mark.remote_data
 @pytest.fixture
 def despiked_map():
     # NOTE: Need an actual 4K-by-4K map to do the spike replacement
-    q = Fido.search(attrs.Time('2013-03-15T12:01:00', '2013-03-15T12:01:10'),
-                    attrs.Wavelength(193*u.angstrom),
-                    attrs.Instrument('AIA'))
-    f = Fido.fetch(q)
-    return sunpy.map.Map(f)
+    return sunpy.map.Map("https://github.com/sunpy/sample-data/blob/master/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits?raw=true")
 
 
+@pytest.mark.remote_data
 @pytest.fixture
 def respiked_map(despiked_map):
     return respike(despiked_map)
 
 
+@pytest.mark.remote_data
 @pytest.fixture
 def spikes(despiked_map):
     return fetch_spikes(despiked_map)
