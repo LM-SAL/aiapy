@@ -1,0 +1,3 @@
+Added a new function :func:`aiapy.calibrate.util.get_error_table` to fetch and parse the
+table with the associate error parameters.
+This is used primarily in :func:`aiapy.calibrate.estimate_error`.
