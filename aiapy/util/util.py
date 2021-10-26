@@ -9,7 +9,9 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from sunpy.time import parse_time
 
-__all__ = ['sdo_location']
+from aiapy.util.decorators import validate_channel
+
+__all__ = ['sdo_location', 'telescope_number']
 
 
 def sdo_location(time):
@@ -45,3 +47,33 @@ def sdo_location(time):
     z = np.interp(t.mjd, times.mjd, keys['HAEZ_OBS'])
     return SkyCoord(x=x, y=y, z=z, unit=u.m, representation_type='cartesian',
                     frame='heliocentricmeanecliptic', obstime=t)
+
+
+@u.quantity_input
+@validate_channel('channel')
+def telescope_number(channel: u.angstrom):
+    """
+    For a given channel wavelength, return the associated telescope number.
+
+    Parameters
+    ----------
+    channel : `~astropy.units.Quantity`
+        Wavelength of AIA channel.
+
+    Returns
+    -------
+    telescope_number : `int`
+        The telescope number of the filter designated by ``channel``
+    """
+    return {
+        94*u.angstrom: 4,
+        131*u.angstrom: 1,
+        171*u.angstrom: 3,
+        193*u.angstrom: 2,
+        211*u.angstrom: 2,
+        304*u.angstrom: 4,
+        335*u.angstrom: 1,
+        1600*u.angstrom: 3,
+        1700*u.angstrom: 3,
+        4500*u.angstrom: 3,
+    }[channel]
