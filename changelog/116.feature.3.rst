@@ -1,2 +1,0 @@
-Added a new function :func:`aiapy.util.telescope_number` that returns the associated
-telscope number for a given filter wavelength.
