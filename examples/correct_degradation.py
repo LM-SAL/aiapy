@@ -52,7 +52,7 @@ print(table)
 # function. This function calculates the time-dependent correction factor
 # based on the time and wavelength of the observation.
 # We then divide the mean intensity by the correction factor to get the corrected intensity.
-For more details on how the correction factor is calculated, see the documentation for the
+# For more details on how the correction factor is calculated, see the documentation for the
 # `~aiapy.calibrate.degradation` function.
 correction_factor = degradation(335*u.angstrom, table['DATE_OBS'])
 # This correction can be applied to a sunpy map as well.
