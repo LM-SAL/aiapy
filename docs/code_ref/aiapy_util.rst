@@ -1,5 +1,5 @@
-aiapy util
-==========
+Utilities (``aiapy.util``)
+==========================
 
 .. automodapi:: aiapy.util
     :skip: AiapyWarning, AiapyUserWarning

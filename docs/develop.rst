@@ -19,7 +19,7 @@ Labels for issues should be created and used as appropriate.
 When a merge request resolves an issue, the issue should be closed and the appropriate merge request should be referenced.
 Issues should not be closed without a reason.
 
-Creating a Fork
+Creating a fork
 ---------------
 
 If you would like to contribute to aiapy, you will first need to setup your development environment.
@@ -75,7 +75,7 @@ To make sure everything is working alright, you can run the tests,
 
 See :ref:`tests` for more details regarding running the tests.
 
-Making a Contribution
+Making a contribution
 ---------------------
 
 If you want to add a feature or bugfix to aiapy, start by first making sure the master branch of your fork is up to date with the master branch of the main repository (see above, this will help to prevent potential file conflicts).
@@ -160,7 +160,7 @@ You can build and test the documentation locally by running,
 This will run Sphinx on the restructured text files in order to create the HTML version of the documentation.
 The built documentation, in HTML format, is in ``docs/_build/html``.
 
-Best Practices
+Best practices
 --------------
 
 All contributors to the aiapy codebase should follow the `SunPy developer's guide`_.
