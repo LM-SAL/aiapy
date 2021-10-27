@@ -1,8 +1,8 @@
-.. _changelog:
+.. _changelog-ref:
 
-**************
-Full Changelog
-**************
+*********
+Changelog
+*********
 
 .. changelog::
    :towncrier: ../

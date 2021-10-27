@@ -1,5 +1,5 @@
-aiapy calibrate
-===============
+Calibration (``aiapy.calibrate``)
+=================================
 
 .. automodapi:: aiapy.calibrate
     :no-inheritance-diagram:
