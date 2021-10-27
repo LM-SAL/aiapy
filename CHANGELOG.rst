@@ -1,3 +1,32 @@
+0.6.0 (2021-10-27)
+==================
+
+Breaking Changes
+----------------
+
+- Pin minimum version of Python to 3.7 (`#114 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/114>`__)
+
+
+New Features
+------------
+
+- Added a new function :func:`aiapy.util.telescope_number` that returns the associated
+  telscope number for a given filter wavelength. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
+- Added a new function :func:`aiapy.calibrate.util.get_error_table` to fetch and parse the
+  table with the associate error parameters.
+  This is used primarily in :func:`aiapy.calibrate.estimate_error`. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
+- Added a new function :func:`aiapy.calibrate.estimate_error` to calculate the error for
+  a given set of AIA counts and the associated channel.
+  This is an exact port of the IDL function ``aia_bp_estimate_error``. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
+
+
+Bug Fixes
+---------
+
+- `~aiapy.calibrate.update_pointing` now skips updating keywords if the pointing values
+  are missing from the pointing table returned from JSOC. (`#120 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/120>`__)
+
+
 0.5.2 (2021-05-24)
 ==================
 
