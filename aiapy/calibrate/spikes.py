@@ -6,6 +6,7 @@ import numpy as np
 
 import astropy.units as u
 from astropy.io import fits
+from astropy.wcs import WCS
 from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
@@ -160,10 +161,10 @@ def fetch_spikes(smap, as_coords=False):
         meta_full_frame['crpix2'] = meta_full_frame['y0_mp'] + 1
         meta_full_frame['naxis1'] = shape_full_frame[0]
         meta_full_frame['naxis2'] = shape_full_frame[1]
-        wcs_full_frame = smap._new_instance(
-            np.zeros_like(shape_full_frame),
-            meta_full_frame,
-        ).wcs
+        # WCS doesn't like keycomments being a dict, so just remove it
+        meta_full_frame.pop('keycomments', None)
+        wcs_full_frame = WCS(meta_full_frame)
+
         x_coords, y_coords = pixel_to_pixel(
             wcs_full_frame, smap.wcs, x_coords, y_coords)
         # Find those indices which are still in the FOV
