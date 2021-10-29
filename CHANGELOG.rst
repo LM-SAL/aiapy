@@ -5,7 +5,7 @@ Breaking Changes
 ----------------
 
 - Pin minimum version of Python to 3.7 (`#114 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/114>`__)
-
+- Pin minimum version of sunpy to 3.0.0 LTS.
 
 New Features
 ------------
@@ -19,21 +19,11 @@ New Features
   a given set of AIA counts and the associated channel.
   This is an exact port of the IDL function ``aia_bp_estimate_error``. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
 
-
 Bug Fixes
 ---------
 
 - `~aiapy.calibrate.update_pointing` now skips updating keywords if the pointing values
   are missing from the pointing table returned from JSOC. (`#120 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/120>`__)
-
-
-0.5.2 (2021-05-24)
-==================
-
-Bug Fixes
----------
-
-- Pin sunpy to below version 3.1 or higher.
 
 0.5.1 (2021-05-24)
 ==================
