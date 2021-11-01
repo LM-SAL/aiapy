@@ -1,3 +1,15 @@
+0.6.1 (2021-11-01)
+==================
+
+Bug Fixes
+---------
+
+- Fixed a compatibility issue with sunpy>=3.1 in which creating a full-frame WCS in
+  `~aiapy.calibrate.fetch_spikes` was throwing an exception. (`#126 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/126>`__)
+- Added a check on `~aiapy.calibrate.update_pointing` so that passing in a submap or a map not at the
+  full AIA resolution, raises an exception. (`#127 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/127>`__)
+
+
 0.6.0 (2021-10-27)
 ==================
 

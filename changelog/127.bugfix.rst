@@ -1,2 +1,0 @@
-Added a check on `~aiapy.calibrate.update_pointing` so that passing in a submap or a map not at the
-full AIA resolution, raises an exception.
