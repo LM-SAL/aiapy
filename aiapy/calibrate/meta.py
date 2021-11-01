@@ -8,6 +8,7 @@ import numpy as np
 
 import astropy.units as u
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
+from sunpy.map import contains_full_disk
 
 from aiapy.calibrate.util import get_pointing_table
 from aiapy.util.exceptions import AiapyUserWarning
@@ -88,6 +89,12 @@ def update_pointing(smap, pointing_table=None):
     --------
     aiapy.calibrate.util.get_pointing_table
     """
+    # This function can only be applied to full-resolution, full-frame images
+    if not contains_full_disk(smap):
+        raise ValueError("Input must be a full disk image.")
+    shape_full_frame = (4096, 4096)
+    if not all(d == (s*u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
+        raise ValueError(f"Input must be at the full resolution of {shape_full_frame}")
     if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
         pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
