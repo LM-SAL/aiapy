@@ -1,2 +1,0 @@
-Fixed a compatibility issue with sunpy>=3.1 in which creating a full-frame WCS in
-`~aiapy.calibrate.fetch_spikes` was throwing an exception.
