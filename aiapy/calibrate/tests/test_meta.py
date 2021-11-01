@@ -1,6 +1,7 @@
 import pytest
 
 import astropy.units as u
+from astropy.coordinates.sky_coordinate import SkyCoord
 
 from aiapy.calibrate import fix_observer_location, update_pointing
 from aiapy.calibrate.util import get_pointing_table
@@ -31,6 +32,17 @@ def test_fix_pointing(aia_171_map):
     aia_map_updated2 = update_pointing(aia_171_map, pointing_table=ptable)
     for k in keys:
         assert aia_map_updated.meta[k] == aia_map_updated2.meta[k]
+
+
+def test_update_pointing_raises_exceptions(aia_171_map):
+    # This tests that submaps and resampled maps raise an exception
+    m = aia_171_map.submap(SkyCoord(0, 0, unit='arcsec', frame=aia_171_map.coordinate_frame),
+                           top_right=aia_171_map.top_right_coord)
+    with pytest.raises(ValueError, match="Input must be a full disk image."):
+        _ = update_pointing(m)
+    m = aia_171_map.resample((512, 512)*u.pixel)
+    with pytest.raises(ValueError, match="Input must be at the full resolution"):
+        _ = update_pointing(m)
 
 
 @pytest.mark.remote_data
