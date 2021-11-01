@@ -161,7 +161,7 @@ def fetch_spikes(smap, as_coords=False):
         meta_full_frame['naxis1'] = shape_full_frame[0]
         meta_full_frame['naxis2'] = shape_full_frame[1]
         wcs_full_frame = smap._new_instance(
-            np.zeros_like(shape_full_frame),
+            np.empty(shape_full_frame, dtype=np.uint8),
             meta_full_frame,
         ).wcs
         x_coords, y_coords = pixel_to_pixel(
