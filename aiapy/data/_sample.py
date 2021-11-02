@@ -6,8 +6,8 @@ from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
-    'https://github.com/sunpy/sample-data/raw/master/sunpy/v1/',
-    'http://data.sunpy.org/sunpy/v1/',
+    'https://github.com/sunpy/sample-data/raw/master/aiapy/',
+    'http://data.sunpy.org/aiapy/',
 )
 
 # Shortcut requirements:
@@ -19,7 +19,7 @@ _BASE_URLS = (
 # All separated by underscores
 # the files should include necessary extensions
 _SAMPLE_DATA = {
-    "AIA_094_IMAGE": "aia_lev1_94a_2019_01_01t00_00_11_12z_image_lev1",
+    "AIA_094_IMAGE": "aia_lev1_94a_2019_01_01t00_00_11_12z_image_lev1.fits",
     "AIA_193_IMAGE": "aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits",
 }
 # Reverse the dict because we want to use it backwards, but it is nicer to

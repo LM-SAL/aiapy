@@ -13,6 +13,7 @@ described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDO
 
 import sunpy.map
 
+import aiapy.data.sample as sample_data
 from aiapy.calibrate import normalize_exposure, register, update_pointing
 
 ###########################################################
@@ -31,27 +32,10 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # to a common grid in which the y-axis of the image is aligned
 # with solar North.
 #
-# First, let's fetch level 1 AIA images from the
-# `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
-# from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map`
+# First, we will be using a level 1 AIA image from the aiapy sample data.
+# it is from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map`
 # object.
-#
-# Here we post the code required to use Fido to download level 1 AIA 94 Å::
-#
-#    import astropy.units as u
-#    from sunpy.net import Fido, attrs as a
-#
-#    query = Fido.search(
-#        attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
-#        attrs.Instrument('AIA'),
-#        attrs.Wavelength(wavemin=94*u.angstrom, wavemax=94*u.angstrom),
-#    )
-#    file = Fido.fetch(query)
-#
-# This is not used out of speed, but it is useful to see how the query would be constructed.
-
-file = "http://data.sunpy.org/aiapy/aia_lev1_94a_2019_01_01t00_00_11_12z_image_lev1.fits"
-m = sunpy.map.Map(file)
+m = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 
 ###########################################################
 # The first step in this process is to update the metadata of the map to the
