@@ -11,7 +11,6 @@ build-backend = 'setuptools.build_meta'
     filename = "CHANGELOG.rst"
     directory = "changelog/"
     issue_format = "`#{issue} <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/{issue}>`__"
-    title_format = "{version} ({project_date})"
 
     [[tool.towncrier.type]]
         directory = "breaking"
