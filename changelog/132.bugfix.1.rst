@@ -1,0 +1,3 @@
+Fixed an off-by-one bug in `~aiapy.calibrate.update_pointing` where the
+``CRPIX1`` and ``CRPIX2`` keywords were not being properly updated from the
+``X0`` and ``Y0`` columns in the master pointing table.

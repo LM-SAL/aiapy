@@ -177,7 +177,7 @@ def get_pointing_table(start, end):
     table['T_STOP'] = Time(table['T_STOP'], scale='utc')
     for c in table.colnames:
         if 'X0' in c or 'Y0' in c:
-            table[c].unit = 'arcsecond'
+            table[c].unit = 'pixel'
         if 'IMSCALE' in c:
             table[c].unit = 'arcsecond / pixel'
         if 'INSTROT' in c:
