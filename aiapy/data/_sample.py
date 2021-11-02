@@ -1,8 +1,10 @@
 import os
 from pathlib import Path
+from urllib.parse import urljoin
 
 from sunpy.data._sample import _download_sample_data, _is_writable_dir
-from sunpy.util.config import get_and_create_sample_dir
+from sunpy.util.config import _is_writable_dir, get_and_create_sample_dir
+from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
     'https://github.com/sunpy/sample-data/raw/master/aiapy/',
@@ -23,6 +25,20 @@ _SAMPLE_DATA = {
 # Reverse the dict because we want to use it backwards, but it is nicer to
 # write the other way around
 _SAMPLE_FILES = {v: k for k, v in _SAMPLE_DATA.items()}  # NOQA
+
+
+def _retry_sample_data(results):
+    # In case we have a broken file on disk, overwrite it.
+    dl = Downloader(overwrite=True, progress=True, headers={'Accept-Encoding': 'identity'})
+    for err in results.errors:
+        file_name = err.filepath_partial().name
+        # Update the url to a mirror and requeue the file.
+        new_url = urljoin(_BASE_URLS[1], file_name)
+        dl.enqueue_file(new_url, filename=err.filepath_partial)
+    extra_results = dl.download()
+    for err in extra_results.errors:
+        file_name = err.filepath_partial().name
+    return results + extra_results
 
 
 def download_sample_data(overwrite=False):

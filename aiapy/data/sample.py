@@ -15,7 +15,6 @@ from pathlib import Path
 from ._sample import _SAMPLE_FILES, download_sample_data
 
 files = download_sample_data()
-
 file_dict = {}
 for f in files:
     name = Path(f).name
