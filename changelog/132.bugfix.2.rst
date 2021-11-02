@@ -1,3 +1,0 @@
-Fixed a bug in the units on the table returned by `~aiapy.calibrate.util.get_pointing_table`.
-The ``X0`` and ``Y0`` columns were incorrectly being assigned units of arcseconds instead
-of pixels.
