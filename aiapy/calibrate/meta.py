@@ -103,8 +103,12 @@ def update_pointing(smap, pointing_table=None):
     w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
     new_meta = copy.deepcopy(smap.meta)
     # Extract new pointing parameters
-    crpix1 = pointing_table[f'A_{w_str}_X0'][i_nearest].to('arcsecond').value
-    crpix2 = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('arcsecond').value
+    # The x0 and y0 keywords denote the location of the center
+    # of the Sun in CCD pixel coordinates (0-based), but FITS WCS indexing is
+    # 1-based. See Section 2.2 of
+    # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
+    crpix1 = pointing_table[f'A_{w_str}_X0'][i_nearest].to('pix').value + 1
+    crpix2 = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('pix').value + 1
     cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
