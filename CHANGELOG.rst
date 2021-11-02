@@ -1,3 +1,17 @@
+0.6.2 (2021-11-02)
+==================
+
+Bug Fixes
+---------
+
+- Fixed a bug in the units on the table returned by `~aiapy.calibrate.util.get_pointing_table`.
+  The ``X0`` and ``Y0`` columns were incorrectly being assigned units of arcseconds instead
+  of pixels. (`#132 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/132>`__)
+- Fixed an off-by-one bug in `~aiapy.calibrate.update_pointing` where the
+  ``CRPIX1`` and ``CRPIX2`` keywords were not being properly updated from the
+  ``X0`` and ``Y0`` columns in the master pointing table. (`#132 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/132>`__)
+
+
 0.6.1 (2021-11-01)
 ==================
 
