@@ -1,0 +1,2 @@
+Update the ``x0_mp`` and ``y0_mp`` keywords when updating the pointing information
+in `~aiapy.calibrate.update_pointing`.
