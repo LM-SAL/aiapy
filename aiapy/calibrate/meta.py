@@ -59,9 +59,9 @@ def fix_observer_location(smap):
 
 def update_pointing(smap, pointing_table=None):
     """
-    Update pointing information in the map header
+    Update pointing information in the ``smap`` header
 
-    This function updates the pointing information in the map by
+    This function updates the pointing information in `smap` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
     in the header using the information provided in `pointing_table`.
     If `pointing_table` is not specified, the 3-hour pointing

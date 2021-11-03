@@ -38,12 +38,20 @@ def test_fix_pointing(aia_171_map, pointing_table):
 
 
 @pytest.mark.remote_data
-def test_update_pointing_accuracy(aia_171_map, pointing_table):
+@pytest.mark.parametrize('t_delt_factor,expected_entry', [
+    (0, 0),      # T_OBS = T_START[i] chooses the i-th entry
+    (0.001, 0),  # T_OBS = T_START[i] + epsilon chooses the i-th entry
+    (0.501, 0),  # T_OBS = (T_START[i] + T_STOP[i])/2 + epsilon chooses the i-th entry
+    (1, 1),      # T_OBS = T_STOP[i] chooses the i+1-th entry
+    (1.001, 1),  # T_OBS = T_STOP[i] + epsilon chooses the i+1-th entry
+])
+def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, expected_entry):
+    t_start = pointing_table[0]['T_START']
+    t_delt = (pointing_table[0]['T_STOP'] - t_start)  # This is nearly always 3 hours
+    aia_171_map.meta['T_OBS'] = (t_start + t_delt * t_delt_factor).isot
     aia_map_updated = update_pointing(aia_171_map, pointing_table=pointing_table)
-    # NOTE: The index of -3 was predetermined by looking at the pointing table
-    # and knowing which row T_OBS should correspond to.
-    assert aia_map_updated.reference_pixel.x == pointing_table[-3]['A_171_X0']
-    assert aia_map_updated.reference_pixel.y == pointing_table[-3]['A_171_Y0']
+    assert aia_map_updated.reference_pixel.x == pointing_table[expected_entry]['A_171_X0']
+    assert aia_map_updated.reference_pixel.y == pointing_table[expected_entry]['A_171_Y0']
 
 
 @pytest.mark.remote_data
