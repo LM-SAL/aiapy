@@ -142,11 +142,25 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, ver
 
 def get_pointing_table(start, end):
     """
-    Query JSOC for the most up-to-date pointing information.
+    Retrieve 3-hourly master pointing table from the JSOC.
 
     This function queries `JSOC <http://jsoc.stanford.edu/>`__ for
-    the 3-hourly pointing information in the interval defined by
+    the 3-hourly master pointing table (MPT) in the interval defined by
     `start` and `end`.
+    The 3-hourly MPT entries are computed from limb fits of images with
+    ``T_OBS`` between ``T_START`` and ``T_STOP``.
+
+    .. note:: A MPT entry covers the interval ``[T_START:T_STOP)``;
+              that is, the interval includes ``T_START`` and excludes
+              ``T_STOP``.
+
+    .. note:: While it is generally true that ``TSTOP = T_START + 3 hours``,
+              there are edge cases where ``T_STOP`` is more than 3 hours
+              after ``T_START`` because of a calibration, an eclipse,
+              or other reasons, but the fits are still calculated based
+              on images from ``T_START`` to ``T_START + 3 hours``.
+              Pointing is not stable during these periods, so the question
+              of which MPT entry to use is not relevant.
 
     Parameters
     ----------
