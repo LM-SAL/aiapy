@@ -59,13 +59,13 @@ def fix_observer_location(smap):
 
 def update_pointing(smap, pointing_table=None):
     """
-    Update pointing information in the ``smap`` header
+    Update pointing information in the `smap` header.
 
     This function updates the pointing information in `smap` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
     in the header using the information provided in `pointing_table`.
     If `pointing_table` is not specified, the 3-hour pointing
-    information is queried from `JSOC <http://jsoc.stanford.edu/>`_.
+    information is queried from the `JSOC <http://jsoc.stanford.edu/>`_.
 
     .. note:: The method removes any ``PCi_j`` matrix keys in the header and
               updates the ``CROTA2`` keyword.
@@ -119,7 +119,9 @@ def update_pointing(smap, pointing_table=None):
     t_obs_in_interval = np.logical_and(t_obs >= pointing_table['T_START'],
                                        t_obs < pointing_table['T_STOP'])
     if not t_obs_in_interval.any():
-        raise IndexError(f'No valid entries in pointing table for {t_obs}')
+        raise IndexError(f'No valid entries for {t_obs} in pointing table '
+                         f'with first T_START date of {pointing_table[0]["T_START"]} '
+                         f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.')
     i_nearest = np.where(t_obs_in_interval)[0][0]
     w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
     new_meta = copy.deepcopy(smap.meta)
