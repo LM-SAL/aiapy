@@ -149,23 +149,15 @@ def fetch_spikes(smap, as_coords=False):
     # those in the FOV of the cutout
     if not all(d == (s*u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
         # Construct WCS for full frame
-        meta_full_frame = copy.deepcopy(smap.meta)
-        meta_full_frame['crval1'] = 0.0
-        meta_full_frame['crval2'] = 0.0
+        wcs_full_frame = copy.deepcopy(smap.wcs)
+        wcs_full_frame.wcs.crval = np.array([0.0, 0.0])
         # NOTE: The x0_mp and y0_mp keywords denote the location of the center
         # of the Sun in array coordinates (0-based), but FITS WCS indexing is
         # 1-based. See Section 2.2 of
         # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
-        meta_full_frame['crpix1'] = meta_full_frame['x0_mp'] + 1
-        meta_full_frame['crpix2'] = meta_full_frame['y0_mp'] + 1
-        meta_full_frame['naxis1'] = shape_full_frame[0]
-        meta_full_frame['naxis2'] = shape_full_frame[1]
-        wcs_full_frame = smap._new_instance(
-            np.empty(shape_full_frame, dtype=np.uint8),
-            meta_full_frame,
-        ).wcs
-        x_coords, y_coords = pixel_to_pixel(
-            wcs_full_frame, smap.wcs, x_coords, y_coords)
+        wcs_full_frame.wcs.crpix = np.array([smap.meta['x0_mp'], smap.meta['y0_mp']]) + 1
+        # Translate pixel coordinates from full-frame to cutout
+        x_coords, y_coords = pixel_to_pixel(wcs_full_frame, smap.wcs, x_coords, y_coords)
         # Find those indices which are still in the FOV
         match = np.where(np.logical_and(
             np.logical_and(x_coords >= 0, y_coords >= 0),
