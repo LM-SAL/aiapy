@@ -151,7 +151,6 @@ def fetch_spikes(smap, as_coords=False):
         # Construct WCS for full frame
         wcs_full_frame = copy.deepcopy(smap.wcs)
         wcs_full_frame.wcs.crval = np.array([0.0, 0.0])
-        wcs_full_frame.array_shape = shape_full_frame
         # NOTE: The x0_mp and y0_mp keywords denote the location of the center
         # of the Sun in array coordinates (0-based), but FITS WCS indexing is
         # 1-based. See Section 2.2 of
