@@ -1,0 +1,3 @@
+In the case where a submap is passed into `~aiapy.calibrate.fetch_spikes`,
+create the full-frame WCS directly from the submap WCS rather than creating
+an intermediate dummy full-frame map.
