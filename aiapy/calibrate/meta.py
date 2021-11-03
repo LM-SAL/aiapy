@@ -130,8 +130,10 @@ def update_pointing(smap, pointing_table=None):
     # of the Sun in CCD pixel coordinates (0-based), but FITS WCS indexing is
     # 1-based. See Section 2.2 of
     # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
-    crpix1 = pointing_table[f'A_{w_str}_X0'][i_nearest].to('pix').value + 1
-    crpix2 = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('pix').value + 1
+    x0_mp = pointing_table[f'A_{w_str}_X0'][i_nearest].to('pix').value
+    y0_mp = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('pix').value
+    crpix1 = x0_mp + 1
+    crpix2 = y0_mp + 1
     cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
@@ -141,6 +143,8 @@ def update_pointing(smap, pointing_table=None):
     # Update headers
     for key, value in [('crpix1', crpix1),
                        ('crpix2', crpix2),
+                       ('x0_mp', x0_mp),  # x0_mp and y0_mp are not standard FITS keywords but they are
+                       ('y0_mp', y0_mp),  # used when respiking submaps so we update them here.
                        ('cdelt1', cdelt),
                        ('cdelt2', cdelt),
                        ('crota2', crota2)]:
