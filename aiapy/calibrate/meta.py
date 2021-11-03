@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 
+import astropy.time
 import astropy.units as u
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
 from sunpy.map import contains_full_disk
@@ -98,8 +99,28 @@ def update_pointing(smap, pointing_table=None):
     if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
         pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
-    # Find row closest to obstime
-    i_nearest = np.fabs((pointing_table['T_START'] - smap.date).to(u.s)).argmin()
+    # Find row in which T_START <= T_OBS < T_STOP
+    # The following notes are from a private communication with J. Serafin (LMSAL)
+    # and are preserved here to explain the reasoning for selecting the particular
+    # entry from the master pointing table (MPT).
+    # NOTE: The 3 hour MPT entries are computed from limb fits of images with T_OBS
+    # between T_START and T_START + 3hr, so any image with T_OBS equal to
+    # T_START + 3hr - epsilon should still use the 3hr MPT entry for that T_START.
+    # NOTE: For SDO data, T_OBS is preferred to DATE-OBS in the case of the
+    # MPT, using DATE-OBS from near the slot boundary might result in selecting
+    # an incorrect MPT record.
+    t_obs = smap.meta.get('T_OBS')
+    if t_obs is None:
+        warnings.warn('T_OBS key is missing from metadata. Falling back to Map.date. '
+                      'This may result in selecting in incorrect record from the '
+                      'master pointing table.', AiapyUserWarning)
+        t_obs = smap.date
+    t_obs = astropy.time.Time(t_obs)
+    t_obs_in_interval = np.logical_and(t_obs >= pointing_table['T_START'],
+                                       t_obs < pointing_table['T_STOP'])
+    if not t_obs_in_interval.any():
+        raise IndexError(f'No valid entries in pointing table for {t_obs}')
+    i_nearest = np.where(t_obs_in_interval)[0][0]
     w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
     new_meta = copy.deepcopy(smap.meta)
     # Extract new pointing parameters
