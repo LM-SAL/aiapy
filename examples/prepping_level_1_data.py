@@ -32,9 +32,8 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # to a common grid in which the y-axis of the image is aligned
 # with solar North.
 #
-# First, we will be using a level 1 AIA image from the aiapy sample data.
-# it is from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map`
-# object.
+# First, let's read a level 1 94 Å AIA image from the aiapy sample data into
+# a `~sunpy.map.Map` object.
 m = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 
 ###########################################################
