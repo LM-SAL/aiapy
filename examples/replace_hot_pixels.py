@@ -35,9 +35,8 @@ from aiapy.calibrate import fetch_spikes, respike
 # separate segment of the `aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series
 
 ####################################################
-# First, let's use a level 1 AIA image and read it into a `~sunpy.map.Map`. For
-# our demonstration, we use a 193 Å image taken on 15 March 2013
-# stored from the aiapy sample data.
+# First, let's read a level 1 193 Å AIA image from the aiapy sample data
+# into a `~sunpy.map.Map` object.
 m = sunpy.map.Map(sample_data.AIA_193_IMAGE)
 
 ###########################################################
