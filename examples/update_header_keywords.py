@@ -30,8 +30,8 @@ from aiapy.calibrate import fix_observer_location, update_pointing
 # pointing, a more accurate 3-hourly pointing table is available from the
 # JSOC.
 #
-# As an example, using a 171 Å AIA observation on 1 January 2019,
-# that is from the aiapy sample data and create a `~sunpy.map.Map`
+# For this example, we will read a 171 Å image from the aiapy sample data
+# into a `~sunpy.map.Map` object.
 m = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 
 ###########################################################
