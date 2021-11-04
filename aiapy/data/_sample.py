@@ -21,6 +21,7 @@ _BASE_URLS = (
 _SAMPLE_DATA = {
     "AIA_094_IMAGE": "aia_lev1_94a_2019_01_01t00_00_11_12z_image_lev1.fits",
     "AIA_193_IMAGE": "aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits",
+    "AIA_171_IMAGE": "aia_lev1_171a_2019_01_01t00_00_09_35z_image_lev1.fits",
 }
 # Reverse the dict because we want to use it backwards, but it is nicer to
 # write the other way around
