@@ -1,6 +1,6 @@
 """
 =====================================
-Correcting for Instrument Degradation
+Correcting for instrument degradation
 =====================================
 
 This example demonstrates the degradation of the filters on AIA over time.

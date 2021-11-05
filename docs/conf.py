@@ -84,7 +84,6 @@ intersphinx_mapping = {
 }
 
 # -- Options for HTML output -------------------------------------------------
-
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
@@ -119,3 +118,4 @@ sphinx_gallery_conf = {
     'filename_pattern': '^((?!skip_).)*$',
     'default_thumb_file': '_static/sdo.png',
 }
+html_theme_options["logo_url"] = "https://aiapy.readthedocs.io/en/stable/"
