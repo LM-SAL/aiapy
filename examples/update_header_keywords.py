@@ -1,6 +1,6 @@
 """
 ==========================================================
-Updating Pointing and Observer Keywords in the FITS Header
+Updating pointing and observer keywords in the FITS header
 ==========================================================
 
 This example demonstrates how to update the metadata in
@@ -9,10 +9,9 @@ information regarding the spacecraft pointing and observer
 position.
 """
 
-import astropy.units as u
 import sunpy.map
-from sunpy.net import Fido, attrs
 
+import aiapy.data.sample as sample_data
 from aiapy.calibrate import fix_observer_location, update_pointing
 
 ###########################################################
@@ -31,16 +30,9 @@ from aiapy.calibrate import fix_observer_location, update_pointing
 # pointing, a more accurate 3-hourly pointing table is available from the
 # JSOC.
 #
-# As an example, let's first query the VSO for a single 171 Å AIA observation
-# on 1 January 2019, download it, and create a `~sunpy.map.Map`
-q = Fido.search(
-    attrs.Time('2019-01-01T00:00:00', '2019-01-01T01:00:00'),
-    attrs.Sample(1*u.h),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(171*u.angstrom),
-)
-file = Fido.fetch(q)
-m = sunpy.map.Map(file)
+# For this example, we will read a 171 Å image from the aiapy sample data
+# into a `~sunpy.map.Map` object.
+m = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 
 ###########################################################
 # To update the pointing keywords, we can pass our `~sunpy.map.Map` to the

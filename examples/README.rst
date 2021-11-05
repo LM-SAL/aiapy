@@ -1,5 +1,5 @@
 ###############
-Example Gallery
+Example gallery
 ###############
 
 This gallery contains examples of how to use `~aiapy` to process EUV imaging

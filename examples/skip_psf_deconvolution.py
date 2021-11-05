@@ -1,7 +1,7 @@
 """
-=============================================================
-Deconvolving Images with the Instrument Point Spread Function
-=============================================================
+===================================================================
+Deconvolving images with the instrument Point Spread Function (PSF)
+===================================================================
 
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
@@ -12,8 +12,8 @@ import astropy.units as u
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize, LogStretch
-from sunpy.net import Fido, attrs
 
+import aiapy.data.sample as sample_data
 import aiapy.psf
 
 #########################################
@@ -24,18 +24,13 @@ import aiapy.psf
 # impulsive phase of a flare where the intensity enhancement is very localized.
 # To remove these artifacts, the PSF must be deconvolved from the image.
 #
-# First, we'll download a single level 1 image from the 171 Å channel from
-# 7 June 2011. Note that deconvolution should be performed on level 1 images
+# First, we'll use a single level 1 image from the 171 Å channel from
+# 15 March 2019. Note that deconvolution should be performed on level 1 images
 # only. This is because, as with the level 1 data, the PSF model is defined
 # on the CCD grid. Once deconvolved, the image can be passed to
 # `~aiapy.calibrate.register`
 # (see the :ref:`sphx_glr_generated_gallery_prepping_level_1_data.py` example).
-q = Fido.search(
-    attrs.Time('2011-06-07T06:52:00', '2011-06-07T06:52:10'),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=171*u.angstrom, wavemax=171*u.angstrom),
-)
-m = sunpy.map.Map(Fido.fetch(q))
+m = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection=m)
 m.plot(axes=ax,)
