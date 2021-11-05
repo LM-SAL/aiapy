@@ -1,3 +1,26 @@
+0.6.3 (2021-11-05)
+==================
+
+Bug Fixes
+---------
+
+- Fixes a bug in `~aiapy.calibrate.update_pointing` concerning how the row in 3-hourly
+  master pointing table is chosen.
+  Previously, the row with ``T_START`` closest to ``DATE_OBS`` was chosen.
+  Now, the row corresponding to ``T_OBS`` greater than or equal to ``T_START`` AND
+  less than ``T_STOP`` is chosen. (`#137 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/137>`__)
+- Update the ``x0_mp`` and ``y0_mp`` keywords when updating the pointing information
+  in `~aiapy.calibrate.update_pointing`. (`#140 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/140>`__)
+
+
+Internal Changes
+----------------
+
+- In the case where a submap is passed into `~aiapy.calibrate.fetch_spikes`,
+  create the full-frame WCS directly from the submap WCS rather than creating
+  an intermediate dummy full-frame map. (`#139 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/139>`__)
+
+
 0.6.2 (2021-11-02)
 ==================
 
