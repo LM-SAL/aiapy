@@ -1,20 +1,19 @@
 """
-=======================================
-Registering and Aligning Level 1 Data
-=======================================
+=====================================
+Registering and aligning level 1 data
+=====================================
 
 This example demonstrates how to convert AIA images to a common pointing,
 rescale them to a common plate scale, and remove the roll angle. This process
 is often referred to as "aia_prep" and the resulting data are typically
 referred to as level 1.5 data. In this example, we will demonstrate how to do
 this with `aiapy`. This corresponds to the `aia_prep.pro` procedure as
-described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
+described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 """
 
-import astropy.units as u
 import sunpy.map
-from sunpy.net import Fido, attrs
 
+import aiapy.data.sample as sample_data
 from aiapy.calibrate import normalize_exposure, register, update_pointing
 
 ###########################################################
@@ -33,16 +32,9 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # to a common grid in which the y-axis of the image is aligned
 # with solar North.
 #
-# First, let's fetch level 1 AIA images from the
-# `Virtual Solar Observatory <https://sdac.virtualsolar.org/cgi/search>`_
-# from 1 January 2019 for the 94 Å channel and create a `~sunpy.map.Map`
-# object.
-q = Fido.search(
-    attrs.Time('2019-01-01T00:00:00', '2019-01-01T00:00:11'),
-    attrs.Instrument('AIA'),
-    attrs.Wavelength(wavemin=94*u.angstrom, wavemax=94*u.angstrom),
-)
-m = sunpy.map.Map(Fido.fetch(q))
+# First, let's read a level 1 94 Å AIA image from the aiapy sample data into
+# a `~sunpy.map.Map` object.
+m = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 
 ###########################################################
 # The first step in this process is to update the metadata of the map to the
