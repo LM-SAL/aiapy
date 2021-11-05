@@ -1,6 +1,6 @@
 """
 ========================================
-Modeling Channel Degradation over Time
+Modeling channel degradation over time
 ========================================
 
 This example demonstrates how to model the degradation
@@ -25,7 +25,7 @@ from aiapy.calibrate.util import get_correction_table
 # exposure. When looking at AIA images over the lifetime of the mission, it
 # is important to understand how the degradation of the instrument impacts the
 # measured intensity. For monitoring brightness changes over months and years,
-# degradation correction is an important step in the data normalization proces.
+# degradation correction is an important step in the data normalization process.
 # For instance, the SDO Machine Learning Dataset
 # (`Galvez et al., 2019 <https://ui.adsabs.harvard.edu/abs/2019ApJS..242....7G/abstract>`_)
 # includes this correction.
