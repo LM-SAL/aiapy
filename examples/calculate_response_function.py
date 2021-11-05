@@ -1,7 +1,7 @@
 """
-========================================
-Computing Wavelength Response Functions
-========================================
+=======================================
+Computing wavelength response functions
+=======================================
 
 This example shows how to compute the
 wavelength response function of the 335 Å channel as
