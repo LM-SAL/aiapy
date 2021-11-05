@@ -1,9 +1,8 @@
-import os
 from pathlib import Path
 from urllib.parse import urljoin
 
-from sunpy.data._sample import _download_sample_data, _is_writable_dir
-from sunpy.util.config import _is_writable_dir, get_and_create_sample_dir
+from sunpy.data._sample import _download_sample_data
+from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
@@ -51,12 +50,7 @@ def download_sample_data(overwrite=False):
     overwrite: `bool`
         Overwrite existing sample data.
     """
-    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR", False)
-    if sampledata_dir:
-        sampledata_dir = Path(sampledata_dir).expanduser().resolve()
-        _is_writable_dir(sampledata_dir)
-    else:
-        sampledata_dir = Path(get_and_create_sample_dir())
+    sampledata_dir = Path(get_and_create_sample_dir()) / Path("aiapy")
     already_downloaded = []
     to_download = []
     for url_file_name in _SAMPLE_FILES.keys():
