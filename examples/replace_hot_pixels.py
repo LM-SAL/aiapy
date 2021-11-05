@@ -1,7 +1,7 @@
 """
-========================================
-Re-spiking Level 1 Images
-========================================
+=========================
+Re-spiking level 1 images
+=========================
 
 This example demonstrates how to "re-spike" AIA level 1 images
 """
@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import astropy.units as u
 import sunpy.map
 from astropy.coordinates import SkyCoord
-from sunpy.net import Fido, attrs
 
+import aiapy.data.sample as sample_data
 from aiapy.calibrate import fetch_spikes, respike
 
 ####################################################
@@ -35,14 +35,9 @@ from aiapy.calibrate import fetch_spikes, respike
 # separate segment of the `aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series
 
 ####################################################
-# First, let's fetch a level 1 AIA image and read it into a `~sunpy.map.Map`. For
-# our demonstration, we use a 193 Å image taken on 15 March 2013.
-q = Fido.search(attrs.Time('2013-03-15T12:01:00', '2013-03-15T12:01:10'),
-                attrs.Wavelength(193*u.angstrom),
-                attrs.Instrument('AIA'))
-f = Fido.fetch(q)
-m = sunpy.map.Map(f)
-
+# First, let's read a level 1 193 Å AIA image from the aiapy sample data
+# into a `~sunpy.map.Map` object.
+m = sunpy.map.Map(sample_data.AIA_193_IMAGE)
 
 ###########################################################
 # The spike data are stored as separate data segments in JSOC
