@@ -74,15 +74,13 @@ class Channel(object):
     @property
     def is_fuv(self):
         """
-        Returns True for UV and visible channels 1600, 1700, 4500 |AA|.
-
-        .. |AA| unicode:: x212B .. angstrom
+        Returns True for UV and visible channels 1600, 1700, 4500 Å.
         """
         return self.channel in [1600, 1700, 4500]*u.angstrom
 
     def _get_instrument_data(self, instrument_file):
         """
-        Read the raw instrument data for all channels from the `.genx` files in SSW.
+        Read the raw instrument data for all channels from the ``.genx`` files in SSW.
         """
         if isinstance(instrument_file, collections.OrderedDict):
             return instrument_file
@@ -223,7 +221,7 @@ class Channel(object):
 
         On telescopes 1, 3, and 4, both channels are always illuminated.
         This can lead to contamination in a channel from the channel with which it shares a telescope.
-        This impacts the 94 and 304 channels as well as 131 and 335.
+        This impacts the 94 and 304 Å channels as well as 131 and 335 Å.
         See Section 2.2.1 of [1]_ for more details.
 
         References
@@ -258,15 +256,17 @@ class Channel(object):
 
         .. math::
 
-            \\frac{A_{eff}(\lambda_n,t_0)}{A_{eff}(\lambda_E,t_e)}
+            \frac{A_{eff}(\lambda_n,t_0)}{A_{eff}(\lambda_E,t_e)}
 
         where :math:`A_{eff}(\lambda_n,t_0)` is the effective area at the
         nominal wavelength of the channel (:math:`\lambda_n`) at the first
         calibration epoch and :math:`A_{eff}(\lambda_E,t_e)` is the effective
         area at the ``obstime`` calibration epoch interpolated to the effective
-        wavelength (:math:`\lambda_E`). This function is adapted directly from
-        the `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`__
-        routine in SolarSoft.
+        wavelength (:math:`\lambda_E`).
+
+        .. note:: This function is adapted directly from the
+                  `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`__
+                  routine in SolarSoft.
 
         Parameters
         ----------
@@ -316,10 +316,10 @@ class Channel(object):
 
         .. math::
 
-            G(\lambda) = \\frac{hc}{\lambda}\\frac{g}{a}
+            G(\lambda) = \frac{hc}{\lambda}\frac{g}{a}
 
         where :math:`g` is the camera gain in DN per electron
-        and :math:`a\\approx 3.65` eV per electron is a conversion factor.
+        and :math:`\approx 3.65` eV per electron is a conversion factor.
 
         References
         ----------
