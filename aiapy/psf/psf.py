@@ -162,7 +162,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     .. note:: This function has been adapted from
               `aia_calc_psf.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
 
-    .. note:: If the `cupy` package is installed
+    .. note:: If the `~cupy` package is installed
               and your machine has an NVIDIA GPU, the PSF calculation will
               automatically be accelerated with CUDA. This can lead to
               several orders of magnitude in performance increase compared to
@@ -173,13 +173,13 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
 
     .. math::
 
-        I(r, \\theta) = I_0 \exp\left(\\frac{-r^2}{2\sigma^2}\\right)
+        I(r, \theta) = I_0 \exp\left(\frac{-r^2}{2\sigma^2}\right)
 
     where,
 
     - :math:`I_0` : the intensity of a diffraction spike
     - :math:`r` : the radial distance from the center
-    - :math:`\\theta = m\lambda/d`
+    - :math:`\theta = m\lambda/d`
     - :math:`m` : diffraction order
     - :math:`\lambda` : the wavelength of light
     - :math:`\sigma` : width of Gaussian
@@ -188,7 +188,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
 
     .. math::
 
-        I_0 = \mathrm{sinc}^2\left(\\frac{\\theta w}{\lambda}\\right)
+        I_0 = \mathrm{sinc}^2\left(\frac{\theta w}{\lambda}\right)
 
     where,
 
@@ -199,7 +199,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
 
     .. math::
 
-        \mathrm{PSF} = \sum_{m=-\infty}^{+\infty}I_m(r,\\theta)
+        \mathrm{PSF} = \sum_{m=-\infty}^{+\infty}I_m(r,\theta)
 
     where, in practice, one can approximate the summation by simply summing
     over a sufficiently large number of diffraction orders. In this case, we
@@ -213,7 +213,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
         \mathrm{PSF}_c = \left|\mathcal{F}\left\{
                             \mathcal{F}\{\mathrm{PSF}_f\}
                             \mathcal{F}\{\mathrm{PSF}_e\}
-                          \\right\}\\right|
+                          \right\}\right|
 
     where :math:`\mathcal{F}` denotes the Fourier transform,
     :math:`\mathrm{PSF}_f` is the PSF of the focal plane filter, and
