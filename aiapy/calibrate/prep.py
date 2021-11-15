@@ -27,9 +27,8 @@ def register(smap, missing=None, order=3, use_scipy=False):
     Sun is at the center of the image. The actual transformation is done by
     the `~sunpy.map.mapbase.GenericMap.rotate` method.
 
-
     .. note:: This routine modifies the header information to the standard
-              PCi_j WCS formalism. The FITS header resulting in saving a file
+              ``PCi_j`` WCS formalism. The FITS header resulting in saving a file
               after this procedure will therefore differ from the original
               file.
 
@@ -125,8 +124,7 @@ def correct_degradation(smap, **kwargs):
 
 @u.quantity_input
 @validate_channel('channel')
-def degradation(channel: u.angstrom, obstime,
-                **kwargs) -> u.dimensionless_unscaled:
+def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
 
@@ -137,7 +135,7 @@ def degradation(channel: u.angstrom, obstime,
 
     .. math::
 
-        \\frac{A_{eff}(t_{e})}{A_{eff}(t_0)}(1 + p_1\delta t + p_2\delta t^2 + p_3\delta t^3)
+        \frac{A_{eff}(t_{e})}{A_{eff}(t_0)}(1 + p_1\delta t + p_2\delta t^2 + p_3\delta t^3)
 
     where :math:`A_{eff}(t_e)` is the effective area calculated at the
     calibration epoch for `obstime`, :math:`A_{eff}(t_0)` is the effective
@@ -145,12 +143,12 @@ def degradation(channel: u.angstrom, obstime,
     :math:`p_1,p_2,p_3` are the interpolation coefficients for the
     `obstime` epoch, and :math:`\delta t` is the difference between the
     start time of the epoch and `obstime`.
-
     All calibration terms are taken from the `aia.response` series in JSOC
-    or read from the table input by the user. This function is adapted
-    directly from the
-    `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
-    routine in SolarSoft.
+    or read from the table input by the user.
+
+    .. note:: This function is adapted directly from the
+              `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+              routine in SolarSoft.
 
     Parameters
     ----------

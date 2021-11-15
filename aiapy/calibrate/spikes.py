@@ -32,8 +32,8 @@ def respike(smap, spikes=None):
               level 1 data, the spikes will be reinserted at the wrong
               locations.
 
-    .. note:: This function modifies the `LVL_NUM`, `NSPIKES`, and `COMMENTS`
-              header keywords ssuch that the resulting FITS header will differ
+    .. note:: This function modifies the ``LVL_NUM``, ``NSPIKES``, and ``COMMENTS``
+              header keywords such that the resulting FITS header will differ
               from the original file.
 
     .. note:: If the image series of interest is large, it is advised to
