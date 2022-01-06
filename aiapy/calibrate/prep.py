@@ -78,7 +78,7 @@ def register(smap, missing=None, order=3, use_scipy=False):
     missing = smap.min() if missing is None else missing
     tempmap = smap.rotate(
         recenter=True,
-        scale=scale_factor.value,
+        scale=float(scale_factor.value),
         order=order,
         missing=missing,
         use_scipy=use_scipy
