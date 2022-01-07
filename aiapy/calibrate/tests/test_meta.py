@@ -1,12 +1,11 @@
-from unittest.mock import patch
 
 import numpy as np
-import pandas as pd
 import pytest
 
 import astropy.units as u
 from astropy.coordinates.sky_coordinate import SkyCoord
 from astropy.table import QTable
+from astropy.time import Time, TimeDelta
 
 from aiapy.calibrate import fix_observer_location, update_pointing
 from aiapy.calibrate.util import get_pointing_table
@@ -28,77 +27,17 @@ def pointing_table(aia_171_map):
 
 @pytest.fixture
 def mock_pointing_table():
-    POINTING_TABLE_DICT = {
-        "T_START": {
-            0: pd.Timestamp("2010-09-29 21:00:00"),
-            1: pd.Timestamp("2010-09-30 00:00:00"),
-            2: pd.Timestamp("2010-09-30 03:00:00"),
-            3: pd.Timestamp("2010-09-30 06:00:00"),
-            4: pd.Timestamp("2010-09-30 09:00:00"),
-            5: pd.Timestamp("2010-09-30 12:00:00"),
-            6: pd.Timestamp("2010-09-30 15:00:00"),
-            7: pd.Timestamp("2010-09-30 18:00:00"),
-        },
-        "T_STOP": {
-            0: pd.Timestamp("2010-09-30 00:00:00"),
-            1: pd.Timestamp("2010-09-30 03:00:00"),
-            2: pd.Timestamp("2010-09-30 06:00:00"),
-            3: pd.Timestamp("2010-09-30 09:00:00"),
-            4: pd.Timestamp("2010-09-30 12:00:00"),
-            5: pd.Timestamp("2010-09-30 15:00:00"),
-            6: pd.Timestamp("2010-09-30 18:00:00"),
-            7: pd.Timestamp("2010-09-30 21:00:00"),
-        },
-        "A_171_X0": {
-            0: np.nan,
-            1: np.nan,
-            2: np.nan,
-            3: np.nan,
-            4: np.nan,
-            5: np.nan,
-            6: np.nan,
-            7: np.nan,
-        },
-        "A_171_Y0": {
-            0: np.nan,
-            1: np.nan,
-            2: np.nan,
-            3: np.nan,
-            4: np.nan,
-            5: np.nan,
-            6: np.nan,
-            7: np.nan,
-        },
-        "A_171_INSTROT": {
-            0: 0.019327,
-            1: 0.019327,
-            2: 0.019327,
-            3: 0.019327,
-            4: 0.019327,
-            5: 0.019327,
-            6: 0.019327,
-            7: 0.019327,
-        },
-        "A_171_IMSCALE": {
-            0: 0.019327,
-            1: 0.019327,
-            2: 0.019327,
-            3: 0.019327,
-            4: 0.019327,
-            5: 0.019327,
-            6: 0.019327,
-            7: 0.019327,
-        },
-    }
-    table = QTable.from_pandas(pd.DataFrame.from_dict(POINTING_TABLE_DICT))
-    # Have to prevent it becoming a masked column
-    table["A_171_X0"] = float("nan")
-    table["A_171_Y0"] = float("nan")
-    # I forgot to check if these are correct but it doesn't error.
-    table["A_171_Y0"].unit = u.pix
-    table["A_171_X0"].unit = u.pix
-    table["A_171_IMSCALE"].unit = u.arcsec / u.pix
-    table["A_171_INSTROT"].unit = u.degree
+    table = QTable(
+        [
+            Time("2010-09-29 21:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
+            Time("2010-09-30 00:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
+            [np.nan * u.pix] * 8,
+            [np.nan * u.pix] * 8,
+            [0.019327 * u.degree] * 8,
+            [0.019327 * u.arcsec / u.pix] * 8,
+        ],
+        names=("T_START", "T_STOP", "A_171_X0", "A_171_Y0", "A_171_INSTROT", "A_171_IMSCALE"),
+    )
     return table
 
 
@@ -173,7 +112,6 @@ def test_fix_pointing_missing_value(aia_171_map, mock_pointing_table):
     aia_171_map.meta['date-obs'] = '2010-09-30T06:51:48.344'
     aia_171_map.meta['t_obs'] = aia_171_map.meta['date-obs']
     with pytest.warns(AiapyUserWarning, match='Missing value in pointing table'):
-        with patch('aiapy.calibrate.meta.get_pointing_table', return_value=mock_pointing_table):
-            aia_171_map_updated = update_pointing(aia_171_map)
+        aia_171_map_updated = update_pointing(aia_171_map, pointing_table=mock_pointing_table)
     assert aia_171_map.meta['crpix1'] == aia_171_map_updated.meta['crpix1']
     assert aia_171_map.meta['crpix2'] == aia_171_map_updated.meta['crpix2']
