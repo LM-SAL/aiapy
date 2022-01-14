@@ -93,7 +93,7 @@ def test_pointing_table():
     assert isinstance(table['T_START'], astropy.time.Time)
     assert isinstance(table['T_STOP'], astropy.time.Time)
     # Ensure that none of the pointing parameters are masked columns
-    for c in expected_columns:
+    for c in expected_columns[2:]:
         assert not hasattr(table[c], 'mask')
 
 
