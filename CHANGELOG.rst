@@ -1,3 +1,22 @@
+0.6.4 (2022-01-14)
+==================
+
+Bug Fixes
+---------
+
+- Fixes a bug where columns in the pointing table used to update the pointing information were being converted
+  to masked float values.
+  This bugfix ensures that any column used in the pointing update does not have a mask and any values that
+  are masked are filled with NaN.
+  This bug arises in astropy>=5.0. (`#151 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/151>`__)
+
+
+Documentation
+-------------
+
+- Fixed escaping of characters in equations in multiple docstrings. (`#146 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/146>`__)
+
+
 0.6.3 (2021-11-05)
 ==================
 
