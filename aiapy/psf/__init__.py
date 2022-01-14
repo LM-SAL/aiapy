@@ -1,2 +1,2 @@
-from .deconvolve import *
-from .psf import *
+from .deconvolve import *  # NOQA
+from .psf import *  # NOQA
