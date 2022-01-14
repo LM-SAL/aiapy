@@ -8,7 +8,7 @@ import numpy as np
 
 import astropy.io.ascii
 import astropy.units as u
-from astropy.table import QTable
+from astropy.table import MaskedColumn, QTable
 from astropy.time import Time
 from sunpy.data import manager
 from sunpy.net import attrs, jsoc
@@ -196,6 +196,11 @@ def get_pointing_table(start, end):
             table[c].unit = 'arcsecond / pixel'
         if 'INSTROT' in c:
             table[c].unit = 'degree'
+    # Remove masking on columns with pointing parameters
+    for c in table.colnames:
+        if any([n in c for n in ['X0', 'Y0', 'IMSCALE', 'INSTROT']]):
+            if isinstance(table[c], MaskedColumn):
+                table[c] = table[c].filled(np.nan)
     return table
 
 
