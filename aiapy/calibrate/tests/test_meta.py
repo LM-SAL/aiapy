@@ -1,7 +1,11 @@
+
+import numpy as np
 import pytest
 
 import astropy.units as u
 from astropy.coordinates.sky_coordinate import SkyCoord
+from astropy.table import QTable
+from astropy.time import Time, TimeDelta
 
 from aiapy.calibrate import fix_observer_location, update_pointing
 from aiapy.calibrate.util import get_pointing_table
@@ -19,6 +23,22 @@ def test_fix_observer_location(aia_171_map):
 @pytest.fixture
 def pointing_table(aia_171_map):
     return get_pointing_table(aia_171_map.date-6*u.h, aia_171_map.date+6*u.h)
+
+
+@pytest.fixture
+def mock_pointing_table():
+    table = QTable(
+        [
+            Time("2010-09-29 21:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
+            Time("2010-09-30 00:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
+            [np.nan * u.pix] * 8,
+            [np.nan * u.pix] * 8,
+            [0.019327 * u.degree] * 8,
+            [0.019327 * u.arcsec / u.pix] * 8,
+        ],
+        names=("T_START", "T_STOP", "A_171_X0", "A_171_Y0", "A_171_INSTROT", "A_171_IMSCALE"),
+    )
+    return table
 
 
 @pytest.mark.remote_data
@@ -87,12 +107,11 @@ def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table):
         _ = update_pointing(aia_171_map, pointing_table=pointing_table)
 
 
-@pytest.mark.remote_data
-def test_fix_pointing_missing_value(aia_171_map):
+def test_fix_pointing_missing_value(aia_171_map, mock_pointing_table):
     # Adjust map to a date we know has missing pointing information
     aia_171_map.meta['date-obs'] = '2010-09-30T06:51:48.344'
     aia_171_map.meta['t_obs'] = aia_171_map.meta['date-obs']
     with pytest.warns(AiapyUserWarning, match='Missing value in pointing table'):
-        aia_171_map_updated = update_pointing(aia_171_map)
+        aia_171_map_updated = update_pointing(aia_171_map, pointing_table=mock_pointing_table)
     assert aia_171_map.meta['crpix1'] == aia_171_map_updated.meta['crpix1']
     assert aia_171_map.meta['crpix2'] == aia_171_map_updated.meta['crpix2']

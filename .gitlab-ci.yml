@@ -1,4 +1,4 @@
-image: python:3.8
+image: python:3.10
 
 before_script:
   - pip install tox
@@ -26,21 +26,23 @@ py37:
   script:
     - tox -e py37
 
-py38-online:
+py310-online:
   stage: Test
   script:
-    - tox -e py38-online
+    - tox -e py310-online
     - pip install --upgrade codecov
     - codecov
 
 py38-devdeps:
   allow_failure: true
   stage: Extra
+  image: python:3.8
   script:
     - tox -e py38-devdeps
 
 build_docs:
   stage: Extra
+  image: python:3.9
   before_script:
     # Need graphviz binary for generating inheritance diagrams
     - apt-get update -qq && apt-get install -y -qq graphviz
