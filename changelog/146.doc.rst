@@ -1,1 +1,0 @@
-Fixed escaping of characters in equations in multiple docstrings.
