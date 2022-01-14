@@ -83,14 +83,18 @@ def test_obstime_out_of_range():
 
 @pytest.mark.remote_data
 def test_pointing_table():
+    expected_columns = ['T_START', 'T_STOP']
+    for c in ['094', '171', '193', '211', '304', '335', '1600', '1700', '4500']:
+        expected_columns += [f'A_{c}_X0', f'A_{c}_Y0', f'A_{c}_IMSCALE', f'A_{c}_IMSCALE']
     t = astropy.time.Time('2011-01-01T00:00:00', scale='utc')
     table = get_pointing_table(t-3*u.h, t+3*u.h)
     assert isinstance(table, astropy.table.QTable)
-    expected_columns = ['T_START']
-    for c in ['094', '171', '193', '211', '304', '335', '1600', '1700', '4500']:
-        expected_columns += [f'A_{c}_X0', f'A_{c}_Y0', f'A_{c}_IMSCALE', f'A_{c}_IMSCALE']
     assert all([cn in table.colnames for cn in expected_columns])
     assert isinstance(table['T_START'], astropy.time.Time)
+    assert isinstance(table['T_STOP'], astropy.time.Time)
+    # Ensure that none of the pointing parameters are masked columns
+    for c in expected_columns[2:]:
+        assert not hasattr(table[c], 'mask')
 
 
 @pytest.mark.remote_data
