@@ -94,7 +94,7 @@ def test_pointing_table():
     assert isinstance(table['T_STOP'], astropy.time.Time)
     # Ensure that none of the pointing parameters are masked columns
     for c in expected_columns:
-        assert not isinstance(table[c], astropy.table.MaskedColumn)
+        assert not hasattr(table[c], 'mask')
 
 
 @pytest.mark.remote_data
