@@ -1,1 +1,0 @@
-Fixed issue with Astropy 5.0 and `aiapy.calibrate.register` after `aiapy.calibrate.update_pointing`.
