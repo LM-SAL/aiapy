@@ -7,17 +7,20 @@ import warnings
 import numpy as np
 
 import astropy.units as u
-from sunpy.map import contains_full_disk
+import astropy.wcs
+from astropy.coordinates import SkyCoord
+from astropy.wcs.utils import pixel_to_pixel
+from sunpy.map.header_helper import make_fitswcs_header
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AiapyUserWarning, detector_dimensions
 from aiapy.util.decorators import validate_channel
 from .util import _select_epoch_from_correction_table, get_correction_table
 
 __all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
 
 
-def register(smap, missing=None, order=3, use_scipy=False):
+def register(smap, missing=None, algorithm='interpolation', **kwargs):
     """
     Processes a full-disk level 1 `~sunpy.map.sources.sdo.AIAMap` into a level
     1.5 `~sunpy.map.sources.sdo.AIAMap`.
@@ -25,12 +28,14 @@ def register(smap, missing=None, order=3, use_scipy=False):
     Rotates, scales and translates the image so that solar North is aligned
     with the y axis, each pixel is 0.6 arcsec across, and the center of the
     Sun is at the center of the image. The actual transformation is done by
-    the `~sunpy.map.mapbase.GenericMap.rotate` method.
+    the `reproject` package.
 
     .. note:: This routine modifies the header information to the standard
               ``PCi_j`` WCS formalism. The FITS header resulting in saving a file
               after this procedure will therefore differ from the original
               file.
+
+    Additional keyword arguments are passed through to the reprojection function.
 
     Parameters
     ----------
@@ -40,11 +45,7 @@ def register(smap, missing=None, order=3, use_scipy=False):
         If there are missing values after the interpolation, they will be
         filled in with `missing`. If None, the default value will be the
         minimum value of `smap`
-    order : `int`, optional
-        Order of the spline interpolation
-    use_scipy : `bool`, optional
-        If True, use `~scipy.ndimage.interpolation.affine_transform` to do the
-        image warping. Otherwise, use `~skimage.transform.warp` (recommended).
+    algorithm : `str`, optional
 
     Returns
     -------
@@ -52,49 +53,62 @@ def register(smap, missing=None, order=3, use_scipy=False):
         A level 1.5 copy of `~sunpy.map.sources.sdo.AIAMap` or
         `~sunpy.map.sources.sdo.HMIMap`.
     """
-    # This implementation is taken directly from the `aiaprep` method in
-    # sunpy.instr.aia.aiaprep under the terms of the BSD 2 Clause license.
-    # See licenses/SUNPY.rst.
+    # This check is here because we assume detector dimensions of (4096,4096)
+    # and a CDELT of 0.6 arcsec / pix
     if not isinstance(smap, (AIAMap, HMIMap)):
-        raise ValueError("Input must be an AIAMap or HMIMap.")
-    if not contains_full_disk(smap):
-        raise ValueError("Input must be a full disk image.")
-    # FIXME: this should not be needed. Additional prep calls should
-    # not have any effect. This is a precaution in case additional
-    # calls to rotate introduce artifacts.
-    if smap.processing_level is None or smap.processing_level > 1:
-        warnings.warn(
-            'Image registration should only be applied to level 1 data',
-            AiapyUserWarning
-        )
-    # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
-    # map has already been rescaled.
-    if ((smap.scale[0] / 0.6).round() != 1.0 * u.arcsec / u.pix
-            and smap.data.shape != (4096, 4096)):
-        scale = (smap.scale[0] / 0.6).round() * 0.6 * u.arcsec
-    else:
-        scale = 0.6 * u.arcsec  # pragma: no cover # needs a full res image
-    scale_factor = smap.scale[0] / scale
-    missing = smap.min() if missing is None else missing
-    tempmap = smap.rotate(
-        recenter=True,
-        scale=scale_factor.value,
-        order=order,
-        missing=missing,
-        use_scipy=use_scipy
+        warnings.warn('Input is not an AIAMap or an HMIMap',
+                      AiapyUserWarning)
+    # The output WCS is defined in terms of the full-frame image such that
+    # the center of the Sun lies at the center of the pixel array.
+    shape_full_disk = detector_dimensions()
+    ref_pixel_full_disk = (shape_full_disk - 1*u.pix) / 2
+    ref_coord = SkyCoord(0, 0, unit='arcsec', frame=smap.coordinate_frame)
+    scale = [0.6, 0.6] * u.arcsec / u.pixel
+    # First, construct the full-frame WCS
+    header_l15_full_disk = make_fitswcs_header(
+        tuple(shape_full_disk.value),
+        ref_coord,
+        reference_pixel=ref_pixel_full_disk,
+        scale=scale,
+        rotation_matrix=np.eye(2),
     )
-    # extract center from padded smap.rotate output
-    # crpix1 and crpix2 will be equal (recenter=True), as prep does not
-    # work with submaps
-    center = np.floor(tempmap.meta['crpix1'])
-    range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
-    newmap = tempmap.submap(
-        u.Quantity([range_side[0], range_side[0]]),
-        top_right=u.Quantity([range_side[1], range_side[1]]) - 1*u.pix)
-    newmap.meta['r_sun'] = newmap.meta['rsun_obs'] / newmap.meta['cdelt1']
-    newmap.meta['lvl_num'] = 1.5
-    newmap.meta['bitpix'] = -64
-    return newmap
+    wcs_l15_full_disk = astropy.wcs.WCS(header_l15_full_disk)
+
+    # Find the bottom left corner of the map in the full-frame WCS
+    blc_full_disk = pixel_to_pixel(smap.wcs, wcs_l15_full_disk, 0, 0) * u.pix
+    # Calculate distance between full-frame center and bottom left corner
+    # This is the location of disk center in the aligned WCS of this map
+    ref_pixel = ref_pixel_full_disk - blc_full_disk
+
+    # Construct the L1.5 WCS for this map and reproject
+    wcs_l15 = astropy.wcs.WCS(make_fitswcs_header(
+        smap.data.shape,
+        ref_coord,
+        reference_pixel=ref_pixel,
+        scale=scale,
+        rotation_matrix=np.eye(2),
+    ))
+    smap_l15 = smap.reproject_to(wcs_l15,
+                                 return_footprint=False,
+                                 algorithm=algorithm,
+                                 **kwargs)
+    # Fill in missing values
+    data = smap_l15.data
+    missing = smap.data.min() if missing is None else missing
+    data[np.where(np.isnan(data))] = missing
+
+    # Restore metadata (reproject_to only carries over the WCS keywords)
+    new_meta = copy.deepcopy(smap.meta)
+    # CROTA2 conflicts with the new diagonalized PCi_j
+    new_meta.pop('crota2', None)
+    # Update the WCS keywords
+    new_meta.update(smap_l15.meta)
+    # TODO: check if any other keys need to be manually modified?
+    new_meta['lvl_num'] = 1.5
+
+    return smap_l15._new_instance(data,
+                                  new_meta,
+                                  plot_settings=smap_l15.plot_settings)
 
 
 def correct_degradation(smap, **kwargs):
