@@ -5,6 +5,7 @@ import numpy as np
 
 import astropy.units as u
 
+from aiapy.util import detector_dimensions
 from aiapy.util.decorators import validate_channel
 
 try:
@@ -274,7 +275,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
 
 
 def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
-    psf = np.zeros((4096, 4096), dtype=float)
+    psf = np.zeros(detector_dimensions().value, dtype=float)
     # If cupy is available, cast to a cupy array
     if HAS_CUPY and use_gpu:
         psf = cupy.array(psf)

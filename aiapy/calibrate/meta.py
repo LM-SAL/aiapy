@@ -12,6 +12,7 @@ from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEclipti
 from sunpy.map import contains_full_disk
 
 from aiapy.calibrate.util import get_pointing_table
+from aiapy.util import detector_dimensions
 from aiapy.util.exceptions import AiapyUserWarning
 
 __all__ = ['fix_observer_location', 'update_pointing']
@@ -93,7 +94,7 @@ def update_pointing(smap, pointing_table=None):
     # This function can only be applied to full-resolution, full-frame images
     if not contains_full_disk(smap):
         raise ValueError("Input must be a full disk image.")
-    shape_full_frame = (4096, 4096)
+    shape_full_frame = detector_dimensions().value
     if not all(d == (s*u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
         raise ValueError(f"Input must be at the full resolution of {shape_full_frame}")
     if pointing_table is None:
