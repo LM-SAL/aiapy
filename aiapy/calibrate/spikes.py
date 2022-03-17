@@ -10,7 +10,7 @@ from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
 
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AiapyUserWarning, detector_dimensions
 
 __all__ = ['respike', 'fetch_spikes']
 
@@ -141,7 +141,7 @@ def fetch_spikes(smap, as_coords=False):
     )
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     spikes = spikes.data
-    shape_full_frame = (4096, 4096)
+    shape_full_frame = detector_dimensions().value
     values = spikes[1, :]
     y_coords, x_coords = np.unravel_index(spikes[0, :], shape=shape_full_frame)
     # If this is a cutout, need to transform the full-frame pixel
