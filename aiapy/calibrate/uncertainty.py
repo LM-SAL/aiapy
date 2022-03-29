@@ -1,5 +1,5 @@
 """
-Estimate uncertainty on intensities
+Estimate uncertainty on intensities.
 """
 import numpy as np
 
@@ -9,13 +9,21 @@ from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
 from .util import get_error_table
 
-__all__ = ['estimate_error']
+__all__ = ["estimate_error"]
 
 
 @u.quantity_input
-@validate_channel('channel')
-def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, include_preflight=False,
-                   include_eve=False, include_chianti=False, error_table=None, **kwargs) -> u.ct / u.pix:
+@validate_channel("channel")
+def estimate_error(
+    counts: u.ct / u.pix,
+    channel: u.angstrom,
+    n_sample=1,
+    include_preflight=False,
+    include_eve=False,
+    include_chianti=False,
+    error_table=None,
+    **kwargs
+) -> u.ct / u.pix:
     """
     Given an observed number of counts estimate the associated errors.
 
@@ -59,14 +67,14 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
     """
     counts = np.atleast_1d(counts)
     error_table = get_error_table(error_table=error_table)
-    error_table = error_table[error_table['WAVELNTH'] == channel]
+    error_table = error_table[error_table["WAVELNTH"] == channel]
 
     # Shot noise
     # NOTE: pixel and photon are "unitless" so we multiply/divide by these
     # units such that the shot noise has the same units as counts
     pix_per_photon = 1 * u.pixel / u.photon  # use this to get units right
-    n_photon = counts / error_table['DNPERPHT'] * pix_per_photon
-    shot = np.sqrt(n_photon) * error_table['DNPERPHT'] / np.sqrt(n_sample) / pix_per_photon
+    n_photon = counts / error_table["DNPERPHT"] * pix_per_photon
+    shot = np.sqrt(n_photon) * error_table["DNPERPHT"] / np.sqrt(n_sample) / pix_per_photon
 
     # Dark noise
     # NOTE: The dark error of 0.18 is from an analysis of long-term trends in the residual
@@ -74,7 +82,7 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
     dark = 0.18 * u.ct / u.pix
 
     # Read noise
-    if kwargs.get('compare_idl', False):
+    if kwargs.get("compare_idl", False):
         # The IDL version hardcodes the read noise as 1.15 DN / pixel so we
         # want to use this when comparing against that code and not at any
         # other time. This is why this option is not documented.
@@ -102,23 +110,23 @@ def estimate_error(counts: u.ct / u.pix, channel: u.angstrom, n_sample=1, includ
     quant = quant_rms / np.sqrt(n_sample)
 
     # Onboard compression
-    compress = shot / error_table['COMPRESS']
+    compress = shot / error_table["COMPRESS"]
     compress[compress < quant_rms] = quant_rms
     compress[counts < 25 * counts.unit] = 0 * counts.unit
     compress /= np.sqrt(n_sample)
 
     # Photometric calibration
     if include_eve and include_preflight:
-        raise ValueError('Cannot include both EVE and pre-flight correction.')
+        raise ValueError("Cannot include both EVE and pre-flight correction.")
     calib = 0
     if include_eve:
-        calib = error_table['EVEERR']
+        calib = error_table["EVEERR"]
     elif include_preflight:
-        calib = error_table['CALERR']
+        calib = error_table["CALERR"]
     calib = calib * counts
 
     # CHIANTI atomic errors
-    chianti = error_table['CHIANTI'] if include_chianti else 0
+    chianti = error_table["CHIANTI"] if include_chianti else 0
     chianti = chianti * counts
 
     error_sum = np.sqrt(shot**2 + dark**2 + read**2 + quant**2 + compress**2 + chianti**2 + calib**2)

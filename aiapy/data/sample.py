@@ -1,6 +1,6 @@
 """
-This module provides the following sample data files.
-These files are downloaded when this module is imported for the first time.
+This module provides the following sample data files. These files are
+downloaded when this module is imported for the first time.
 
 .. list-table::
    :widths: auto
@@ -28,6 +28,6 @@ file_dict = dict(sorted(file_dict.items()))
 file_list = file_dict.values()
 
 for keyname, filename in file_dict.items():
-    __doc__ += f'   * - ``{keyname}``\n     - {Path(filename).name}\n'
+    __doc__ += f"   * - ``{keyname}``\n     - {Path(filename).name}\n"
 
-__all__ = list(_SAMPLE_FILES.values()) + ['file_dict', 'file_list']
+__all__ = list(_SAMPLE_FILES.values()) + ["file_dict", "file_list"]

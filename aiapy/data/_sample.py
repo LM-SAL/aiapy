@@ -6,8 +6,8 @@ from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
-    'https://github.com/sunpy/sample-data/raw/master/aiapy/',
-    'http://data.sunpy.org/aiapy/',
+    "https://github.com/sunpy/sample-data/raw/master/aiapy/",
+    "http://data.sunpy.org/aiapy/",
 )  # NOQA
 # Shortcut requirements:
 # start with the instrument name then
@@ -29,7 +29,7 @@ _SAMPLE_FILES = {v: k for k, v in _SAMPLE_DATA.items()}  # NOQA
 
 def _retry_sample_data(results):
     # In case we have a broken file on disk, overwrite it.
-    dl = Downloader(overwrite=True, progress=True, headers={'Accept-Encoding': 'identity'})
+    dl = Downloader(overwrite=True, progress=True, headers={"Accept-Encoding": "identity"})
     for err in results.errors:
         file_name = err.filepath_partial().name
         # Update the url to a mirror and requeue the file.
@@ -54,7 +54,7 @@ def download_sample_data(overwrite=False):
     already_downloaded = []
     to_download = []
     for url_file_name in _SAMPLE_FILES.keys():
-        fname = sampledata_dir/url_file_name
+        fname = sampledata_dir / url_file_name
         if fname.exists() and not overwrite:
             already_downloaded.append(fname)
         else:

@@ -16,23 +16,29 @@ from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correc
 from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
 
-__all__ = ['Channel']
+__all__ = ["Channel"]
 
 # TODO: Work out what changes with version.
-AIA_INSTRUMENT_FILE = 'https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx'
+AIA_INSTRUMENT_FILE = "https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx"
 VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
 # The URLs are left as a list so that possible mirrors for these files
 # can be specified
 URL_HASH = {
-    2: {'fuv': None, 'euv': None},
-    3: {'fuv': None, 'euv': None},
-    4: {'fuv': None, 'euv': None},
-    6: {'fuv': None, 'euv': None},
-    8: {'fuv': ((AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, 'fuv')),
-                '8635166d8f6dde48da4f135925f4e8f48a0574f129c2c2ca24da6628550f5430'),
-        'euv': ((AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, 'all'),),
-                '3940648e6b02876c45a9893f40806bbcc50baa994ae3fa2d95148916988426dd')},
+    2: {"fuv": None, "euv": None},
+    3: {"fuv": None, "euv": None},
+    4: {"fuv": None, "euv": None},
+    6: {"fuv": None, "euv": None},
+    8: {
+        "fuv": (
+            (AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "fuv")),
+            "8635166d8f6dde48da4f135925f4e8f48a0574f129c2c2ca24da6628550f5430",
+        ),
+        "euv": (
+            (AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "all"),),
+            "3940648e6b02876c45a9893f40806bbcc50baa994ae3fa2d95148916988426dd",
+        ),
+    },
 }
 
 
@@ -66,7 +72,7 @@ class Channel(object):
     """
 
     @u.quantity_input
-    @validate_channel('channel')
+    @validate_channel("channel")
     def __init__(self, channel: u.angstrom, instrument_file=None):
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
@@ -76,11 +82,12 @@ class Channel(object):
         """
         Returns True for UV and visible channels 1600, 1700, 4500 Å.
         """
-        return self.channel in [1600, 1700, 4500]*u.angstrom
+        return self.channel in [1600, 1700, 4500] * u.angstrom
 
     def _get_instrument_data(self, instrument_file):
         """
-        Read the raw instrument data for all channels from the ``.genx`` files in SSW.
+        Read the raw instrument data for all channels from the ``.genx`` files
+        in SSW.
         """
         if isinstance(instrument_file, collections.OrderedDict):
             return instrument_file
@@ -91,96 +98,125 @@ class Channel(object):
                 instrument_file = self._get_euv_instrument_file()
         return read_genx(instrument_file)
 
-    @manager.require('instrument_file_euv', *URL_HASH[VERSION_NUMBER]['euv'])
+    @manager.require("instrument_file_euv", *URL_HASH[VERSION_NUMBER]["euv"])
     def _get_euv_instrument_file(self):
-        return manager.get('instrument_file_euv')
+        return manager.get("instrument_file_euv")
 
-    @manager.require('instrument_file_fuv', *URL_HASH[VERSION_NUMBER]['fuv'])
+    @manager.require("instrument_file_fuv", *URL_HASH[VERSION_NUMBER]["fuv"])
     def _get_fuv_instrument_file(self):
-        return manager.get('instrument_file_fuv')
+        return manager.get("instrument_file_fuv")
 
     @property
-    def _data(self,):
+    def _data(
+        self,
+    ):
         """
         Instrument data for this channel.
         """
-        return MetaDict(self._instrument_data[f'A{self.name}_FULL'])
+        return MetaDict(self._instrument_data[f"A{self.name}_FULL"])
 
     @property
     @u.quantity_input
-    def channel(self,) -> u.angstrom:
+    def channel(
+        self,
+    ) -> u.angstrom:
         """
         Nominal wavelength at which the bandpass of the channel is centered.
         """
         return self._channel
 
     @property
-    def name(self,):
-        return f'{self.channel.to(u.angstrom).value:.0f}'
+    def name(
+        self,
+    ):
+        return f"{self.channel.to(u.angstrom).value:.0f}"
 
     @property
-    def telescope_number(self,):
+    def telescope_number(
+        self,
+    ):
         """
         Label denoting the telescope to which the given channel is assigned.
+
         See `crosstalk` for context of why this is important.
         """
         return telescope_number(self.channel)
 
     @property
     @u.quantity_input
-    def wavelength(self,) -> u.angstrom:
+    def wavelength(
+        self,
+    ) -> u.angstrom:
         """
         Array of wavelengths over which channel properties are calculated.
         """
-        return u.Quantity(self._data['wave'], u.angstrom)
+        return u.Quantity(self._data["wave"], u.angstrom)
 
     @property
     @u.quantity_input
-    def primary_reflectance(self,) -> u.dimensionless_unscaled:
-        return u.Quantity(self._data['primary'])
+    def primary_reflectance(
+        self,
+    ) -> u.dimensionless_unscaled:
+        return u.Quantity(self._data["primary"])
 
     @property
     @u.quantity_input
-    def secondary_reflectance(self,) -> u.dimensionless_unscaled:
-        return u.Quantity(self._data['secondary'])
+    def secondary_reflectance(
+        self,
+    ) -> u.dimensionless_unscaled:
+        return u.Quantity(self._data["secondary"])
 
     @property
     @u.quantity_input
-    def focal_plane_filter_efficiency(self,) -> u.dimensionless_unscaled:
-        return u.Quantity(self._data['fp_filter'])
+    def focal_plane_filter_efficiency(
+        self,
+    ) -> u.dimensionless_unscaled:
+        return u.Quantity(self._data["fp_filter"])
 
     @property
     @u.quantity_input
-    def entrance_filter_efficiency(self,) -> u.dimensionless_unscaled:
-        return u.Quantity(self._data['ent_filter'])
+    def entrance_filter_efficiency(
+        self,
+    ) -> u.dimensionless_unscaled:
+        return u.Quantity(self._data["ent_filter"])
 
     @property
     @u.quantity_input
-    def geometrical_collecting_area(self,) -> u.cm**2:
-        return u.Quantity(self._data['geoarea'], u.cm**2)
+    def geometrical_collecting_area(
+        self,
+    ) -> u.cm**2:
+        return u.Quantity(self._data["geoarea"], u.cm**2)
 
     @property
     @u.quantity_input
-    def quantum_efficiency(self,) -> u.dimensionless_unscaled:
-        return u.Quantity(self._data['ccd'])
+    def quantum_efficiency(
+        self,
+    ) -> u.dimensionless_unscaled:
+        return u.Quantity(self._data["ccd"])
 
     @property
     @u.quantity_input
-    def contamination(self,) -> u.dimensionless_unscaled:
+    def contamination(
+        self,
+    ) -> u.dimensionless_unscaled:
         # Contamination missing for FUV channels
-        if 'contam' in self._data:
-            return u.Quantity(self._data['contam'])
+        if "contam" in self._data:
+            return u.Quantity(self._data["contam"])
         else:
             return u.Quantity([1])
 
     @property
     @u.quantity_input
-    def plate_scale(self,) -> u.steradian / u.pixel:
-        return u.Quantity(self._data['platescale'], u.steradian/u.pixel)
+    def plate_scale(
+        self,
+    ) -> u.steradian / u.pixel:
+        return u.Quantity(self._data["platescale"], u.steradian / u.pixel)
 
     @property
     @u.quantity_input
-    def effective_area(self,) -> u.cm**2:
+    def effective_area(
+        self,
+    ) -> u.cm**2:
         r"""
         Uncorrected effective area as a function of wavelength.
 
@@ -205,17 +241,21 @@ class Channel(object):
         ----------
         .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
-        return (self.primary_reflectance
-                * self.secondary_reflectance
-                * self.focal_plane_filter_efficiency
-                * self.entrance_filter_efficiency
-                * self.geometrical_collecting_area
-                * self.quantum_efficiency
-                * self.contamination)
+        return (
+            self.primary_reflectance
+            * self.secondary_reflectance
+            * self.focal_plane_filter_efficiency
+            * self.entrance_filter_efficiency
+            * self.geometrical_collecting_area
+            * self.quantum_efficiency
+            * self.contamination
+        )
 
     @property
     @u.quantity_input
-    def crosstalk(self,) -> u.cm**2:
+    def crosstalk(
+        self,
+    ) -> u.cm**2:
         """
         Contamination of effective area from crosstalk  between channels.
 
@@ -229,21 +269,22 @@ class Channel(object):
         .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         crosstalk_lookup = {
-            94*u.angstrom: 304*u.angstrom,
-            304*u.angstrom: 94*u.angstrom,
-            131*u.angstrom: 335*u.angstrom,
-            335*u.angstrom: 131*u.angstrom,
+            94 * u.angstrom: 304 * u.angstrom,
+            304 * u.angstrom: 94 * u.angstrom,
+            131 * u.angstrom: 335 * u.angstrom,
+            335 * u.angstrom: 131 * u.angstrom,
         }
         if self.channel in crosstalk_lookup:
-            cross = Channel(crosstalk_lookup[self.channel],
-                            instrument_file=self._instrument_data)
-            return (cross.primary_reflectance
-                    * cross.secondary_reflectance
-                    * self.focal_plane_filter_efficiency
-                    * cross.entrance_filter_efficiency
-                    * cross.geometrical_collecting_area
-                    * cross.quantum_efficiency
-                    * cross.contamination)
+            cross = Channel(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
+            return (
+                cross.primary_reflectance
+                * cross.secondary_reflectance
+                * self.focal_plane_filter_efficiency
+                * cross.entrance_filter_efficiency
+                * cross.geometrical_collecting_area
+                * cross.quantum_efficiency
+                * cross.contamination
+            )
         else:
             return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
@@ -295,19 +336,17 @@ class Channel(object):
         table = _select_epoch_from_correction_table(
             self.channel,
             obstime,
-            get_correction_table(correction_table=kwargs.get('correction_table')),
-            version=kwargs.get('calibration_version'),
+            get_correction_table(correction_table=kwargs.get("correction_table")),
+            version=kwargs.get("calibration_version"),
         )
-        effective_area_interp = np.interp(
-            table['EFF_WVLN'][-1],
-            self.wavelength,
-            self.effective_area
-        )
-        return table['EFF_AREA'][0] / effective_area_interp
+        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
+        return table["EFF_AREA"][0] / effective_area_interp
 
     @property
     @u.quantity_input
-    def gain(self,) -> u.count / u.ph:
+    def gain(
+        self,
+    ) -> u.count / u.ph:
         r"""
         Gain of the CCD camera system.
 
@@ -326,21 +365,22 @@ class Channel(object):
         .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         _e = u.electron  # Avoid rewriting u.electron a lot
-        electron_per_ev = self._data['elecperev'] * _e / u.eV
+        electron_per_ev = self._data["elecperev"] * _e / u.eV
         energy_per_photon = const.h * const.c / self.wavelength / u.ph
-        electron_per_photon = (electron_per_ev
-                               * energy_per_photon).to(_e / u.ph)
+        electron_per_photon = (electron_per_ev * energy_per_photon).to(_e / u.ph)
         # Cannot discharge less than one electron per photon
         discharge_floor = electron_per_photon < (1 * _e / u.ph)
         electron_per_photon[discharge_floor] = 1 * _e / u.ph
-        return electron_per_photon / (self._data['elecperdn'] * _e / u.count)
+        return electron_per_photon / (self._data["elecperdn"] * _e / u.count)
 
     @u.quantity_input
-    def wavelength_response(self,
-                            obstime=None,
-                            include_eve_correction=False,
-                            include_crosstalk=True,
-                            **kwargs) -> u.count / u.ph * u.cm**2:
+    def wavelength_response(
+        self,
+        obstime=None,
+        include_eve_correction=False,
+        include_crosstalk=True,
+        **kwargs,
+    ) -> u.count / u.ph * u.cm**2:
         r"""
         The wavelength response function is the product of the gain and the
         effective area.
@@ -375,7 +415,7 @@ class Channel(object):
         correction_table : `~astropy.table.Table` or `str`, optional
             Table of correction parameters or path to correction table file.
             If not specified, it will be queried from JSOC.
-            See `~aiapy.calibrate.util.get_correction_table` for more information.
+            See `aiapy.calibrate.util.get_correction_table` for more information.
 
         Returns
         -------
@@ -394,8 +434,5 @@ class Channel(object):
             time_correction = degradation(self.channel, obstime, **kwargs)
             if include_eve_correction:
                 eve_correction = self.eve_correction(obstime, **kwargs)
-        crosstalk = self.crosstalk if include_crosstalk else 0*u.cm**2
-        return ((self.effective_area + crosstalk)
-                * self.gain
-                * time_correction
-                * eve_correction)
+        crosstalk = self.crosstalk if include_crosstalk else 0 * u.cm**2
+        return (self.effective_area + crosstalk) * self.gain * time_correction * eve_correction

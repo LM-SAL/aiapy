@@ -6,19 +6,25 @@
 # -- Project information -----------------------------------------------------
 import os
 import warnings
-project = 'aiapy'
-copyright = '2021, AIA Instrument Team'
-author = 'AIA Instrument Team'
+
+project = "aiapy"
+copyright = "2021, AIA Instrument Team"
+author = "AIA Instrument Team"
 os.environ["JSOC_EMAIL"] = "jsoc@cadair.com"
-os.environ['HIDE_PARFIVE_PROGESS'] = 'True'
+os.environ["HIDE_PARFIVE_PROGESS"] = "True"
 
 # The full version, including alpha/beta/rc tags
 from aiapy import __version__  # NOQA
-release = __version__
-is_development = '.dev' in __version__
 
-from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning  # NOQA
+release = __version__
+is_development = ".dev" in __version__
+
+from sunpy.util.exceptions import (
+    SunpyDeprecationWarning,
+    SunpyPendingDeprecationWarning,
+)  # NOQA
 from astropy.utils.exceptions import AstropyDeprecationWarning  # NOQA
+
 # We want to ignore all warnings in a release version.
 if not is_development:
     warnings.simplefilter("ignore")
@@ -31,19 +37,19 @@ warnings.filterwarnings("error", category=AstropyDeprecationWarning)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx_automodapi.automodapi',
-    'sphinx_automodapi.smart_resolver',
-    'sphinx_changelog',
-    'sphinx_panels',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.coverage',
-    'sphinx.ext.doctest',
-    'sphinx.ext.inheritance_diagram',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
+    "sphinx_automodapi.automodapi",
+    "sphinx_automodapi.smart_resolver",
+    "sphinx_changelog",
+    "sphinx_panels",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,35 +58,43 @@ extensions = [
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents. Set to the "smart" one.
-default_role = 'obj'
+default_role = "obj"
 
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/',
-               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
-    'numpy': ('https://docs.scipy.org/doc/numpy/',
-              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
-              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
-    'matplotlib': ('https://matplotlib.org/',
-                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
-    'astropy': ('http://docs.astropy.org/en/stable/', None),
-    'sunpy': ('https://docs.sunpy.org/en/stable/', None),
-    'skimage': ('https://scikit-image.org/docs/stable/', None),
-    'cupy': ('https://docs-cupy.chainer.org/en/stable/', None),
+    "python": (
+        "https://docs.python.org/3/",
+        (None, "http://data.astropy.org/intersphinx/python3.inv"),
+    ),
+    "numpy": (
+        "https://docs.scipy.org/doc/numpy/",
+        (None, "http://data.astropy.org/intersphinx/numpy.inv"),
+    ),
+    "scipy": (
+        "https://docs.scipy.org/doc/scipy/reference/",
+        (None, "http://data.astropy.org/intersphinx/scipy.inv"),
+    ),
+    "matplotlib": (
+        "https://matplotlib.org/",
+        (None, "http://data.astropy.org/intersphinx/matplotlib.inv"),
+    ),
+    "astropy": ("http://docs.astropy.org/en/stable/", None),
+    "sunpy": ("https://docs.sunpy.org/en/stable/", None),
+    "skimage": ("https://scikit-image.org/docs/stable/", None),
+    "cupy": ("https://docs-cupy.chainer.org/en/stable/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -98,24 +112,24 @@ from sunpy_sphinx_theme.conf import *  # NOQA
 graphviz_output_format = "svg"
 
 graphviz_dot_args = [
-    '-Nfontsize=10',
-    '-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif',
-    '-Efontsize=10',
-    '-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif',
-    '-Gfontsize=10',
-    '-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif'
+    "-Nfontsize=10",
+    "-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Efontsize=10",
+    "-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Gfontsize=10",
+    "-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
 ]
 
 # -- Sphinx-gallery ----------------------------------------------------------
 extensions += [
-    'sphinx_gallery.gen_gallery',
+    "sphinx_gallery.gen_gallery",
 ]
 
 sphinx_gallery_conf = {
-    'examples_dirs': '../examples',
-    'gallery_dirs': 'generated/gallery',
+    "examples_dirs": "../examples",
+    "gallery_dirs": "generated/gallery",
     # execute all examples except those that start with "skip_"
-    'filename_pattern': '^((?!skip_).)*$',
-    'default_thumb_file': '_static/sdo.png',
+    "filename_pattern": "^((?!skip_).)*$",
+    "default_thumb_file": "_static/sdo.png",
 }
 html_theme_options["logo_url"] = "https://aiapy.readthedocs.io/en/stable/"

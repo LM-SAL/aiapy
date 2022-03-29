@@ -11,7 +11,7 @@ from sunpy.time import parse_time
 
 from aiapy.util.decorators import validate_channel
 
-__all__ = ['sdo_location', 'telescope_number']
+__all__ = ["sdo_location", "telescope_number"]
 
 
 def sdo_location(time):
@@ -35,22 +35,29 @@ def sdo_location(time):
     t = parse_time(time)
     # Query for +/- 3 seconds around the given time
     keys = drms.Client().query(
-        f'aia.lev1[{(t - 3*u.s).utc.isot}/6s]',
-        key='T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS'
+        f"aia.lev1[{(t - 3*u.s).utc.isot}/6s]",
+        key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS",
     )
     if keys is None or len(keys) == 0:
-        raise ValueError('No DRMS records near this time')
+        raise ValueError("No DRMS records near this time")
     # Linear interpolation between the nearest records within the returned set
-    times = Time(list(keys['T_OBS']), scale='utc')
-    x = np.interp(t.mjd, times.mjd, keys['HAEX_OBS'])
-    y = np.interp(t.mjd, times.mjd, keys['HAEY_OBS'])
-    z = np.interp(t.mjd, times.mjd, keys['HAEZ_OBS'])
-    return SkyCoord(x=x, y=y, z=z, unit=u.m, representation_type='cartesian',
-                    frame='heliocentricmeanecliptic', obstime=t)
+    times = Time(list(keys["T_OBS"]), scale="utc")
+    x = np.interp(t.mjd, times.mjd, keys["HAEX_OBS"])
+    y = np.interp(t.mjd, times.mjd, keys["HAEY_OBS"])
+    z = np.interp(t.mjd, times.mjd, keys["HAEZ_OBS"])
+    return SkyCoord(
+        x=x,
+        y=y,
+        z=z,
+        unit=u.m,
+        representation_type="cartesian",
+        frame="heliocentricmeanecliptic",
+        obstime=t,
+    )
 
 
 @u.quantity_input
-@validate_channel('channel')
+@validate_channel("channel")
 def telescope_number(channel: u.angstrom):
     """
     For a given channel wavelength, return the associated telescope number.
@@ -66,14 +73,14 @@ def telescope_number(channel: u.angstrom):
         The telescope number of the filter designated by ``channel``
     """
     return {
-        94*u.angstrom: 4,
-        131*u.angstrom: 1,
-        171*u.angstrom: 3,
-        193*u.angstrom: 2,
-        211*u.angstrom: 2,
-        304*u.angstrom: 4,
-        335*u.angstrom: 1,
-        1600*u.angstrom: 3,
-        1700*u.angstrom: 3,
-        4500*u.angstrom: 3,
+        94 * u.angstrom: 4,
+        131 * u.angstrom: 1,
+        171 * u.angstrom: 3,
+        193 * u.angstrom: 2,
+        211 * u.angstrom: 2,
+        304 * u.angstrom: 4,
+        335 * u.angstrom: 1,
+        1600 * u.angstrom: 3,
+        1700 * u.angstrom: 3,
+        4500 * u.angstrom: 3,
     }[channel]

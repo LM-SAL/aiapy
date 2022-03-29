@@ -19,8 +19,8 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 ###########################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
 # each of the AIA channels have slightly different spatial scales and roll
-# angles. Furthermore, the estimates of the pointing keywords (`CDELT1`, `CDELT2`, `CRPIX1`,
-# `CRPIX2`, `CROTA2`) may have been improved due to limb fitting procedures. The
+# angles. Furthermore, the estimates of the pointing keywords (``CDELT1``, ``CDELT2``, ``CRPIX1``,
+# ``CRPIX2``, ``CROTA2``) may have been improved due to limb fitting procedures. The
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
 # AIA image data and metadata separately; when users download AIA data, these
 # two data types are combined to produce a FITS file. While metadata are
@@ -32,15 +32,15 @@ from aiapy.calibrate import normalize_exposure, register, update_pointing
 # to a common grid in which the y-axis of the image is aligned
 # with solar North.
 #
-# First, let's read a level 1 94 Å AIA image from the aiapy sample data into
+# First, let's read a level 1 94 Å AIA image from the ``aiapy`` sample data into
 # a `~sunpy.map.Map` object.
 m = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 
 ###########################################################
 # The first step in this process is to update the metadata of the map to the
-# most recent pointing using  the `~aiapy.calibrate.update_pointing` function.
+# most recent pointing using  the `aiapy.calibrate.update_pointing` function.
 # This function queries the JSOC for the most recent pointing information,
-# updates the metadata, and returns a `~sunpy.map.Map` with updated metadata.
+# updates the metadata, and returns a `sunpy.map.Map` with updated metadata.
 m_updated_pointing = update_pointing(m)
 
 ###########################################################
@@ -51,7 +51,7 @@ print(m_updated_pointing.scale)
 print(m_updated_pointing.rotation_matrix)
 
 ###########################################################
-# We can use the `~aiapy.calibrate.register` function to scale the image to
+# We can use the `aiapy.calibrate.register` function to scale the image to
 # the :math:`0.6''` per pixel and derotate the image such that the y-axis is aligned
 # with solar North.
 m_registered = register(m_updated_pointing)
@@ -73,7 +73,7 @@ m_normalized = normalize_exposure(m_registered)
 ###########################################################
 # Finally, we can plot the exposure-normalized map.
 # Note that small negative pixel values are possible because
-# CCD images were taken with a pedestal set at ~ 100 DN.
+# CCD images were taken with a pedestal set at ~100 DN.
 # This pedestal is then subtracted when the JSOC pipeline
 # performs dark (+pedestal) subtraction and flatfielding
 # to generate level 1 files.

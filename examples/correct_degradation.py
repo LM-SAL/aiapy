@@ -18,7 +18,7 @@ from aiapy.calibrate import degradation
 
 # These are needed to allow the use of quantities and astropy
 # time objects in the plot.
-time_support(format='jyear')
+time_support(format="jyear")
 quantity_support()
 
 ###########################################################
@@ -31,40 +31,40 @@ quantity_support()
 # and 2018 at a cadence of 30 days. We choose the 335 Å channel because it has experienced
 # significant degradation compared to the other EUV channels.
 results = Fido.search(
-    a.Time('2010-06-01T00:00:00', '2021-06-01T00:00:00'),
-    a.Sample(30*u.day),
+    a.Time("2010-06-01T00:00:00", "2021-06-01T00:00:00"),
+    a.Sample(30 * u.day),
     a.jsoc.Series.aia_lev1_euv_12s,
-    a.jsoc.Wavelength(335*u.angstrom),
+    a.jsoc.Wavelength(335 * u.angstrom),
 )
 
 ###########################################################
 # We only need the date and mean intensity columns from the
 # metadata that was returned. We select those and nothing else.
-table = results["jsoc"].show('DATE__OBS', 'DATAMEAN')
-table['DATAMEAN'].unit = u.ct
-table['DATE_OBS'] = astropy.time.Time(table['DATE__OBS'], scale='utc')
-del table['DATE__OBS']
+table = results["jsoc"].show("DATE__OBS", "DATAMEAN")
+table["DATAMEAN"].unit = u.ct
+table["DATE_OBS"] = astropy.time.Time(table["DATE__OBS"], scale="utc")
+del table["DATE__OBS"]
 
 print(table)
 
 ###########################################################
-# Next, we pass the date column to the `~aiapy.calibrate.correct_degradation`
+# Next, we pass the date column to the `aiapy.calibrate.correct_degradation`
 # function. This function calculates the time-dependent correction factor
 # based on the time and wavelength of the observation.
 # We then divide the mean intensity by the correction factor to get the corrected intensity.
 # For more details on how the correction factor is calculated, see the documentation for the
-# `~aiapy.calibrate.degradation` function.
-correction_factor = degradation(335*u.angstrom, table['DATE_OBS'])
-# This correction can be applied to a sunpy map as well.
-table['DATAMEAN_DEG'] = table['DATAMEAN'] / correction_factor
+# `aiapy.calibrate.degradation` function.
+correction_factor = degradation(335 * u.angstrom, table["DATE_OBS"])
+# This correction can be applied to a sunpy Map as well.
+table["DATAMEAN_DEG"] = table["DATAMEAN"] / correction_factor
 
 ###########################################################
 # To understand the effect of the degradation and the correction factor, we
 # plot the corrected and uncorrected mean intensity as a function of time.
 # Note that the uncorrected intensity decreases monotonically over time
 # while the corrected intensity recovers to pre-2011 values in 2020.
-plt.plot(table['DATE_OBS'], table['DATAMEAN'], label='mean', marker='o')
-plt.plot(table['DATE_OBS'], table['DATAMEAN_DEG'], label='mean, corrected', marker='o')
+plt.plot(table["DATE_OBS"], table["DATAMEAN"], label="mean", marker="o")
+plt.plot(table["DATE_OBS"], table["DATAMEAN_DEG"], label="mean, corrected", marker="o")
 plt.title(f'{(335*u.angstrom).to_string(format="latex")} Channel Degradation')
 plt.legend(frameon=False)
 
