@@ -13,6 +13,7 @@ aiapy documentation
       :maxdepth: 1
 
       getting_started
+      preparing_data
       generated/gallery/index
       code_ref/index
 

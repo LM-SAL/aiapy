@@ -4,11 +4,10 @@ Registering and aligning level 1 data
 =====================================
 
 This example demonstrates how to convert AIA images to a common pointing,
-rescale them to a common plate scale, and remove the roll angle. This process
-is often referred to as "aia_prep" and the resulting data are typically
-referred to as level 1.5 data. In this example, we will demonstrate how to do
-this with `aiapy`. This corresponds to the `aia_prep.pro` procedure as
-described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
+rescale them to a common plate scale, and remove the roll angle.
+This process is often referred to as "aia_prep" and the resulting data are typically referred to as level 1.5 data.
+In this example, we will demonstrate how to do this with `aiapy`.
+This corresponds to the `aia_prep.pro` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 """
 
 import sunpy.map
