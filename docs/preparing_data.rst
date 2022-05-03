@@ -23,4 +23,4 @@ A few notes on this:
   More details can be found in this gallery example :ref:`sphx_glr_generated_gallery_update_header_keywords.py`.
 * The exposure time normalization (`aiapy.calibrate.normalize_exposure`) and degradation correction (`aiapy.calibrate.correct_degradation`) operations are just scalar multiplication and are thus linear such that their ordering is inconsequential.
 * Level 1.5, in its typical usage, only includes steps 2 and 3.
-  Inclusion of Steps 1, 4 and 5 are not, as far we are aware, denoted through any standard level number designation.
+  Unless stated otherwise, a science publication mentioning level 1.5 AIA data does not include steps 1, 4 and 5.
