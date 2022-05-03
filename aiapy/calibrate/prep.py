@@ -1,5 +1,5 @@
 """
-Functions for calibrating AIA images
+Functions for calibrating AIA images.
 """
 import copy
 import warnings
@@ -10,11 +10,11 @@ import astropy.units as u
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 
+from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
-from .util import _select_epoch_from_correction_table, get_correction_table
 
-__all__ = ['register', 'correct_degradation', 'degradation', 'normalize_exposure']
+__all__ = ["register", "correct_degradation", "degradation", "normalize_exposure"]
 
 
 def register(smap, missing=None, order=3, use_scipy=False):
@@ -64,13 +64,15 @@ def register(smap, missing=None, order=3, use_scipy=False):
     # calls to rotate introduce artifacts.
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
-            'Image registration should only be applied to level 1 data',
-            AiapyUserWarning
+            "Image registration should only be applied to level 1 data",
+            AiapyUserWarning,
         )
     # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
     # map has already been rescaled.
-    if ((smap.scale[0] / 0.6).round() != 1.0 * u.arcsec / u.pix
-            and smap.data.shape != (4096, 4096)):
+    if (smap.scale[0] / 0.6).round() != 1.0 * u.arcsec / u.pix and smap.data.shape != (
+        4096,
+        4096,
+    ):
         scale = (smap.scale[0] / 0.6).round() * 0.6 * u.arcsec
     else:
         scale = 0.6 * u.arcsec  # pragma: no cover # needs a full res image
@@ -81,19 +83,20 @@ def register(smap, missing=None, order=3, use_scipy=False):
         scale=scale_factor.value,
         order=order,
         missing=missing,
-        use_scipy=use_scipy
+        use_scipy=use_scipy,
     )
     # extract center from padded smap.rotate output
     # crpix1 and crpix2 will be equal (recenter=True), as prep does not
     # work with submaps
-    center = np.floor(tempmap.meta['crpix1'])
+    center = np.floor(tempmap.meta["crpix1"])
     range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
     newmap = tempmap.submap(
         u.Quantity([range_side[0], range_side[0]]),
-        top_right=u.Quantity([range_side[1], range_side[1]]) - 1*u.pix)
-    newmap.meta['r_sun'] = newmap.meta['rsun_obs'] / newmap.meta['cdelt1']
-    newmap.meta['lvl_num'] = 1.5
-    newmap.meta['bitpix'] = -64
+        top_right=u.Quantity([range_side[1], range_side[1]]) - 1 * u.pix,
+    )
+    newmap.meta["r_sun"] = newmap.meta["rsun_obs"] / newmap.meta["cdelt1"]
+    newmap.meta["lvl_num"] = 1.5
+    newmap.meta["bitpix"] = -64
     return newmap
 
 
@@ -123,7 +126,7 @@ def correct_degradation(smap, **kwargs):
 
 
 @u.quantity_input
-@validate_channel('channel')
+@validate_channel("channel")
 def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -157,7 +160,7 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     correction_table : `~astropy.table.Table` or `str`, optional
         Table of correction parameters or path to correction table file.
         If not specified, it will be queried from JSOC. See
-        `~aiapy.calibrate.util.get_correction_table` for more information.
+        `aiapy.calibrate.util.get_correction_table` for more information.
         If you are processing many images, it is recommended to
         read the correction table once and pass it with this argument to avoid
         multiple redundant network calls.
@@ -179,23 +182,17 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
     # Do this outside of the loop to avoid repeated queries
-    correction_table = get_correction_table(correction_table=kwargs.get('correction_table'))
+    correction_table = get_correction_table(correction_table=kwargs.get("correction_table"))
     for i, t in enumerate(obstime):
         table = _select_epoch_from_correction_table(
-            channel, t, correction_table,
-            version=kwargs.get('calibration_version')
+            channel, t, correction_table, version=kwargs.get("calibration_version")
         )
         # Time difference between obstime and start of epoch
-        dt = (t - table['T_START'][-1]).to(u.day).value
+        dt = (t - table["T_START"][-1]).to(u.day).value
         # Correction to most recent epoch
-        ratio[i] = table['EFF_AREA'][-1] / table['EFF_AREA'][0]
+        ratio[i] = table["EFF_AREA"][-1] / table["EFF_AREA"][0]
         # Polynomial correction to interpolate within epoch
-        poly[i] = (
-            table['EFFA_P1'][-1]*dt
-            + table['EFFA_P2'][-1]*dt**2
-            + table['EFFA_P3'][-1]*dt**3
-            + 1.
-        )
+        poly[i] = table["EFFA_P1"][-1] * dt + table["EFFA_P2"][-1] * dt**2 + table["EFFA_P3"][-1] * dt**3 + 1.0
     return u.Quantity(poly * ratio)
 
 
@@ -214,12 +211,8 @@ def normalize_exposure(smap):
     if not isinstance(smap, AIAMap):
         raise ValueError("Input must be an AIAMap")
     if smap.exposure_time <= 0.0 * u.s:
-        warnings.warn(
-            "Exposure time is less than or equal to 0.0 seconds.",
-            AiapyUserWarning
-        )
-    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value,
-                                copy.deepcopy(smap.meta))
-    newmap.meta['exptime'] = 1.0
-    newmap.meta['BUNIT'] = 'ct / s'
+        warnings.warn("Exposure time is less than or equal to 0.0 seconds.", AiapyUserWarning)
+    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value, copy.deepcopy(smap.meta))
+    newmap.meta["exptime"] = 1.0
+    newmap.meta["BUNIT"] = "ct / s"
     return newmap
