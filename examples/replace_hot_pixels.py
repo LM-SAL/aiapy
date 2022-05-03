@@ -23,11 +23,11 @@ from aiapy.calibrate import fetch_spikes, respike
 # process may result in unwanted removal of bright points which may be
 # physically meaningful. In this example, we will demonstrate how to revert
 # this removal by putting back all the removed pixel values with the
-# `~aiapy.calibrate.respike` in function. This corresponds to the
+# `aiapy.calibrate.respike` in function. This corresponds to the
 # `aia_respike.pro` IDL procedure as described in the
 # `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
 #
-# The header keywords `LVL_NUM` and `NSPIKES` describe the level number of the
+# The header keywords ``LVL_NUM`` and ``NSPIKES`` describe the level number of the
 # AIA data (e.g. level 1) and how many hot pixels were removed from the image
 # (i.e. the "spikes"). The data containing the information of the pixel
 # position and the intensities of the removed hot pixels are available from the
@@ -48,7 +48,7 @@ m = sunpy.map.Map(sample_data.AIA_193_IMAGE)
 # The spike pixel positions are given with respect to the level 1 full-disk
 # image.
 #
-# We can use the `~aiapy.calibrate.fetch_spikes` function to query the JSOC
+# We can use the `aiapy.calibrate.fetch_spikes` function to query the JSOC
 # for the spike positions and intensity values and convert the positions of the
 # spikes to the 2D pixel full-disk pixel coordinate system given a
 # `~sunpy.map.Map` representing a level 1 AIA image.
@@ -57,9 +57,9 @@ positions, values = fetch_spikes(m)
 
 ###########################################################
 # Now we are ready to respike the level 1 AIA image. The
-# `~aiapy.calibrate.respike` function performs the respike operation on the given
+# `aiapy.calibrate.respike` function performs the respike operation on the given
 # input image and returns a `~sunpy.map.Map` with the respiked image. This
-# operation also alters the metadata by updating the `LVL_NUM`, `NSPIKES`,
+# operation also alters the metadata by updating the ``LVL_NUM``, ``NSPIKES``,
 # and `COMMENTS` keywords.
 #
 # Note that explicitly specifying the spike positions and values is optional.
@@ -69,10 +69,8 @@ m_respiked = respike(m, spikes=(positions, values))
 ###########################################################
 # Now let's create a cutouts of the original level 1 and "re-spiked" (i.e.
 # level 0.5) images for a region with hot pixels.
-top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec,
-                     frame=m.coordinate_frame)
-bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec,
-                       frame=m.coordinate_frame)
+top_right = SkyCoord(30 * u.arcsec, 420 * u.arcsec, frame=m.coordinate_frame)
+bottom_left = SkyCoord(-120 * u.arcsec, 280 * u.arcsec, frame=m.coordinate_frame)
 m_cutout = m.submap(bottom_left, top_right=top_right)
 m_respiked_cutout = m_respiked.submap(bottom_left, top_right=top_right)
 
@@ -89,26 +87,24 @@ spike_coords, _ = fetch_spikes(m_cutout, as_coords=True)
 # circles.
 fig = plt.figure()
 ax = fig.add_subplot(121, projection=m_cutout)
-ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
-              markersize=15)
+ax.plot_coord(spike_coords, "o", color="white", fillstyle="none", markersize=15)
 m_cutout.plot(axes=ax, title='Level 1 "de-spiked" data')
 lon, lat = ax.coords
-lon.set_axislabel('HPC Longitude')
-lat.set_axislabel('HPC Latitude')
+lon.set_axislabel("HPC Longitude")
+lat.set_axislabel("HPC Latitude")
 ax = fig.add_subplot(122, projection=m_respiked_cutout)
-ax.plot_coord(spike_coords, 'o', color='white', fillstyle='none',
-              markersize=15)
+ax.plot_coord(spike_coords, "o", color="white", fillstyle="none", markersize=15)
 m_respiked_cutout.plot(axes=ax, annotate=False)
 ax.set_title('Level 0.5 "re-spiked" data')
 lon, lat = ax.coords
-lon.set_axislabel('HPC Longitude')
-lat.set_axislabel(' ')
+lon.set_axislabel("HPC Longitude")
+lat.set_axislabel(" ")
 lat.set_ticklabel_visible(False)
 plt.show()
 
 ###########################################################
 # Lastly, let's check the metadata in both the level 1 and resulting
 # 0.5 images to double check that the appropriate keywords have been updated.
-for k in ['lvl_num', 'nspikes', 'comments']:
-    print(f'Level 1: {k}: {m_cutout.meta.get(k)}')
-    print(f'Level 0.5: {k}: {m_respiked_cutout.meta.get(k)}')
+for k in ["lvl_num", "nspikes", "comments"]:
+    print(f"Level 1: {k}: {m_cutout.meta.get(k)}")
+    print(f"Level 0.5: {k}: {m_respiked_cutout.meta.get(k)}")

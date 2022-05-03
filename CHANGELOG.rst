@@ -23,19 +23,19 @@ Documentation
 Bug Fixes
 ---------
 
-- Fixes a bug in `~aiapy.calibrate.update_pointing` concerning how the row in 3-hourly
+- Fixes a bug in `aiapy.calibrate.update_pointing` concerning how the row in 3-hourly
   master pointing table is chosen.
   Previously, the row with ``T_START`` closest to ``DATE_OBS`` was chosen.
   Now, the row corresponding to ``T_OBS`` greater than or equal to ``T_START`` AND
   less than ``T_STOP`` is chosen. (`#137 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/137>`__)
 - Update the ``x0_mp`` and ``y0_mp`` keywords when updating the pointing information
-  in `~aiapy.calibrate.update_pointing`. (`#140 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/140>`__)
+  in `aiapy.calibrate.update_pointing`. (`#140 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/140>`__)
 
 
 Internal Changes
 ----------------
 
-- In the case where a submap is passed into `~aiapy.calibrate.fetch_spikes`,
+- In the case where a submap is passed into `aiapy.calibrate.fetch_spikes`,
   create the full-frame WCS directly from the submap WCS rather than creating
   an intermediate dummy full-frame map. (`#139 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/139>`__)
 
@@ -46,10 +46,10 @@ Internal Changes
 Bug Fixes
 ---------
 
-- Fixed a bug in the units on the table returned by `~aiapy.calibrate.util.get_pointing_table`.
+- Fixed a bug in the units on the table returned by `aiapy.calibrate.util.get_pointing_table`.
   The ``X0`` and ``Y0`` columns were incorrectly being assigned units of arcseconds instead
   of pixels. (`#132 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/132>`__)
-- Fixed an off-by-one bug in `~aiapy.calibrate.update_pointing` where the
+- Fixed an off-by-one bug in `aiapy.calibrate.update_pointing` where the
   ``CRPIX1`` and ``CRPIX2`` keywords were not being properly updated from the
   ``X0`` and ``Y0`` columns in the master pointing table. (`#132 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/132>`__)
 
@@ -61,8 +61,8 @@ Bug Fixes
 ---------
 
 - Fixed a compatibility issue with sunpy>=3.1 in which creating a full-frame WCS in
-  `~aiapy.calibrate.fetch_spikes` was throwing an exception. (`#126 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/126>`__)
-- Added a check on `~aiapy.calibrate.update_pointing` so that passing in a submap or a map not at the
+  `aiapy.calibrate.fetch_spikes` was throwing an exception. (`#126 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/126>`__)
+- Added a check on `aiapy.calibrate.update_pointing` so that passing in a submap or a map not at the
   full AIA resolution, raises an exception. (`#127 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/127>`__)
 
 
@@ -90,7 +90,7 @@ New Features
 Bug Fixes
 ---------
 
-- `~aiapy.calibrate.update_pointing` now skips updating keywords if the pointing values
+- `aiapy.calibrate.update_pointing` now skips updating keywords if the pointing values
   are missing from the pointing table returned from JSOC. (`#120 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/120>`__)
 
 0.5.1 (2021-05-24)
@@ -115,8 +115,8 @@ Features
 Features
 --------
 
-- Added a function (:func:`~aiapy.util.sdo_location`) to obtain the SDO location at a given time. (`#57 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/57>`__)
-- Added a function (:func:`~aiapy.calibrate.respike`) for reinserting hot pixels into level 1 images. (`#62 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/62>`__)
+- Added a function (:func:`aiapy.util.sdo_location`) to obtain the SDO location at a given time. (`#57 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/57>`__)
+- Added a function (:func:`aiapy.calibrate.respike`) for reinserting hot pixels into level 1 images. (`#62 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/62>`__)
 - Updated default calibration version to 10.
   Added test for version 10 (`#90 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/90>`__)
 
@@ -150,17 +150,17 @@ Features
 Features
 --------
 
-- Added a function (:func:`~aiapy.calibrate.normalize_exposure`) to normalize an image by its exposure time. (`#78 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/78>`__)
-- :func:`~aiapy.calibrate.degradation` can now accept `~astropy.time.Time` objects with length greater than 1.
+- Added a function (:func:`aiapy.calibrate.normalize_exposure`) to normalize an image by its exposure time. (`#78 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/78>`__)
+- :func:`aiapy.calibrate.degradation` can now accept `~astropy.time.Time` objects with length greater than 1.
   This makes it easier to compute the channel degradation over long intervals. (`#80 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/80>`__)
 - Citation information for `aiapy` is now available from `aiapy.__citation__`. (`#82 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/82>`__)
-- The pointing table can now be passsed in as a keyword argument to :func:`~aiapy.calibrate.update_pointing`.
-  Added a :func:`~aiapy.calibrate.util.get_pointing_table` to retrieve the 3-hour pointing table from JSOC over a given time interval. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
+- The pointing table can now be passsed in as a keyword argument to :func:`aiapy.calibrate.update_pointing`.
+  Added a :func:`aiapy.calibrate.util.get_pointing_table` to retrieve the 3-hour pointing table from JSOC over a given time interval. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
 
 Bug Fixes
 ---------
 
-- The ``CROTA2`` keyword update in :func:`~aiapy.calibrate.update_pointing` now includes the value of ``SAT_ROT`` from the FITS header.
+- The ``CROTA2`` keyword update in :func:`aiapy.calibrate.update_pointing` now includes the value of ``SAT_ROT`` from the FITS header.
   Previously, the keyword was only being updated with ``INSTROT``. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
 
 0.2.0 (2020-07-16)

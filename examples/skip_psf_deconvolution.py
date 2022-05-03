@@ -28,15 +28,17 @@ import aiapy.psf
 # 15 March 2019. Note that deconvolution should be performed on level 1 images
 # only. This is because, as with the level 1 data, the PSF model is defined
 # on the CCD grid. Once deconvolved, the image can be passed to
-# `~aiapy.calibrate.register`
+# `aiapy.calibrate.register`
 # (see the :ref:`sphx_glr_generated_gallery_prepping_level_1_data.py` example).
 m = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection=m)
-m.plot(axes=ax,)
+m.plot(
+    axes=ax,
+)
 
 #######################################
-# Next, we'll calculate the PSF using `~aiapy.psf.psf` for the 171 Å channel.
+# Next, we'll calculate the PSF using `aiapy.psf.psf` for the 171 Å channel.
 # The PSF model accounts for several different effects, including diffraction
 # from the mesh grating of the filters, charge spreading, and jitter. See
 # `Grigis et al (2012) <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
@@ -52,9 +54,11 @@ psf = aiapy.psf.psf(m.wavelength)
 # diffraction "arms" extending from the center pixel can often be seen in
 # flare observations due to the intense, small-scale brightening.
 fov = 500
-lc_x, lc_y = psf.shape[0]//2 - fov//2, psf.shape[1]//2 - fov//2
-plt.imshow(psf[lc_x:lc_x+fov, lc_y:lc_y+fov],
-           norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()))
+lc_x, lc_y = psf.shape[0] // 2 - fov // 2, psf.shape[1] // 2 - fov // 2
+plt.imshow(
+    psf[lc_x : lc_x + fov, lc_y : lc_y + fov],
+    norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()),
+)
 plt.colorbar()
 plt.show()
 
@@ -66,7 +70,7 @@ plt.show()
 # calculated automatically. However, when deconvolving many images of the same
 # wavelength, it is most efficient to only calculate the PSF once.
 #
-# As with `~aiapy.psf.psf`, this will be much faster if you have
+# As with `aiapy.psf.psf`, this will be much faster if you have
 # a GPU and `cupy` installed.
 m_deconvolved = aiapy.psf.deconvolve(m, psf=psf)
 
@@ -78,30 +82,30 @@ ax = fig.add_subplot(121, projection=m)
 m.plot(axes=ax, norm=norm)
 ax = fig.add_subplot(122, projection=m_deconvolved)
 m_deconvolved.plot(axes=ax, annotate=False, norm=norm)
-ax.coords[0].set_axislabel(' ')
-ax.coords[1].set_axislabel(' ')
+ax.coords[0].set_axislabel(" ")
+ax.coords[1].set_axislabel(" ")
 ax.coords[1].set_ticklabel_visible(False)
 plt.show()
 
 #################################################
 # The differences become a bit more obvious when we zoom in. Note that the
 # deconvolution has the effect of "deblurring" the image.
-left_corner = 500*u.arcsec, -600*u.arcsec
-right_corner = 1000*u.arcsec, -100*u.arcsec
+left_corner = 500 * u.arcsec, -600 * u.arcsec
+right_corner = 1000 * u.arcsec, -100 * u.arcsec
 fig = plt.figure()
 m_sub = m.submap(
     SkyCoord(*left_corner, frame=m.coordinate_frame),
-    SkyCoord(*right_corner, frame=m.coordinate_frame)
+    SkyCoord(*right_corner, frame=m.coordinate_frame),
 )
 ax = fig.add_subplot(121, projection=m_sub)
 m_sub.plot(axes=ax, norm=norm)
 m_deconvolved_sub = m_deconvolved.submap(
     SkyCoord(*left_corner, frame=m_deconvolved.coordinate_frame),
-    SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame)
+    SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame),
 )
 ax = fig.add_subplot(122, projection=m_deconvolved_sub)
 m_deconvolved_sub.plot(axes=ax, annotate=False, norm=norm)
-ax.coords[0].set_axislabel(' ')
-ax.coords[1].set_axislabel(' ')
+ax.coords[0].set_axislabel(" ")
+ax.coords[1].set_axislabel(" ")
 ax.coords[1].set_ticklabel_visible(False)
 plt.show()

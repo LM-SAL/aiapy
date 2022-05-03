@@ -9,17 +9,18 @@ from aiapy.util.decorators import validate_channel
 
 try:
     import cupy
+
     HAS_CUPY = True
 except ImportError:
     HAS_CUPY = False
 
-__all__ = ['psf', 'filter_mesh_parameters', '_psf']
+__all__ = ["psf", "filter_mesh_parameters", "_psf"]
 
 
 def filter_mesh_parameters(use_preflightcore=False):
     """
-    Geometric parameters for meshes in AIA filters used to calculate the
-    point spread function.
+    Geometric parameters for meshes in AIA filters used to calculate the point
+    spread function.
 
     Parameters
     ----------
@@ -79,81 +80,88 @@ def filter_mesh_parameters(use_preflightcore=False):
     #       reference: 'AIA20101016_190905_0335.fits'
     # TODO: put this in another file, either JSON or asdf
     return {
-        94 * u.angstrom: {
-            'angle_arm': [49.81, 40.16, -40.28, -49.92] * u.deg,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 8.99 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.207 * u.pixel,
-            'width': (0.951 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600109, 0.600109]*u.arcsec,
+        94
+        * u.angstrom: {
+            "angle_arm": [49.81, 40.16, -40.28, -49.92] * u.deg,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 8.99 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.207 * u.pixel,
+            "width": (0.951 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600109, 0.600109] * u.arcsec,
         },
-        131 * u.angstrom: {
-            'angle_arm': [50.27, 40.17, -39.70, -49.95] * u.deg,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 12.37 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.289 * u.pixel,
-            'width': (1.033 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600698, 0.600698]*u.arcsec,
+        131
+        * u.angstrom: {
+            "angle_arm": [50.27, 40.17, -39.70, -49.95] * u.deg,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 12.37 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.289 * u.pixel,
+            "width": (1.033 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600698, 0.600698] * u.arcsec,
         },
-        171 * u.angstrom: {
-            'angle_arm': [49.81, 39.57, -40.13, -50.38] * u.deg,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 16.26 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.377 * u.pixel,
-            'width': (0.962 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.599489, 0.599489]*u.arcsec,
+        171
+        * u.angstrom: {
+            "angle_arm": [49.81, 39.57, -40.13, -50.38] * u.deg,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 16.26 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.377 * u.pixel,
+            "width": (0.962 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.599489, 0.599489] * u.arcsec,
         },
-        193 * u.angstrom: {
-            'angle_arm': [49.82, 39.57, -40.12, -50.37] * u.deg,
-            'error_angle_arm': [0.02, 0.02, 0.03, 0.04] * u.deg,
-            'spacing_e': 18.39 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.425 * u.pixel,
-            'width': (1.512 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600758, 0.600758]*u.arcsec,
+        193
+        * u.angstrom: {
+            "angle_arm": [49.82, 39.57, -40.12, -50.37] * u.deg,
+            "error_angle_arm": [0.02, 0.02, 0.03, 0.04] * u.deg,
+            "spacing_e": 18.39 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.425 * u.pixel,
+            "width": (1.512 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600758, 0.600758] * u.arcsec,
         },
-        211 * u.angstrom: {
-            'angle_arm': [49.78, 40.08, -40.34, -49.95] * u.deg,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 19.97 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.465 * u.pixel,
-            'width': (1.199 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600758, 0.600758]*u.arcsec,
+        211
+        * u.angstrom: {
+            "angle_arm": [49.78, 40.08, -40.34, -49.95] * u.deg,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 19.97 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.465 * u.pixel,
+            "width": (1.199 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600758, 0.600758] * u.arcsec,
         },
-        304 * u.angstrom: {
-            'angle_arm': [49.76, 40.18, -40.14, -49.90] * u.degree,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 28.87 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.670 * u.pixel,
-            'width': (1.247 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600165, 0.600165]*u.arcsec,
+        304
+        * u.angstrom: {
+            "angle_arm": [49.76, 40.18, -40.14, -49.90] * u.degree,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 28.87 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.670 * u.pixel,
+            "width": (1.247 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600165, 0.600165] * u.arcsec,
         },
-        335 * u.angstrom: {
-            'angle_arm': [50.40, 39.80, -39.64, -50.25] * u.degree,
-            'error_angle_arm': [0.02, 0.02, 0.02, 0.02] * u.deg,
-            'spacing_e': 31.83 * u.pixel,
-            'mesh_pitch': 363.0 * u.um,
-            'mesh_width': 34.0 * u.um,
-            'spacing_fp': 0.738 * u.pixel,
-            'width': (0.962 if use_preflightcore else 4.5) * u.pixel,
-            'CDELT': [0.600737, 0.600737]*u.arcsec,
+        335
+        * u.angstrom: {
+            "angle_arm": [50.40, 39.80, -39.64, -50.25] * u.degree,
+            "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
+            "spacing_e": 31.83 * u.pixel,
+            "mesh_pitch": 363.0 * u.um,
+            "mesh_width": 34.0 * u.um,
+            "spacing_fp": 0.738 * u.pixel,
+            "width": (0.962 if use_preflightcore else 4.5) * u.pixel,
+            "CDELT": [0.600737, 0.600737] * u.arcsec,
         },
     }
 
 
 @u.quantity_input
-@validate_channel('channel', valid_channels=[94, 131, 171, 193, 211, 304, 335]*u.angstrom)
+@validate_channel("channel", valid_channels=[94, 131, 171, 193, 211, 304, 335] * u.angstrom)
 def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
     r"""
     Calculate the composite PSF for a given channel, including diffraction and
@@ -251,22 +259,24 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     """
     meshinfo = filter_mesh_parameters(use_preflightcore=use_preflightcore)
     meshinfo = meshinfo[channel]
-    angles_entrance = meshinfo['angle_arm']
-    angles_focal_plane = u.Quantity([45.0, -45.0], 'deg')
+    angles_entrance = meshinfo["angle_arm"]
+    angles_focal_plane = u.Quantity([45.0, -45.0], "deg")
     if diffraction_orders is None:
         diffraction_orders = np.arange(-100, 101, 1)
     psf_entrance = _psf(meshinfo, angles_entrance, diffraction_orders, use_gpu=use_gpu)
-    psf_focal_plane = _psf(meshinfo, angles_focal_plane, diffraction_orders,
-                           focal_plane=True, use_gpu=use_gpu)
+    psf_focal_plane = _psf(
+        meshinfo,
+        angles_focal_plane,
+        diffraction_orders,
+        focal_plane=True,
+        use_gpu=use_gpu,
+    )
     # Composite PSF
-    psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane)
-                          * np.fft.fft2(psf_entrance)))
+    psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane) * np.fft.fft2(psf_entrance)))
     # Center PSF in the middle of the image
-    psf = np.roll(np.roll(psf, psf.shape[1]//2, axis=1),
-                  psf.shape[0]//2,
-                  axis=0)
+    psf = np.roll(np.roll(psf, psf.shape[1] // 2, axis=1), psf.shape[0] // 2, axis=0)
     # Normalize by total number of pixels
-    psf = psf/(psf.shape[0]*psf.shape[1])
+    psf = psf / (psf.shape[0] * psf.shape[1])
     # If using cupy, cast back to a normal numpy array
     if HAS_CUPY and use_gpu:
         psf = cupy.asnumpy(psf)
@@ -279,8 +289,8 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
     if HAS_CUPY and use_gpu:
         psf = cupy.array(psf)
     Nx, Ny = psf.shape
-    width_x = meshinfo['width'].value
-    width_y = meshinfo['width'].value
+    width_x = meshinfo["width"].value
+    width_y = meshinfo["width"].value
     # x and y position grids
     x = np.outer(np.ones(Ny), np.arange(Nx) + 0.5)
     y = np.outer(np.arange(Ny) + 0.5, np.ones(Nx))
@@ -288,23 +298,20 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
         x = cupy.array(x)
         y = cupy.array(y)
     area_not_mesh = 0.82  # fractional area not covered by the mesh
-    spacing = meshinfo['spacing_fp'] if focal_plane else meshinfo['spacing_e']
-    mesh_ratio = (meshinfo['mesh_pitch'] / meshinfo['mesh_width']).decompose().value
+    spacing = meshinfo["spacing_fp"] if focal_plane else meshinfo["spacing_e"]
+    mesh_ratio = (meshinfo["mesh_pitch"] / meshinfo["mesh_width"]).decompose().value
     spacing_x = spacing * np.cos(angles)
     spacing_y = spacing * np.sin(angles)
     for order in diffraction_orders:
         if order == 0:
             continue
-        intensity = np.sinc(order / mesh_ratio)**2  # I_0
+        intensity = np.sinc(order / mesh_ratio) ** 2  # I_0
         for dx, dy in zip(spacing_x.value, spacing_y.value):
-            x_centered = x - (0.5*Nx + dx*order + 0.5)
-            y_centered = y - (0.5*Ny + dy*order + 0.5)
+            x_centered = x - (0.5 * Nx + dx * order + 0.5)
+            y_centered = y - (0.5 * Ny + dy * order + 0.5)
             # NOTE: this step is the bottleneck and is VERY slow on a CPU
-            psf += np.exp(-width_x*x_centered*x_centered
-                          - width_y*y_centered*y_centered)*intensity
+            psf += np.exp(-width_x * x_centered * x_centered - width_y * y_centered * y_centered) * intensity
     # Contribution from core
-    psf_core = np.exp(-width_x*(x - 0.5*Nx - 0.5)**2
-                      - width_y*(y - 0.5*Ny - 0.5)**2)
-    psf_total = ((1 - area_not_mesh) * psf / psf.sum()
-                 + area_not_mesh * psf_core / psf_core.sum())
+    psf_core = np.exp(-width_x * (x - 0.5 * Nx - 0.5) ** 2 - width_y * (y - 0.5 * Ny - 0.5) ** 2)
+    psf_total = (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()
     return psf_total

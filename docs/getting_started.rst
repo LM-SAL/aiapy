@@ -21,4 +21,4 @@ You can also install the development version from GitLab,
    cd aiapy
    pip install -e .
 
-If you will be developing aiapy, please see the :ref:`dev-guide`.
+If you will be developing ``aiapy``, please see the :ref:`dev-guide`.

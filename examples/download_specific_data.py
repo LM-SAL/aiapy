@@ -38,13 +38,7 @@ jsoc_email = os.environ.get("JSOC_EMAIL")
 # the keywords we want from the JSOC.
 
 client = drms.Client(email=jsoc_email)
-keys = [
-    "EXPTIME",
-    "QUALITY",
-    "T_OBS",
-    "T_REC",
-    "WAVELNTH"
-]
+keys = ["EXPTIME", "QUALITY", "T_OBS", "T_REC", "WAVELNTH"]
 
 print("Querying series info")
 # We plan to only use the EUV 12s data for this example.
@@ -136,7 +130,7 @@ urls = [f"http://jsoc.stanford.edu{filename}" for filename in filenames.image]
 level_1_maps = sunpy.map.Map(files.download.to_list())
 # We get the pointing table outside of the loop for the relevant time range.
 # Otherwise you're making a call to the JSOC every single time.
-pointing_table = get_pointing_table(level_1_maps[0].date-3*u.h, level_1_maps[-1].date+3*u.h)
+pointing_table = get_pointing_table(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
 # The same applies for the correction table.
 correction_table = get_correction_table()
 

@@ -1,6 +1,6 @@
 from importlib import resources
 
-__all__ = ['get_test_filepath']
+__all__ = ["get_test_filepath"]
 
 
 def get_test_filepath(filename, **kwargs):

@@ -8,6 +8,7 @@ import numpy as np
 
 try:
     import cupy
+
     HAS_CUPY = True
 except ImportError:
     HAS_CUPY = False
@@ -15,7 +16,7 @@ except ImportError:
 from aiapy.util import AiapyUserWarning
 from .psf import psf as calculate_psf
 
-__all__ = ['deconvolve']
+__all__ = ["deconvolve"]
 
 
 def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
@@ -66,25 +67,24 @@ def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
         img = np.where(img < 0, 0, img)
     if np.any(img < 0):
         warnings.warn(
-            'Image contains negative intensity values. Consider setting clip_negative to True',
-            AiapyUserWarning)
+            "Image contains negative intensity values. Consider setting clip_negative to True",
+            AiapyUserWarning,
+        )
     if psf is None:
         psf = calculate_psf(smap.wavelength)
     if HAS_CUPY and use_gpu:
         img = cupy.array(img)
         psf = cupy.array(psf)
     # Center PSF at pixel (0,0)
-    psf = np.roll(np.roll(psf, psf.shape[0]//2, axis=0),
-                  psf.shape[1]//2,
-                  axis=1)
+    psf = np.roll(np.roll(psf, psf.shape[0] // 2, axis=0), psf.shape[1] // 2, axis=1)
     # Convolution requires FFT of the PSF
     psf = np.fft.rfft2(psf)
     psf_conj = psf.conj()
 
     img_decon = np.copy(img)
     for _ in range(iterations):
-        ratio = img/np.fft.irfft2(np.fft.rfft2(img_decon)*psf)
-        img_decon = img_decon*np.fft.irfft2(np.fft.rfft2(ratio)*psf_conj)
+        ratio = img / np.fft.irfft2(np.fft.rfft2(img_decon) * psf)
+        img_decon = img_decon * np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
 
     return smap._new_instance(
         cupy.asnumpy(img_decon) if (HAS_CUPY and use_gpu) else img_decon,

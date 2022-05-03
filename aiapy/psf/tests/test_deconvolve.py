@@ -14,7 +14,7 @@ def test_deconvolve(aia_171_map):
     try:
         import cupy  # NOQA
     except ImportError:
-        pytest.skip('Cannot import cupy. Skipping deconvolution test with full PSF')
+        pytest.skip("Cannot import cupy. Skipping deconvolution test with full PSF")
     map_decon = aiapy.psf.deconvolve(aia_171_map)
     assert isinstance(map_decon, sunpy.map.GenericMap)
     assert map_decon.data.shape == aia_171_map.data.shape

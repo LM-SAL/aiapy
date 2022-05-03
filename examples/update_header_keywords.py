@@ -36,7 +36,7 @@ m = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 
 ###########################################################
 # To update the pointing keywords, we can pass our `~sunpy.map.Map` to the
-# `~aiapy.calibrate.update_pointing` function. This function will query the
+# `aiapy.calibrate.update_pointing` function. This function will query the
 # JSOC, using `~sunpy`, for the most recent pointing information, update
 # the metadata, and then return a new `~sunpy.map.Map` with this updated
 # metadata.
@@ -60,12 +60,12 @@ print(m_updated_pointing.rotation_matrix)
 # location in the header are inaccurate. If we check the HGS longitude keyword
 # in the header, we find that it is 0 degrees which is not the HGS longitude
 # coordinate of SDO.
-print(m_updated_pointing.meta['hgln_obs'])
-print(m_updated_pointing.meta['hglt_obs'])
+print(m_updated_pointing.meta["hgln_obs"])
+print(m_updated_pointing.meta["hglt_obs"])
 
 ############################################################
 # To update the HGS observer coordinates, we can use the
-# `~aiapy.calibrate.fix_observer_location` function. This function reads the
+# `aiapy.calibrate.fix_observer_location` function. This function reads the
 # correct observer location from Heliocentric Aries Ecliptic (HAE) coordinates
 # in the header, converts them to HGS, and replaces the inaccurate HGS
 # keywords.
@@ -74,13 +74,13 @@ m_observer_fixed = fix_observer_location(m_updated_pointing)
 ############################################################
 # Looking again at the HGS longitude and latitude keywords, we can see that
 # they have been updated.
-print(m_observer_fixed.meta['hgln_obs'])
-print(m_observer_fixed.meta['hglt_obs'])
+print(m_observer_fixed.meta["hgln_obs"])
+print(m_observer_fixed.meta["hglt_obs"])
 
 ############################################################
 # Note that in `~sunpy.map.AIAMap`, the `~sunpy.map.Map.observer_coordinate`
 # attribute is already derived from the HAE coordinates such that it is not
-# strictly necessary to apply `~aiapy.calibrate.fix_observer_location`. For
+# strictly necessary to apply `aiapy.calibrate.fix_observer_location`. For
 # example, the unfixed `~sunpy.map.Map` will still have an accurate derived
 # observer position
 print(m_updated_pointing.observer_coordinate)

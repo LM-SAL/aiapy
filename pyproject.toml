@@ -6,6 +6,28 @@ requires = ["setuptools",
 
 build-backend = 'setuptools.build_meta'
 
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | docs
+    | .history
+  )/
+  | ah_bootstrap.py
+)
+'''
+
 [tool.towncrier]
     package = "aiapy"
     filename = "CHANGELOG.rst"
