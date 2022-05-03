@@ -126,10 +126,16 @@ extensions += [
 ]
 
 sphinx_gallery_conf = {
-    "examples_dirs": "../examples",
-    "gallery_dirs": "generated/gallery",
-    # execute all examples except those that start with "skip_"
+    "backreferences_dir": os.path.join("generated", "modules"),
     "filename_pattern": "^((?!skip_).)*$",
+    "examples_dirs": os.path.join("..", "examples"),
+    "gallery_dirs": os.path.join("generated", "gallery"),
+    "matplotlib_animations": True,
     "default_thumb_file": "_static/sdo.png",
+    "abort_on_example_error": False,
+    "plot_gallery": "True",
+    "remove_config_comments": True,
+    "doc_module": ("sunpy"),
+    "only_warn_on_example_error": True,
 }
 html_theme_options["logo_url"] = "https://aiapy.readthedocs.io/en/stable/"

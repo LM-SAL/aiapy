@@ -10,9 +10,9 @@ sphinx:
   fail_on_warning: false
 
 python:
-   install:
-     - method: pip
-       extra_requirements:
+  install:
+    - method: pip
+      extra_requirements:
         - all
         - docs
-       path: .
+      path: .
