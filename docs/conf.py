@@ -10,7 +10,7 @@ import warnings
 project = "aiapy"
 copyright = "2021, AIA Instrument Team"
 author = "AIA Instrument Team"
-os.environ["JSOC_EMAIL"] = "jsoc@cadair.com"
+os.environ["JSOC_EMAIL"] = "nabil.freij@gmail.com"
 os.environ["HIDE_PARFIVE_PROGESS"] = "True"
 
 # The full version, including alpha/beta/rc tags
