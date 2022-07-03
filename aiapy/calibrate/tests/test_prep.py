@@ -18,8 +18,7 @@ from aiapy.util import AiapyUserWarning
 
 @pytest.fixture
 def lvl_15_map(aia_171_map):
-    # Use scipy set to True as skimage can cause CI test failures
-    return register(aia_171_map, use_scipy=True)
+    return register(aia_171_map)
 
 
 def test_register(aia_171_map, lvl_15_map):
