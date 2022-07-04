@@ -94,7 +94,7 @@ intersphinx_mapping = {
     "astropy": ("http://docs.astropy.org/en/stable/", None),
     "sunpy": ("https://docs.sunpy.org/en/stable/", None),
     "skimage": ("https://scikit-image.org/docs/stable/", None),
-    "cupy": ("https://docs-cupy.chainer.org/en/stable/", None),
+    "cupy": ("https://docs.cupy.dev/en/stable/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------
