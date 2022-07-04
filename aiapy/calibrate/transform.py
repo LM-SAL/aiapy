@@ -1,6 +1,5 @@
 from sunpy.image.transform import add_rotation_function
 
-
 @add_rotation_function(
     "cupy", allowed_orders=range(6), handles_clipping=False, handles_image_nans=False, handles_nan_missing=True
 )
