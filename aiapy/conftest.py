@@ -47,7 +47,7 @@ def idl_available():
     try:
         import hissw
 
-        _ = hissw.Environment().run("")
+        hissw.Environment().run("")
         return True
     except Exception:
         return False

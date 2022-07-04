@@ -75,14 +75,14 @@ def test_exceptions(despiked_map, key, value):
     new_meta = copy.deepcopy(despiked_map.meta)
     new_meta[key] = value
     with pytest.raises(ValueError):
-        _ = respike(sunpy.map.Map(despiked_map.data, new_meta))
+        respike(sunpy.map.Map(despiked_map.data, new_meta))
 
 
 @pytest.mark.remote_data
 def test_resample_warning(despiked_map):
     despiked_map_resample = despiked_map.resample((512, 512) * u.pixel)
     with pytest.warns(AiapyUserWarning):
-        _ = respike(despiked_map_resample)
+        respike(despiked_map_resample)
 
 
 @pytest.mark.remote_data

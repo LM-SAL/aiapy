@@ -32,7 +32,7 @@ def test_deconvolve_negative_pixels(aia_171_map, psf):
         aia_171_map.meta,
     )
     with pytest.warns(AiapyUserWarning):
-        _ = aiapy.psf.deconvolve(
+        aiapy.psf.deconvolve(
             aia_171_map_neg,
             psf=psf,
             iterations=1,

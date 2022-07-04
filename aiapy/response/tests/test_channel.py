@@ -168,13 +168,13 @@ def test_wavelength_response_no_idl(channel):
     r = channel.wavelength_response()
     assert r.shape == channel.wavelength.shape
     correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
-    _ = channel.wavelength_response(include_crosstalk=False)
-    _ = channel.wavelength_response(
+    channel.wavelength_response(include_crosstalk=False)
+    channel.wavelength_response(
         obstime=astropy.time.Time.now(),
         correction_table=correction_table,
         calibration_version=8,
     )
-    _ = channel.wavelength_response(
+    channel.wavelength_response(
         obstime=astropy.time.Time.now(),
         include_eve_correction=True,
         correction_table=correction_table,
