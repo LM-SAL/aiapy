@@ -1,5 +1,7 @@
 from sunpy.image.transform import add_rotation_function
 
+__all__ = []
+
 
 @add_rotation_function(
     "cupy", allowed_orders=range(6), handles_clipping=False, handles_image_nans=False, handles_nan_missing=True
@@ -14,8 +16,8 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
       be ``'constant'``
     """
     try:
-        import cupy  # NOQA
-        import cupyx.scipy.ndimage  # NOQA
+        import cupy
+        import cupyx.scipy.ndimage
     except ImportError:
         raise ImportError("The cupy package is required to use this rotation method.")
     rotated_image = cupyx.scipy.ndimage.affine_transform(
