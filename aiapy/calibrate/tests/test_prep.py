@@ -219,4 +219,4 @@ def test_normalize_exposure_non_sdo_map(non_sdo_map):
 
 def test_register_cupy(aia_171_map):
     pytest.importorskip("cupy")
-    register(aia_171_map,method="cupy")
+    register(aia_171_map, method="cupy")
