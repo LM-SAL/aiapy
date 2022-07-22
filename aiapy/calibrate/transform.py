@@ -19,7 +19,9 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
         import cupy
         import cupyx.scipy.ndimage
     except ImportError:
-        raise ImportError("The cupy package is required to use this rotation method.")
+        raise ImportError(
+            "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method."
+        )
     rotated_image = cupyx.scipy.ndimage.affine_transform(
         cupy.array(image.T), cupy.array(matrix), offset=cupy.array(shift), order=order, mode="constant", cval=missing
     ).T
