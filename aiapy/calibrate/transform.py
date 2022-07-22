@@ -23,6 +23,6 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
             "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method."
         )
     rotated_image = cupyx.scipy.ndimage.affine_transform(
-        cupy.array(image.T), cupy.array(matrix), offset=cupy.array(shift), order=order, mode="constant", cval=missing
+        cupy.array(image).T, cupy.array(matrix), offset=cupy.array(shift), order=order, mode="constant", cval=missing
     ).T
-    return cupy.asnumpy(rotated_image.T)
+    return cupy.asnumpy(rotated_image)
