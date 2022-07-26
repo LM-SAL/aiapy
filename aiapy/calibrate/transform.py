@@ -1,6 +1,6 @@
 from sunpy.image.transform import add_rotation_function
 
-__all__ = []
+__all__ = ["_rotation_cupy"]
 
 
 @add_rotation_function(
