@@ -193,7 +193,7 @@ def test_degradation_time_array():
 def test_normalize_exposure(aia_171_map):
     aia_171_map_norm = normalize_exposure(aia_171_map)
     data_norm = aia_171_map.data / aia_171_map.exposure_time.to(u.s).value
-    assert np.all(aia_171_map_norm.data == data_norm)
+    assert np.allclose(aia_171_map_norm.data, data_norm)
     assert aia_171_map_norm.exposure_time == 1.0 * u.s
     assert aia_171_map_norm.meta["BUNIT"] == "ct / s"
 
@@ -202,7 +202,7 @@ def test_normalize_exposure_twice(aia_171_map):
     # Test that additional normalizations have no effect
     aia_171_map_norm = normalize_exposure(aia_171_map)
     aia_171_map_norm_norm = normalize_exposure(aia_171_map_norm)
-    assert np.all(aia_171_map_norm.data == aia_171_map_norm_norm.data)
+    assert np.allclose(aia_171_map_norm.data, aia_171_map_norm_norm.data)
 
 
 def test_normalize_exposure_zero(aia_171_map):
