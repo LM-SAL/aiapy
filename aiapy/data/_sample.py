@@ -6,8 +6,8 @@ from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
-    "https://github.com/sunpy/data/raw/main/sunpy/v1/",
-    "http://data.sunpy.org/sunpy/v1/",
+    "https://github.com/sunpy/data/blob/main/aiapy/",
+    "http://data.sunpy.org/aiapy/",
 )
 _SAMPLE_DATA = {
     "AIA_094_IMAGE": "aia_lev1_94a_2019_01_01t00_00_11_12z_image_lev1.fits",
