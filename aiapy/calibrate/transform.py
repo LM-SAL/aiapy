@@ -1,6 +1,6 @@
-from sunpy.image.transform import add_rotation_function
+from sunpy.image.transform import _rotation_registry, add_rotation_function
 
-__all__ = ["_rotation_cupy"]
+__all__ = ["_rotation_cupy", "_rotation_function_names"]
 
 
 @add_rotation_function(
@@ -26,3 +26,7 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
         cupy.array(image).T, cupy.array(matrix), offset=cupy.array(shift), order=order, mode="constant", cval=missing
     ).T
     return cupy.asnumpy(rotated_image)
+
+
+# Generate the string with allowable rotation-function names for use in docstrings
+_rotation_function_names = ", ".join([f"``'{name}'``" for name in _rotation_registry])

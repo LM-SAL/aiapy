@@ -7,11 +7,11 @@ import warnings
 import numpy as np
 
 import astropy.units as u
-from sunpy.image.transform import _rotation_function_names
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
+from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
@@ -43,12 +43,12 @@ def register(smap, missing=None, order=3, method="scipy"):
         A `~sunpy.map.Map` containing a full-disk AIA image or HMI magnetogram
     missing : `float`, optional
         If there are missing values after the interpolation, they will be
-        filled in with `missing`. If None, the default value will be the
-        minimum value of `smap`
+        filled in with ``missing``. If `None`, the default value will be the
+        minimum value of ``smap``
     order : `int`, optional
-        Order of the spline interpolation
+        Order of the spline interpolation.
     method : {{{rotation_function_names}}}, optional
-        Rotation function to use.  Defaults to ``'scipy'``.
+        Rotation function to use. Defaults to ``'scipy'``.
 
     Returns
     -------
