@@ -9,7 +9,7 @@ import aiapy.util
 def test_sdo_location(aia_171_map):
     # Confirm that the queried location matches AIAMap's interpretation of the FITS file
     result = aiapy.util.sdo_location(aia_171_map.date)
-    _ = aia_171_map.observer_coordinate.transform_to(result)
+    aia_171_map.observer_coordinate.transform_to(result)
     assert_quantity_allclose(result.cartesian.xyz, result.cartesian.xyz)
 
 

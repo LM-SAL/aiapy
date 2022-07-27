@@ -52,7 +52,7 @@ def test_fix_pointing(aia_171_map, pointing_table):
     keys = ["CRPIX1", "CRPIX2", "CDELT1", "CDELT2", "CROTA2"]
     # Remove keys to at least test that they get set
     for k in keys:
-        _ = aia_171_map.meta.pop(k)
+        aia_171_map.meta.pop(k)
     aia_map_updated = update_pointing(aia_171_map)
     # FIXME: how do we check these values are accurate?
     assert all([k in aia_map_updated.meta for k in keys])
@@ -91,9 +91,9 @@ def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, ex
 @pytest.mark.remote_data
 def test_update_pointing_missing_tobs_raises_warning(aia_171_map, pointing_table):
     # Tests that a warning is raised if T_OBS is not present.
-    _ = aia_171_map.meta.pop("T_OBS")
+    aia_171_map.meta.pop("T_OBS")
     with pytest.warns(AiapyUserWarning, match="T_OBS key is missing from metadata."):
-        _ = update_pointing(aia_171_map, pointing_table=pointing_table)
+        update_pointing(aia_171_map, pointing_table=pointing_table)
 
 
 @pytest.mark.remote_data
@@ -103,14 +103,14 @@ def test_update_pointing_submap_raises_exception(aia_171_map, pointing_table):
         top_right=aia_171_map.top_right_coord,
     )
     with pytest.raises(ValueError, match="Input must be a full disk image."):
-        _ = update_pointing(m, pointing_table=pointing_table)
+        update_pointing(m, pointing_table=pointing_table)
 
 
 @pytest.mark.remote_data
 def test_update_pointing_resampled_raises_exception(aia_171_map, pointing_table):
     m = aia_171_map.resample((512, 512) * u.pixel)
     with pytest.raises(ValueError, match="Input must be at the full resolution"):
-        _ = update_pointing(m, pointing_table=pointing_table)
+        update_pointing(m, pointing_table=pointing_table)
 
 
 @pytest.mark.remote_data
@@ -120,7 +120,7 @@ def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table):
     # We explicitly set the T_OBS key
     aia_171_map.meta["T_OBS"] = (aia_171_map.date + 1 * u.day).isot
     with pytest.raises(IndexError, match="No valid entries for"):
-        _ = update_pointing(aia_171_map, pointing_table=pointing_table)
+        update_pointing(aia_171_map, pointing_table=pointing_table)
 
 
 def test_fix_pointing_missing_value(aia_171_map, mock_pointing_table):

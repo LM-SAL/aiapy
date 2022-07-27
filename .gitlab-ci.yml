@@ -14,17 +14,10 @@ codestyle:
   script:
     - tox -e codestyle
 
-py39:
+py310:
   stage: Basic
-  image: python:3.9
   script:
-    - tox -e py39
-
-py37:
-  stage: Test
-  image: python:3.7
-  script:
-    - tox -e py37
+    - tox -e py310
 
 py310-online:
   stage: Test
@@ -33,12 +26,18 @@ py310-online:
     - pip install --upgrade codecov
     - codecov
 
-py38-devdeps:
-  allow_failure: true
-  stage: Extra
+py38:
+  stage: Test
   image: python:3.8
   script:
-    - tox -e py38-devdeps
+    - tox -e py38
+
+py39-devdeps:
+  allow_failure: true
+  stage: Extra
+  image: python:3.9
+  script:
+    - tox -e py39-devdeps
 
 build_docs:
   stage: Extra

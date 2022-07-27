@@ -18,8 +18,12 @@ from aiapy.util import AiapyUserWarning
 
 @pytest.fixture
 def lvl_15_map(aia_171_map):
-    # Use scipy set to True as skimage can cause CI test failures
-    return register(aia_171_map, use_scipy=True)
+    return register(aia_171_map)
+
+
+@pytest.fixture
+def non_sdo_map():
+    return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
 
 
 def test_register(aia_171_map, lvl_15_map):
@@ -66,18 +70,17 @@ def test_register_filesave(lvl_15_map):
     assert load_map.meta["lvl_num"] == 1.5
 
 
-def test_register_unsupported_maps(aia_171_map):
+def test_register_unsupported_maps(aia_171_map, non_sdo_map):
     """
     Make sure we raise an error when an unsupported map is passed in.
     """
     # A submap
     original_cutout = aia_171_map.submap(aia_171_map.center, top_right=aia_171_map.top_right_coord)
     with pytest.raises(ValueError):
-        _ = register(original_cutout)
+        register(original_cutout)
     # A Map besides AIA or HMI
-    non_sdo_map = Map(sunpy.data.test.get_test_filepath("swap_lv1_20140606_000113.fits"))
     with pytest.raises(ValueError):
-        _ = register(non_sdo_map)
+        register(non_sdo_map)
 
 
 def test_register_level_15(lvl_15_map):
@@ -85,7 +88,7 @@ def test_register_level_15(lvl_15_map):
         AiapyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
-        _ = register(lvl_15_map)
+        register(lvl_15_map)
     new_meta = copy.deepcopy(lvl_15_map.meta)
     # Test case where processing_level is missing and returns None
     del new_meta["lvl_num"]
@@ -93,7 +96,7 @@ def test_register_level_15(lvl_15_map):
         AiapyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
-        _ = register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
+        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
 
 
 @pytest.mark.parametrize(
@@ -190,7 +193,7 @@ def test_degradation_time_array():
 def test_normalize_exposure(aia_171_map):
     aia_171_map_norm = normalize_exposure(aia_171_map)
     data_norm = aia_171_map.data / aia_171_map.exposure_time.to(u.s).value
-    assert np.all(aia_171_map_norm.data == data_norm)
+    assert np.allclose(aia_171_map_norm.data, data_norm)
     assert aia_171_map_norm.exposure_time == 1.0 * u.s
     assert aia_171_map_norm.meta["BUNIT"] == "ct / s"
 
@@ -199,17 +202,23 @@ def test_normalize_exposure_twice(aia_171_map):
     # Test that additional normalizations have no effect
     aia_171_map_norm = normalize_exposure(aia_171_map)
     aia_171_map_norm_norm = normalize_exposure(aia_171_map_norm)
-    assert np.all(aia_171_map_norm.data == aia_171_map_norm_norm.data)
+    assert np.allclose(aia_171_map_norm.data, aia_171_map_norm_norm.data)
 
 
 def test_normalize_exposure_zero(aia_171_map):
     aia_171_map_exptime_zero = copy.deepcopy(aia_171_map)
     aia_171_map_exptime_zero.meta["exptime"] = 0.0
     with pytest.warns(AiapyUserWarning):
-        _ = normalize_exposure(aia_171_map_exptime_zero)
+        normalize_exposure(aia_171_map_exptime_zero)
 
 
-def test_normalize_exposure_non_aia_map(aia_171_map):
-    non_aia_map = Map(sunpy.data.test.get_test_filepath("swap_lv1_20140606_000113.fits"))
+def test_normalize_exposure_non_sdo_map(non_sdo_map):
     with pytest.raises(ValueError):
-        _ = normalize_exposure(non_aia_map)
+        normalize_exposure(non_sdo_map)
+
+
+def test_register_cupy(aia_171_map):
+    pytest.importorskip("cupy")
+    cupy_map = register(aia_171_map, method="cupy")
+    scipy_map = register(aia_171_map, method="scipy")
+    assert np.allclose(cupy_map.data, scipy_map.data)

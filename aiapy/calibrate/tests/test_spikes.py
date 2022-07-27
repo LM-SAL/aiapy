@@ -15,9 +15,9 @@ from aiapy.util import AiapyUserWarning
 @pytest.mark.remote_data
 @pytest.fixture
 def despiked_map():
-    # NOTE: Need an actual 4K-by-4K map to do the spike replacement
+    # Need an actual 4K-by-4K map to do the spike replacement
     return sunpy.map.Map(
-        "https://github.com/sunpy/sample-data/blob/master/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits?raw=true"
+        "https://github.com/sunpy/data/blob/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits?raw=true"
     )
 
 
@@ -49,7 +49,7 @@ def test_respike_meta(respiked_map):
 @pytest.mark.remote_data
 def test_fetch_with_prefetched_spikes(despiked_map, respiked_map, spikes):
     respiked_map_prefetched = respike(despiked_map, spikes=spikes)
-    assert np.all(respiked_map.data == respiked_map_prefetched.data)
+    assert np.allclose(respiked_map.data, respiked_map_prefetched.data)
 
 
 @pytest.mark.remote_data
@@ -66,7 +66,7 @@ def test_cutout(respiked_map, despiked_map):
             top_right=SkyCoord(*trc, frame=despiked_map.coordinate_frame),
         )
     )
-    assert np.all(respiked_map_cutout.data == cutout_map_respiked.data)
+    assert np.allclose(respiked_map_cutout.data, cutout_map_respiked.data)
 
 
 @pytest.mark.remote_data
@@ -75,14 +75,14 @@ def test_exceptions(despiked_map, key, value):
     new_meta = copy.deepcopy(despiked_map.meta)
     new_meta[key] = value
     with pytest.raises(ValueError):
-        _ = respike(sunpy.map.Map(despiked_map.data, new_meta))
+        respike(sunpy.map.Map(despiked_map.data, new_meta))
 
 
 @pytest.mark.remote_data
 def test_resample_warning(despiked_map):
     despiked_map_resample = despiked_map.resample((512, 512) * u.pixel)
     with pytest.warns(AiapyUserWarning):
-        _ = respike(despiked_map_resample)
+        respike(despiked_map_resample)
 
 
 @pytest.mark.remote_data
