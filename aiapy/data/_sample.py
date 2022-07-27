@@ -6,7 +6,7 @@ from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
 
 _BASE_URLS = (
-    "https://github.com/sunpy/data/blob/main/aiapy/",
+    "https://github.com/sunpy/data/raw/main/aiapy/",
     "http://data.sunpy.org/aiapy/",
 )
 _SAMPLE_DATA = {
@@ -73,7 +73,7 @@ def download_sample_data(overwrite=False):
     overwrite : `bool`
         Overwrite existing sample data.
     """
-    sampledata_dir = Path(get_and_create_sample_dir()) / Path("aiapy")
+    sampledata_dir = Path(get_and_create_sample_dir()).parent / Path("aiapy")
     already_downloaded = []
     to_download = []
     for url_file_name in _SAMPLE_FILES.keys():
