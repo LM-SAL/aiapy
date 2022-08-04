@@ -1,1 +1,0 @@
-Added a "cupy" method to :func:`aiapy.calibrate.register` that will use cupy to do the affine_transform.

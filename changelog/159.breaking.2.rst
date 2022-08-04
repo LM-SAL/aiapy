@@ -1,2 +1,0 @@
-:func:`aiapy.calibrate.register` ``use_scipy`` keyword has been removed and replaced with a ``method`` keyword that defaults to use ``scipy`` by default.
-It is also possible to use ``scikit-image`` or ``opencv`` or ``cupy`` (provided you have either one installed.)
