@@ -1,3 +1,21 @@
+0.7 0.6.1.dev43+ga4f0ca2 (2022-08-04)
+=====================================
+
+Breaking Changes
+----------------
+
+- Minimum version of ``Python`` supported is now ``Python`` 3.8.0. (`#159 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/159>`__)
+- Minimum version of ``sunpy`` supported is now ``sunpy`` 4.0.0 LTS. (`#159 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/159>`__)
+- :func:`aiapy.calibrate.register` ``use_scipy`` keyword has been removed and replaced with a ``method`` keyword that defaults to use ``scipy`` by default.
+  It is also possible to use ``scikit-image`` or ``opencv`` or ``cupy`` (provided you have either one installed.) (`#159 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/159>`__)
+
+
+New Features
+------------
+
+- Added a "cupy" method to :func:`aiapy.calibrate.register` that will use cupy to do the affine_transform. (`#159 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/159>`__)
+
+
 0.6.4 (2022-01-14)
 ==================
 
