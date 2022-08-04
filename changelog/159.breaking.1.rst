@@ -1,0 +1,1 @@
+Minimum version of ``sunpy`` supported is now ``sunpy`` 4.0.0 LTS.

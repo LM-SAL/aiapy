@@ -117,7 +117,7 @@ def test_pointing_table_unavailable():
     # Check that missing pointing data raises a nice error
     t = astropy.time.Time("1990-01-01")
     with pytest.raises(RuntimeError, match="Could not find any pointing information"):
-        _ = get_pointing_table(t - 3 * u.h, t + 3 * u.h)
+        get_pointing_table(t - 3 * u.h, t + 3 * u.h)
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,9 @@ import numpy as np
 import astropy.units as u
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
+from sunpy.util.decorators import add_common_docstring
 
+from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
@@ -17,7 +19,8 @@ from aiapy.util.decorators import validate_channel
 __all__ = ["register", "correct_degradation", "degradation", "normalize_exposure"]
 
 
-def register(smap, missing=None, order=3, use_scipy=False):
+@add_common_docstring(rotation_function_names=_rotation_function_names)
+def register(smap, missing=None, order=3, method="scipy"):
     """
     Processes a full-disk level 1 `~sunpy.map.sources.sdo.AIAMap` into a level
     1.5 `~sunpy.map.sources.sdo.AIAMap`.
@@ -27,10 +30,12 @@ def register(smap, missing=None, order=3, use_scipy=False):
     Sun is at the center of the image. The actual transformation is done by
     the `~sunpy.map.mapbase.GenericMap.rotate` method.
 
-    .. note:: This routine modifies the header information to the standard
-              ``PCi_j`` WCS formalism. The FITS header resulting in saving a file
-              after this procedure will therefore differ from the original
-              file.
+    .. note::
+
+        This routine modifies the header information to the standard
+        ``PCi_j`` WCS formalism. The FITS header resulting in saving a file
+        after this procedure will therefore differ from the original
+        file.
 
     Parameters
     ----------
@@ -38,13 +43,12 @@ def register(smap, missing=None, order=3, use_scipy=False):
         A `~sunpy.map.Map` containing a full-disk AIA image or HMI magnetogram
     missing : `float`, optional
         If there are missing values after the interpolation, they will be
-        filled in with `missing`. If None, the default value will be the
-        minimum value of `smap`
+        filled in with ``missing``. If `None`, the default value will be the
+        minimum value of ``smap``
     order : `int`, optional
-        Order of the spline interpolation
-    use_scipy : `bool`, optional
-        If True, use `~scipy.ndimage.interpolation.affine_transform` to do the
-        image warping. Otherwise, use `~skimage.transform.warp` (recommended).
+        Order of the spline interpolation.
+    method : {{{rotation_function_names}}}, optional
+        Rotation function to use. Defaults to ``'scipy'``.
 
     Returns
     -------
@@ -83,7 +87,7 @@ def register(smap, missing=None, order=3, use_scipy=False):
         scale=scale_factor.value,
         order=order,
         missing=missing,
-        use_scipy=use_scipy,
+        method=method,
     )
     # extract center from padded smap.rotate output
     # crpix1 and crpix2 will be equal (recenter=True), as prep does not
