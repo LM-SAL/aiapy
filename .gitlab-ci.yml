@@ -49,12 +49,10 @@ build_docs:
   script:
     - tox -e build_docs
 
-# Upload to PyPI when we push to a tag
 pypi:
   stage: Deploy
-  # only run on parent tags with semantic versioning names, excluding dev tags
   only:
-    - /v\d+\.\d+\.\d+(?!(dev))/@LMSAL_HUB/aia_hub/aiapy
+    - /v\d+\.\d+\.\d+(?!(dev))
   except:
     - branches
     - merge_requests
