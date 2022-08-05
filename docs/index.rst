@@ -5,25 +5,32 @@ aiapy documentation
 
 ``aiapy`` includes software for converting AIA images from level 1 to level 1.5, point spread function deconvolution, and computing the wavelength and temperature response functions for the EUV channels.
 
-.. panels::
+.. grid:: 1 2 2 2
+    :gutter: 3
 
-    Getting started
-    ^^^^^^^^^^^^^^^
-    .. toctree::
-      :maxdepth: 1
+    .. grid-item-card::
+        :class-card: card
 
-      getting_started
-      preparing_data
-      generated/gallery/index
-      code_ref/index
+        Getting started
+        ^^^^^^^^^^^^^^^
 
-    ---
+        .. toctree::
+            :maxdepth: 1
 
-    Other info
-    ^^^^^^^^^^
-    .. toctree::
-      :maxdepth: 1
+            getting_started
+            preparing_data
+            generated/gallery/index
+            code_ref/index
 
-      citation
-      changelog
-      develop
+    .. grid-item-card::
+        :class-card: card
+
+        Other info
+        ^^^^^^^^^^
+
+        .. toctree::
+            :maxdepth: 1
+
+            citation
+            changelog
+            develop
