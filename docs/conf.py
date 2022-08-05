@@ -11,27 +11,31 @@ from sunpy.util.exceptions import (
     SunpyDeprecationWarning,
     SunpyPendingDeprecationWarning,
 )
+from packaging.version import Version
 
-log.setLevel("DEBUG")
-release = __version__
-is_development = ".dev" in __version__
-project = "aiapy"
-copyright = f"{datetime.now().year}, AIA Instrument Team"
-author = "AIA Instrument Team"
 os.environ["JSOC_EMAIL"] = "nabil.freij@gmail.com"
 os.environ["HIDE_PARFIVE_PROGESS"] = "True"
-if not is_development:
+log.setLevel("DEBUG")
+
+release = __version__
+aiapy_version = Version(__version__)
+is_release = not (aiapy_version.is_prerelease or aiapy_version.is_devrelease)
+if is_release:
     warnings.simplefilter("ignore")
 warnings.filterwarnings("error", category=SunpyDeprecationWarning)
 warnings.filterwarnings("error", category=SunpyPendingDeprecationWarning)
 warnings.filterwarnings("error", category=AstropyDeprecationWarning)
 
 # -- General configuration ---------------------------------------------------
+project = "aiapy"
+copyright = f"{datetime.now().year}, AIA Instrument Team"
+author = "AIA Instrument Team"
 extensions = [
+    "matplotlib.sphinxext.plot_directive",
     "sphinx_automodapi.automodapi",
     "sphinx_automodapi.smart_resolver",
     "sphinx_changelog",
-    "sphinx_panels",
+    "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
@@ -41,13 +45,19 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
-    "sphinx_gallery.gen_gallery",
+    "sphinxext.opengraph",
+    "sphinx_design",
 ]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 source_suffix = ".rst"
 master_doc = "index"
 default_role = "obj"
-
+ogp_image = "https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/raw/main/docs/_static/sdo.png"
+ogp_use_first_image = True
+ogp_description_length = 160
+ogp_custom_meta_tags = [
+    '<meta property="og:ignore_canonical" content="true" />',
+]
 # -- Options for intersphinx extension ---------------------------------------
 intersphinx_mapping = {
     "python": (
