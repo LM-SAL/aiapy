@@ -4,44 +4,42 @@ before_script:
   - pip install tox
 
 stages:
-  - Basic
-  - Test
-  - Extra
-  - Deploy
+  - Base
+  - Extras
+  - Release
 
 codestyle:
-  stage: Basic
+  stage: Base
   script:
     - tox -e codestyle
 
 py310:
-  stage: Basic
+  stage: Base
   script:
     - tox -e py310
 
 py310-online:
-  stage: Test
+  stage: Extras
   script:
     - tox -e py310-online
     - pip install --upgrade codecov
     - codecov
 
 py38:
-  stage: Test
+  stage: Extras
   image: python:3.8
   script:
     - tox -e py38
 
 py39-devdeps:
   allow_failure: true
-  stage: Extra
+  stage: Extras
   image: python:3.9
   script:
     - tox -e py39-devdeps
 
 build_docs:
-  stage: Extra
-  image: python:3.9
+  stage: Extras
   before_script:
     # Need graphviz binary for generating inheritance diagrams
     - apt-get update -qq && apt-get install -y -qq graphviz
@@ -49,15 +47,10 @@ build_docs:
   script:
     - tox -e build_docs
 
-# Upload to PyPI when we push to a tag
-pypi:
-  stage: Deploy
-  # only run on parent tags with semantic versioning names, excluding dev tags
-  only:
-    - /v\d+\.\d+\.\d+(?!(dev))/@LMSAL_HUB/aia_hub/aiapy
-  except:
-    - branches
-    - merge_requests
+pypi_upload:
+  stage: Release
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/' # A specific tag with 'vX.Y.Z' pattern is created
   before_script:
     - pip install --upgrade twine pep517
   script:
