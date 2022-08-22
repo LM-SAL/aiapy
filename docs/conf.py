@@ -15,7 +15,6 @@ from packaging.version import Version
 
 os.environ["JSOC_EMAIL"] = "nabil.freij@gmail.com"
 os.environ["HIDE_PARFIVE_PROGESS"] = "True"
-log.setLevel("DEBUG")
 
 release = __version__
 aiapy_version = Version(__version__)
