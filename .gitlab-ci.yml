@@ -38,6 +38,12 @@ py39-devdeps:
   script:
     - tox -e py39-devdeps
 
+py39-rc1:
+  stage: Base
+  image: python:3.9
+  script:
+    - tox -e py39-rc1-online
+
 build_docs:
   stage: Extras
   before_script:
