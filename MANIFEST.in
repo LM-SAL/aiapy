@@ -1,15 +1,2 @@
-include README.rst
-include CHANGES.rst
-include setup.cfg
-include LICENSE.rst
-include pyproject.toml
-
-recursive-include aiapy *.pyx *.c *.pxd
-
-prune .codecov.yml
-prune .gitlab-ci.yml
-prune build
-prune docs/*
 prune joss
-
-global-exclude *.pyc *.o
+prune aiapy/_dev
