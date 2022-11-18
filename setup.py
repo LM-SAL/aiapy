@@ -1,9 +1,14 @@
 #!/usr/bin/env python
+from setuptools import setup  # isort:skip
 import os
 from itertools import chain
 
-from setuptools import setup
-from setuptools.config import read_configuration
+try:
+    # Recommended for setuptools 61.0.0+
+    # (though may disappear in the future)
+    from setuptools.config.setupcfg import read_configuration
+except ImportError:
+    from setuptools.config import read_configuration
 
 ################################################################################
 # Programmatically generate some extras combos.
@@ -19,12 +24,7 @@ ex_extras = dict(filter(lambda i: i[0] not in exclude_keys, extras.items()))
 # Concatenate all the values together for 'all'
 extras["all"] = list(chain.from_iterable(ex_extras.values()))
 
-################################################################################
-# Version configuration and setup call
-################################################################################
 setup(
     extras_require=extras,
-    use_scm_version={
-        "write_to": os.path.join("aiapy", "_version.py"),
-    },
+    use_scm_version={"write_to": os.path.join("aiapy", "_version.py")},
 )
