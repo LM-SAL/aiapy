@@ -42,11 +42,11 @@ py311-devdeps:
   script:
     - tox -e py311-devdeps
 
-py310-rc-online:
-  stage: Extras
-  image: python:3.10
-  script:
-    - tox -e py310-rc-online
+#py310-rc-online:
+#  stage: Extras
+#  image: python:3.10
+#  script:
+#    - tox -e py310-rc-online
 
 build_docs:
   stage: Extras
