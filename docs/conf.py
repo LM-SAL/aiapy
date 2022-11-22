@@ -81,6 +81,12 @@ intersphinx_mapping = {
     "skimage": ("https://scikit-image.org/docs/stable/", None),
     "cupy": ("https://docs.cupy.dev/en/stable/", None),
 }
+rst_prolog = r"""
+.. only:: html
+
+  :math:`\renewcommand\AA{\text{Å}}`
+
+"""
 
 # -- Options for HTML output -------------------------------------------------
 

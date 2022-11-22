@@ -56,6 +56,7 @@ build_docs:
     - pip install "tox<4.0" tox-pypi-filter
   script:
     - tox -e build_docs
+    - tox -e build_docs-gallery
 
 pypi_upload:
   stage: Release
