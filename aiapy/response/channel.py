@@ -1,6 +1,7 @@
 """
 Class for accessing response function data from each channel.
 """
+from urllib.parse import urljoin
 import collections
 
 import numpy as np
@@ -11,6 +12,7 @@ from sunpy.data import manager
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
+from aiapy import _SSW_MIRROR
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import telescope_number
@@ -19,7 +21,7 @@ from aiapy.util.decorators import validate_channel
 __all__ = ["Channel"]
 
 # TODO: Work out what changes with version.
-AIA_INSTRUMENT_FILE = "https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/response/aia_V{}_{}_fullinst.genx"
+AIA_INSTRUMENT_FILE = urljoin(_SSW_MIRROR, "/sdo/aia/response/aia_V{}_{}_fullinst.genx")
 VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
 # The URLs are left as a list so that possible mirrors for these files
