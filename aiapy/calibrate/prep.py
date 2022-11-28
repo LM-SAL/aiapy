@@ -11,6 +11,7 @@ from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
+from aiapy import _SSW_MIRROR
 from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
@@ -154,7 +155,7 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     or read from the table input by the user.
 
     .. note:: This function is adapted directly from the
-              `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+              `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`_
               routine in SolarSoft.
 
     Parameters
