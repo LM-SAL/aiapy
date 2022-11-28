@@ -1,9 +1,9 @@
 """
 Utilities for computing intensity corrections.
 """
-from urllib.parse import urljoin
 import pathlib
 import warnings
+from urllib.parse import urljoin
 
 import numpy as np
 

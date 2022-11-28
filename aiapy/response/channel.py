@@ -1,8 +1,8 @@
 """
 Class for accessing response function data from each channel.
 """
-from urllib.parse import urljoin
 import collections
+from urllib.parse import urljoin
 
 import numpy as np
 
