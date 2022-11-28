@@ -181,9 +181,7 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     aiapy.calibrate.get_correction_table
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
-    """.format(
-        ssw_mirror=_SSW_MIRROR
-    )
+    """
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
