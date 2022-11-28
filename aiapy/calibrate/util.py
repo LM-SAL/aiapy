@@ -24,7 +24,7 @@ __all__ = ["get_correction_table", "get_pointing_table", "get_error_table"]
 # This needs to be incremented as the calibration is updated in JSOC.
 CALIBRATION_VERSION = 10
 # Error table filename available from SSW
-AIA_ERROR_FILE = urljoin(_SSW_MIRROR, "/sdo/aia/response/aia_V{}_error_table.txt")
+AIA_ERROR_FILE = urljoin(_SSW_MIRROR, "sdo/aia/response/aia_V{}_error_table.txt")
 # Most recent version number for error tables; increment as new versions become available
 ERROR_VERSION = 3
 # URLs and SHA-256 hashes for each version of the error tables
