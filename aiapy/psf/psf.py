@@ -49,7 +49,7 @@ def filter_mesh_parameters(use_preflightcore=False):
     ----------
     .. [1] `Grigis, P., Su, Y., Weber M., et al., 2012,
             AIA PSF Characterization and Deconvolution
-            <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
+            <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
 
     See Also
     --------
@@ -168,7 +168,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     core effects.
 
     .. note:: This function has been adapted from
-              `aia_calc_psf.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
+              `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
 
     .. note:: If the `~cupy` package is installed
               and your machine has an NVIDIA GPU, the PSF calculation will
@@ -255,7 +255,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     ----------
     .. [1] `Grigis, P., Su, Y., Weber M., et al., 2012,
             AIA PSF Characterization and Deconvolution
-            <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`__
+            <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`__
     """
     meshinfo = filter_mesh_parameters(use_preflightcore=use_preflightcore)
     meshinfo = meshinfo[channel]
