@@ -11,7 +11,6 @@ from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
-from aiapy import _SSW_MIRROR
 from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
