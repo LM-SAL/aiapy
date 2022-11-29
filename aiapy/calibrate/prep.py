@@ -154,7 +154,7 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     or read from the table input by the user.
 
     .. note:: This function is adapted directly from the
-              `aia_bp_corrections.pro <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/response/aia_bp_corrections.pro>`_
+              `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`_
               routine in SolarSoft.
 
     Parameters

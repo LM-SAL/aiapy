@@ -1,3 +1,12 @@
+0.7.1 (2022-11-28)
+==================
+
+Bug Fixes
+---------
+
+- Change SSW mirror due to the old one being down. (`#167 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/167>`__)
+
+
 0.7 (2022-08-04)
 ================
 

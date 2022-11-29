@@ -41,7 +41,7 @@ m.plot(
 # Next, we'll calculate the PSF using `aiapy.psf.psf` for the 171 Å channel.
 # The PSF model accounts for several different effects, including diffraction
 # from the mesh grating of the filters, charge spreading, and jitter. See
-# `Grigis et al (2012) <https://hesperia.gsfc.nasa.gov/ssw/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
+# `Grigis et al (2012) <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
 # for more details. Currently, this only works for
 # :math:`4096\times4096` full frame images.
 #
