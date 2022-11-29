@@ -3,6 +3,9 @@ import os
 from .version import version as __version__
 
 
+_SSW_MIRROR = "https://sohoftp.nascom.nasa.gov/solarsoft/"
+
+
 def _get_bibtex():
     import textwrap
 
