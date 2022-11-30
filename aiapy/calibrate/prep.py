@@ -111,7 +111,7 @@ def register(smap, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, **kwargs):
+def correct_degradation(smap, correction_table=None, calibration_version=None):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -123,6 +123,19 @@ def correct_degradation(smap, **kwargs):
     Parameters
     ----------
     smap : `~sunpy.map.sources.sdo.AIAMap`
+        Map to be corrected.
+    correction_table : `~astropy.table.Table` or `str`, optional
+        Table of correction parameters or path to correction table file.
+        If not specified, it will be queried from JSOC. See
+        `aiapy.calibrate.util.get_correction_table` for more information.
+        If you are processing many images, it is recommended to
+        read the correction table once and pass it with this argument to avoid
+        multiple redundant network calls.
+    calibration_version : `int`, optional
+        The version of the calibration to use when calculating the degradation.
+        By default, this is the most recent version available from JSOC. If you
+        are using a specific calibration response file, you may need to specify
+        this according to the version in that file.
 
     Returns
     -------
@@ -132,13 +145,17 @@ def correct_degradation(smap, **kwargs):
     --------
     degradation
     """
-    d = degradation(smap.wavelength, smap.date, **kwargs)
+    d = degradation(
+        smap.wavelength, smap.date, correction_table=correction_table, calibration_version=calibration_version
+    )
     return smap._new_instance(smap.data / d, smap.meta)
 
 
 @u.quantity_input
 @validate_channel("channel")
-def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unscaled:
+def degradation(
+    channel: u.angstrom, obstime, correction_table=None, calibration_version=None
+) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
 
@@ -193,11 +210,10 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
     # Do this outside of the loop to avoid repeated queries
-    correction_table = get_correction_table(correction_table=kwargs.get("correction_table"))
+    correction_table = get_correction_table(correction_table=correction_table)
     for i, t in enumerate(obstime):
-        table = _select_epoch_from_correction_table(
-            channel, t, correction_table, version=kwargs.get("calibration_version")
-        )
+        table = _select_epoch_from_correction_table(channel, t, correction_table, version=calibration_version)
+
         # Time difference between obstime and start of epoch
         dt = (t - table["T_START"][-1]).to(u.day).value
         # Correction to most recent epoch
