@@ -173,6 +173,74 @@ def test_degradation(correction_table, version, time_correction_truth):
     assert u.allclose(time_correction, time_correction_truth, rtol=1e-10, atol=0.0)
 
 
+@pytest.mark.parametrize(
+    "wavelength,result",
+    [
+        pytest.param(
+            1600,
+            0.56048306 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            1700,
+            0.87895035 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            171,
+            0.78689527 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            304,
+            0.14925002 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            211,
+            0.82998772 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            193,
+            0.86181854 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            335,
+            0.32689207 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            94,
+            0.90317732 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+    ],
+)
+def test_degradation_all_wavelengths(wavelength, result):
+    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    time_correction = degradation(
+        wavelength * u.angstrom,
+        obstime,
+    )
+    assert u.allclose(time_correction, result)
+
+
+@pytest.mark.remote_data
+def test_degradation_4500():
+    # 4500 has a max version of 3, so by default it will error
+    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    with pytest.raises(
+        ValueError,
+        match="Correction table does not contain calibration for version 10 for 4500.0 Angstrom. Max version is 3",
+    ):
+        degradation(4500 * u.angstrom, obstime)
+
+    correction = degradation(4500 * u.angstrom, obstime, calibration_version=3)
+    assert u.allclose(correction, 1.0 * u.dimensionless_unscaled)
+
+
 def test_degradation_time_array():
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     obstime = obstime + np.linspace(0, 1, 100) * u.year
