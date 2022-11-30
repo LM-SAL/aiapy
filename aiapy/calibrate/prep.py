@@ -11,7 +11,6 @@ from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
-from aiapy import _SSW_MIRROR
 from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
@@ -80,7 +79,7 @@ def register(smap, missing=None, order=3, method="scipy"):
     ):
         scale = (smap.scale[0] / 0.6).round() * 0.6 * u.arcsec
     else:
-        scale = 0.6 * u.arcsec  # pragma: no cover # needs a full res image
+        scale = 0.6 * u.arcsec
     scale_factor = smap.scale[0] / scale
     missing = smap.min() if missing is None else missing
     tempmap = smap.rotate(
@@ -90,15 +89,22 @@ def register(smap, missing=None, order=3, method="scipy"):
         missing=missing,
         method=method,
     )
-    # extract center from padded smap.rotate output
-    # crpix1 and crpix2 will be equal (recenter=True), as prep does not
-    # work with submaps
-    center = np.floor(tempmap.meta["crpix1"])
-    range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
-    newmap = tempmap.submap(
-        u.Quantity([range_side[0], range_side[0]]),
-        top_right=u.Quantity([range_side[1], range_side[1]]) - 1 * u.pix,
-    )
+    # TODO: Generalize this other small sizes
+    if tempmap.data.shape == (4094, 4094):
+        padded_array = np.pad(tempmap.data, 1, mode="constant")
+        tempmap.meta["crpix1"] += 1
+        tempmap.meta["crpix2"] += 1
+        newmap = tempmap._new_instance(padded_array, tempmap.meta)
+    else:
+        # extract center from padded smap.rotate output
+        # crpix1 and crpix2 will be equal (recenter=True), as prep does not
+        # work with submaps
+        center = np.floor(tempmap.meta["crpix1"])
+        range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
+        newmap = tempmap.submap(
+            u.Quantity([range_side[0], range_side[0]]),
+            top_right=u.Quantity([range_side[1], range_side[1]]) - 1 * u.pix,
+        )
     newmap.meta["r_sun"] = newmap.meta["rsun_obs"] / newmap.meta["cdelt1"]
     newmap.meta["lvl_num"] = 1.5
     newmap.meta["bitpix"] = -64

@@ -3,7 +3,6 @@
 from aiapy import __version__
 from astropy.utils.exceptions import AstropyDeprecationWarning
 from datetime import datetime
-from sunpy import log
 import aiapy.data.sample  # NOQA
 import os
 import warnings

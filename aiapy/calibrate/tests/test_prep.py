@@ -31,11 +31,9 @@ def test_register(aia_171_map, lvl_15_map):
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
-    # Check all of these for Map attributes and .meta values?
+    # TODO: Check all of these for Map attributes and .meta values?
     # Check array shape
-    # Due to fixes in sunpy 3.1.6, the shape can be different
-    # See https://github.com/sunpy/sunpy/pull/5803
-    assert lvl_15_map.data.shape in (aia_171_map.data.shape, (4094, 4094))
+    assert lvl_15_map.data.shape == aia_171_map.data.shape == (4096, 4096)
     # Check crpix values
     assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
     assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
