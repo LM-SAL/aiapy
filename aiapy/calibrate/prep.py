@@ -91,7 +91,7 @@ def register(smap, missing=None, order=3, method="scipy"):
     )
     # TODO: Generalize this other small sizes
     if tempmap.data.shape == (4094, 4094):
-        padded_array = np.pad(tempmap.data, 1, mode="constant")
+        padded_array = np.pad(tempmap.data, 1, mode="constant", constant_values=missing)
         tempmap.meta["crpix1"] += 1
         tempmap.meta["crpix2"] += 1
         newmap = tempmap._new_instance(padded_array, tempmap.meta)
