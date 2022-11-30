@@ -1,3 +1,21 @@
+0.7.2 (2022-12-02)
+==================
+
+Bug Fixes
+---------
+
+- Pad arrays that are 4094 when registered. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+- Improve error message for degradation with incorrect response table version. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+
+0.7.1 (2022-11-28)
+==================
+
+Bug Fixes
+---------
+
+- Change SSW mirror due to the old one being down. (`#167 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/167>`__)
+
+
 0.7 (2022-08-04)
 ================
 

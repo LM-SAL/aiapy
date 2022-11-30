@@ -132,11 +132,14 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, ver
     table = table[table["VER_NUM"] == version]
     table.sort("DATE")  # Newest entries will be last
     if len(table) == 0:
-        raise IndexError(f"Correction table does not contain calibration for version {version}")
+        extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
+        raise ValueError(
+            f"Correction table does not contain calibration for version {version} for {channel}." + extra_msg
+        )
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table["T_START"], obstime < table["T_STOP"])
     if not obstime_in_epoch.any():
-        raise IndexError(f"No valid calibration epoch for {obstime}")
+        raise ValueError(f"No valid calibration epoch for {obstime}")
     # NOTE: In some cases, there may be multiple entries for a single epoch. We want to
     # use the most up-to-date one.
     i_epoch = np.where(obstime_in_epoch)[0]
