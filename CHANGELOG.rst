@@ -1,3 +1,37 @@
+0.7.2 (2023-01-31)
+==================
+
+Breaking Changes
+----------------
+
+- Removed kwargs from ``correct_degradation``, ``degradation`` to ensure that the correct keywords are passed into these functions and the function calls that require these keywords. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+- Several private internal functions now raise `ValueError` instead of `IndexError`, some of these will now be raised to the user when calling ``correct_degradation``, therefore any code that checks for this error type will need updating.  (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+
+Bug Fixes
+---------
+
+- Improve error message for degradation with incorrect response table version. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+
+Documentation
+-------------
+
+- Added a warning about ``register`` that it will not return a 4096 by 4096 Map, but most likely a 4094 by 4094 Map. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+
+Trivial Changes
+---------------
+
+- Added several tests to ensure that ``degradation`` works on all wavelengths and the ones it does not, raise the correct error. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+
+
+0.7.1 (2022-11-28)
+==================
+
+Bug Fixes
+---------
+
+- Change SSW mirror due to the old one being down. (`#167 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/167>`__)
+
+
 0.7 (2022-08-04)
 ================
 

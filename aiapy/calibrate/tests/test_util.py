@@ -81,13 +81,13 @@ def test_invalid_wavelength_raises_exception():
 
 
 def test_wrong_version_number_raises_exception():
-    with pytest.raises(IndexError, match="Correction table does not contain calibration for version -1"):
+    with pytest.raises(ValueError, match="Correction table does not contain calibration for version -1"):
         _select_epoch_from_correction_table(94 * u.angstrom, obstime, correction_table_local, version=-1)
 
 
 def test_obstime_out_of_range():
     obstime_out_of_range = astropy.time.Time("2000-01-01T12:00:00", scale="utc")
-    with pytest.raises(IndexError, match=f"No valid calibration epoch for {obstime_out_of_range}"):
+    with pytest.raises(ValueError, match=f"No valid calibration epoch for {obstime_out_of_range}"):
         _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local, version=8)
 
 
