@@ -31,11 +31,11 @@ def test_register(aia_171_map, lvl_15_map):
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
-    # Check all of these for Map attributes and .meta values?
-    # Check array shape
-    # Due to fixes in sunpy 3.1.6, the shape can be different
+    # TODO: Check all of these for Map attributes and .meta values?
+    # Check array shape - We cut off two pixels on each side for kicks
+    # Due to fixes in sunpy 3.1.6, the shape is different
     # See https://github.com/sunpy/sunpy/pull/5803
-    assert lvl_15_map.data.shape in (aia_171_map.data.shape, (4094, 4094))
+    assert lvl_15_map.data.shape == (4094, 4094) != aia_171_map.data.shape
     # Check crpix values
     assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
     assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
@@ -173,6 +173,74 @@ def test_degradation(correction_table, version, time_correction_truth):
         correction_table=correction_table,
     )
     assert u.allclose(time_correction, time_correction_truth, rtol=1e-10, atol=0.0)
+
+
+@pytest.mark.parametrize(
+    "wavelength,result",
+    [
+        pytest.param(
+            1600,
+            0.56048306 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            1700,
+            0.87895035 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            171,
+            0.78689527 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            304,
+            0.14925002 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            211,
+            0.82998772 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            193,
+            0.86181854 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            335,
+            0.32689207 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+        pytest.param(
+            94,
+            0.90317732 * u.dimensionless_unscaled,
+            marks=pytest.mark.remote_data,
+        ),
+    ],
+)
+def test_degradation_all_wavelengths(wavelength, result):
+    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    time_correction = degradation(
+        wavelength * u.angstrom,
+        obstime,
+    )
+    assert u.allclose(time_correction, result)
+
+
+@pytest.mark.remote_data
+def test_degradation_4500():
+    # 4500 has a max version of 3, so by default it will error
+    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    with pytest.raises(
+        ValueError,
+        match="Correction table does not contain calibration for version 10 for 4500.0 Angstrom. Max version is 3",
+    ):
+        degradation(4500 * u.angstrom, obstime)
+
+    correction = degradation(4500 * u.angstrom, obstime, calibration_version=3)
+    assert u.allclose(correction, 1.0 * u.dimensionless_unscaled)
 
 
 def test_degradation_time_array():

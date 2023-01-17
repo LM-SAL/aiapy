@@ -1,7 +1,7 @@
 image: python:3.10
 
 before_script:
-  - pip install tox
+  - pip install "tox<4.0" tox-pypi-filter
 
 stages:
   - Base
@@ -31,19 +31,29 @@ py38:
   script:
     - tox -e py38
 
-py39-devdeps:
+py311-devdeps:
   allow_failure: true
   stage: Extras
-  image: python:3.9
+  image: python:3.11
+  before_script:
+    # Need graphviz binary for generating inheritance diagrams
+    - apt-get update -qq && apt-get install -y -qq libhdf5-dev
+    - pip install "tox<4.0" tox-pypi-filter
   script:
-    - tox -e py39-devdeps
+    - tox -e py311-devdeps
+
+#py310-rc-online:
+#  stage: Extras
+#  image: python:3.10
+#  script:
+#    - tox -e py310-rc-online
 
 build_docs:
   stage: Extras
   before_script:
     # Need graphviz binary for generating inheritance diagrams
     - apt-get update -qq && apt-get install -y -qq graphviz
-    - pip install tox
+    - pip install "tox<4.0" tox-pypi-filter
   script:
     - tox -e build_docs
 
@@ -56,3 +66,6 @@ pypi_upload:
   script:
     - python -m pep517.build --source --out-dir dist .
     - twine upload dist/aiapy*.tar.gz
+
+.common:
+  interruptible: true
