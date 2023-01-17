@@ -11,7 +11,6 @@ from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
-from aiapy import _SSW_MIRROR
 from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AiapyUserWarning
@@ -30,6 +29,16 @@ def register(smap, missing=None, order=3, method="scipy"):
     with the y axis, each pixel is 0.6 arcsec across, and the center of the
     Sun is at the center of the image. The actual transformation is done by
     the `~sunpy.map.mapbase.GenericMap.rotate` method.
+
+    .. warning::
+
+        This function might not return a 4096 by 4096 data array
+        due to the nature of rotating and scaling the image.
+        If you need a 4096 by 4096 image, you will need to pad the array manually,
+        update header: crpix1 and crpix2 by the difference divided by 2 in size along that axis.
+        Then create a new map.
+
+        If you do not like this, please open an issue on the aiapy GitLab page.
 
     .. note::
 
@@ -64,9 +73,6 @@ def register(smap, missing=None, order=3, method="scipy"):
         raise ValueError("Input must be an AIAMap or HMIMap.")
     if not contains_full_disk(smap):
         raise ValueError("Input must be a full disk image.")
-    # FIXME: this should not be needed. Additional prep calls should
-    # not have any effect. This is a precaution in case additional
-    # calls to rotate introduce artifacts.
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
             "Image registration should only be applied to level 1 data",
@@ -91,8 +97,7 @@ def register(smap, missing=None, order=3, method="scipy"):
         method=method,
     )
     # extract center from padded smap.rotate output
-    # crpix1 and crpix2 will be equal (recenter=True), as prep does not
-    # work with submaps
+    # crpix1 and crpix2 will be equal (recenter=True), as prep does not work with submaps
     center = np.floor(tempmap.meta["crpix1"])
     range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
     newmap = tempmap.submap(
@@ -105,7 +110,7 @@ def register(smap, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, **kwargs):
+def correct_degradation(smap, correction_table=None, calibration_version=None):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -117,6 +122,19 @@ def correct_degradation(smap, **kwargs):
     Parameters
     ----------
     smap : `~sunpy.map.sources.sdo.AIAMap`
+        Map to be corrected.
+    correction_table : `~astropy.table.Table` or `str`, optional
+        Table of correction parameters or path to correction table file.
+        If not specified, it will be queried from JSOC. See
+        `aiapy.calibrate.util.get_correction_table` for more information.
+        If you are processing many images, it is recommended to
+        read the correction table once and pass it with this argument to avoid
+        multiple redundant network calls.
+    calibration_version : `int`, optional
+        The version of the calibration to use when calculating the degradation.
+        By default, this is the most recent version available from JSOC. If you
+        are using a specific calibration response file, you may need to specify
+        this according to the version in that file.
 
     Returns
     -------
@@ -126,13 +144,17 @@ def correct_degradation(smap, **kwargs):
     --------
     degradation
     """
-    d = degradation(smap.wavelength, smap.date, **kwargs)
+    d = degradation(
+        smap.wavelength, smap.date, correction_table=correction_table, calibration_version=calibration_version
+    )
     return smap._new_instance(smap.data / d, smap.meta)
 
 
 @u.quantity_input
 @validate_channel("channel")
-def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unscaled:
+def degradation(
+    channel: u.angstrom, obstime, correction_table=None, calibration_version=None
+) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
 
@@ -187,11 +209,10 @@ def degradation(channel: u.angstrom, obstime, **kwargs) -> u.dimensionless_unsca
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
     # Do this outside of the loop to avoid repeated queries
-    correction_table = get_correction_table(correction_table=kwargs.get("correction_table"))
+    correction_table = get_correction_table(correction_table=correction_table)
     for i, t in enumerate(obstime):
-        table = _select_epoch_from_correction_table(
-            channel, t, correction_table, version=kwargs.get("calibration_version")
-        )
+        table = _select_epoch_from_correction_table(channel, t, correction_table, version=calibration_version)
+
         # Time difference between obstime and start of epoch
         dt = (t - table["T_START"][-1]).to(u.day).value
         # Correction to most recent epoch

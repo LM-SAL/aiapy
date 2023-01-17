@@ -153,3 +153,6 @@ htmlcov/
 .history/
 .vscode/
 *.DS_Store*
+
+# Pycharm
+.idea/
