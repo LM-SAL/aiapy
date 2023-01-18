@@ -1,4 +1,4 @@
-0.7.2 (2023-01-17)
+0.7.2 (2023-01-18)
 ==================
 
 Breaking Changes
@@ -11,6 +11,7 @@ Bug Fixes
 ---------
 
 - Improve error message for degradation with incorrect response table version. (`#170 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/170>`__)
+- Fixed download issue for error tables and parfive due to a mirror change. (`#172 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/172>`__)
 
 Documentation
 -------------

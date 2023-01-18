@@ -1,6 +1,7 @@
 """
 Utilities for computing intensity corrections.
 """
+import os
 import pathlib
 import warnings
 from urllib.parse import urljoin
@@ -216,7 +217,10 @@ def get_pointing_table(start, end):
 
 def get_error_table(error_table=None):
     if error_table is None:
+        # This is to work around a parfive bug
+        os.environ["PARFIVE_DISABLE_RANGE"] = "1"
         error_table = fetch_error_table()
+        os.environ.pop("PARFIVE_DISABLE_RANGE")
     if isinstance(error_table, (str, pathlib.Path)):
         table = astropy.io.ascii.read(error_table)
     elif isinstance(error_table, QTable):
