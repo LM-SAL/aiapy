@@ -131,6 +131,7 @@ def test_pointing_table_unavailable():
 def test_error_table(error_table):
     table = get_error_table(error_table)
     assert isinstance(table, astropy.table.QTable)
+    assert len(table) == 10
 
 
 def test_invalid_error_table_input():
