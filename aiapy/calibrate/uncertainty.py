@@ -22,7 +22,7 @@ def estimate_error(
     include_eve=False,
     include_chianti=False,
     error_table=None,
-    **kwargs
+    **kwargs,
 ) -> u.ct / u.pix:
     """
     Given an observed number of counts estimate the associated errors.
