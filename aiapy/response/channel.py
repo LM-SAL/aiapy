@@ -61,7 +61,7 @@ class Channel(object):
         If not specified, the latest version will be downloaded from SolarSoft.
 
     Examples
-    ---------
+    --------
     >>> import astropy.units as u
     >>> from aiapy.response import Channel
     >>> c = Channel(171*u.angstrom)  # doctest: +REMOTE_DATA

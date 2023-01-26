@@ -85,7 +85,7 @@ ax.set_xlabel("Date")
 ax.set_ylabel("Degradation")
 # Wavelength response
 ax = fig.add_subplot(224)
-for i, c in enumerate(channels):
+for _i, c in enumerate(channels):
     w, r = wave_response[c]
     ax.plot(w, r, label=f'{c.value:.0f} {c.unit.to_string(format="latex")}')
 ax.set_yscale("log")
