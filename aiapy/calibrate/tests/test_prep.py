@@ -16,12 +16,12 @@ from aiapy.tests.data import get_test_filepath
 from aiapy.util import AiapyUserWarning
 
 
-@pytest.fixture
+@pytest.fixture()
 def lvl_15_map(aia_171_map):
     return register(aia_171_map)
 
 
-@pytest.fixture
+@pytest.fixture()
 def non_sdo_map():
     return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
 
@@ -76,10 +76,10 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map):
     """
     # A submap
     original_cutout = aia_171_map.submap(aia_171_map.center, top_right=aia_171_map.top_right_coord)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Input must be a full disk image."):
         register(original_cutout)
     # A Map besides AIA or HMI
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Input must be an AIAMap"):
         register(non_sdo_map)
 
 
@@ -100,7 +100,7 @@ def test_register_level_15(lvl_15_map):
 
 
 @pytest.mark.parametrize(
-    "correction_table,version",
+    ("correction_table", "version"),
     [
         pytest.param(None, None, marks=pytest.mark.remote_data),
         (
@@ -111,7 +111,9 @@ def test_register_level_15(lvl_15_map):
 )
 def test_correct_degradation(aia_171_map, correction_table, version):
     original_corrected = correct_degradation(
-        aia_171_map, correction_table=correction_table, calibration_version=version
+        aia_171_map,
+        correction_table=correction_table,
+        calibration_version=version,
     )
     d = degradation(
         aia_171_map.wavelength,
@@ -126,7 +128,7 @@ def test_correct_degradation(aia_171_map, correction_table, version):
 
 
 @pytest.mark.parametrize(
-    "correction_table,version,time_correction_truth",
+    ("correction_table", "version", "time_correction_truth"),
     [
         pytest.param(
             None,
@@ -176,7 +178,7 @@ def test_degradation(correction_table, version, time_correction_truth):
 
 
 @pytest.mark.parametrize(
-    "wavelength,result",
+    ("wavelength", "result"),
     [
         pytest.param(
             1600,
@@ -229,7 +231,7 @@ def test_degradation_all_wavelengths(wavelength, result):
     assert u.allclose(time_correction, result)
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_degradation_4500():
     # 4500 has a max version of 3, so by default it will error
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
@@ -281,7 +283,7 @@ def test_normalize_exposure_zero(aia_171_map):
 
 
 def test_normalize_exposure_non_sdo_map(non_sdo_map):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Input must be an AIAMap"):
         normalize_exposure(non_sdo_map)
 
 

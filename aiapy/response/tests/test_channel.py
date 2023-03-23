@@ -1,5 +1,5 @@
-import os
 import collections
+from pathlib import Path
 
 import pytest
 
@@ -17,20 +17,13 @@ from aiapy.tests.data import get_test_filepath
 @pytest.fixture(params=[pytest.param(None, marks=pytest.mark.remote_data)])
 def channel(request, ssw_home):
     if ssw_home is not None:
-        instrument_file = os.path.join(
-            ssw_home,
-            "sdo",
-            "aia",
-            "response",
-            f"aia_V{VERSION_NUMBER}_all_fullinst.genx",
-        )
+        instrument_file = Path(ssw_home) / "sdo" / "aia" / "response" / f"aia_V{VERSION_NUMBER}_all_fullinst.genx"
     else:
         instrument_file = None
-
     return Channel(94 * u.angstrom, instrument_file=instrument_file)
 
 
-@pytest.fixture
+@pytest.fixture()
 def channel_properties():
     return [
         "wavelength",
@@ -48,7 +41,7 @@ def channel_properties():
     ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def required_keys():
     return [
         "wave",
@@ -117,7 +110,7 @@ def test_effective_area(channel):
 
 
 @pytest.mark.parametrize(
-    "correction_table,version,eve_correction_truth",
+    ("correction_table", "version", "eve_correction_truth"),
     [
         pytest.param(
             None,
@@ -229,7 +222,7 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
     assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.count / u.ph)
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     # There are a few corner cases for the 1600, 1700, and 4500 channels
@@ -240,5 +233,5 @@ def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     assert channel.contamination == u.Quantity(
         [
             1,
-        ]
+        ],
     )

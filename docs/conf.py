@@ -3,13 +3,13 @@
 from aiapy import __version__
 from astropy.utils.exceptions import AstropyDeprecationWarning
 from datetime import datetime
-import aiapy.data.sample  # NOQA
 import os
 import warnings
 from sunpy.util.exceptions import (
     SunpyDeprecationWarning,
     SunpyPendingDeprecationWarning,
 )
+from pathlib import Path
 from packaging.version import Version
 
 os.environ["JSOC_EMAIL"] = "nabil.freij@gmail.com"
@@ -97,10 +97,10 @@ graphviz_dot_args = [
 ]
 # -- Sphinx-gallery ----------------------------------------------------------
 sphinx_gallery_conf = {
-    "backreferences_dir": os.path.join("generated", "modules"),
+    "backreferences_dir": Path("generated") / "modules",
     "filename_pattern": "^((?!skip_).)*$",
-    "examples_dirs": os.path.join("..", "examples"),
-    "gallery_dirs": os.path.join("generated", "gallery"),
+    "examples_dirs": Path("..") / "examples",
+    "gallery_dirs": Path("generated") / "gallery",
     "matplotlib_animations": True,
     "default_thumb_file": "_static/sdo.png",
     "abort_on_example_error": False,
@@ -128,7 +128,6 @@ hoverxref_mathjax = True
 
 # hoverxref has to be applied to these
 hoverxref_domains = ["py"]
-# hoverxref_roles = ["confval", "term"]
 
 hoverxref_role_types = {
     # roles with py domain

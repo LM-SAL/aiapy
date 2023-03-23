@@ -14,7 +14,7 @@ MESH_PROPERTIES = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def psf_full(channels):
     return aiapy.psf.psf(channels[0], use_preflightcore=True)
 
