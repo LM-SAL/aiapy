@@ -4,7 +4,11 @@ __all__ = ["_rotation_cupy", "_rotation_function_names"]
 
 
 @add_rotation_function(
-    "cupy", allowed_orders=range(6), handles_clipping=False, handles_image_nans=False, handles_nan_missing=True
+    "cupy",
+    allowed_orders=range(6),
+    handles_clipping=False,
+    handles_image_nans=False,
+    handles_nan_missing=True,
 )
 def _rotation_cupy(image, matrix, shift, order, missing, clip):
     """
@@ -20,10 +24,15 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
         import cupyx.scipy.ndimage
     except ImportError as e:
         raise ImportError(
-            "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method."
+            "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method.",
         ) from e
     rotated_image = cupyx.scipy.ndimage.affine_transform(
-        cupy.array(image).T, cupy.array(matrix), offset=cupy.array(shift), order=order, mode="constant", cval=missing
+        cupy.array(image).T,
+        cupy.array(matrix),
+        offset=cupy.array(shift),
+        order=order,
+        mode="constant",
+        cval=missing,
     ).T
     return cupy.asnumpy(rotated_image)
 

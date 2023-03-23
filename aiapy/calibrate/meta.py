@@ -111,6 +111,7 @@ def update_pointing(smap, pointing_table=None):
             "This may result in selecting in incorrect record from the "
             "master pointing table.",
             AiapyUserWarning,
+            stacklevel=3,
         )
         t_obs = smap.date
     t_obs = astropy.time.Time(t_obs)
@@ -119,7 +120,7 @@ def update_pointing(smap, pointing_table=None):
         raise IndexError(
             f"No valid entries for {t_obs} in pointing table "
             f'with first T_START date of {pointing_table[0]["T_START"]} '
-            f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.'
+            f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.',
         )
     i_nearest = np.where(t_obs_in_interval)[0][0]
     w_str = f"{smap.wavelength.to(u.angstrom).value:03.0f}"
@@ -156,6 +157,7 @@ def update_pointing(smap, pointing_table=None):
             warnings.warn(
                 f"Missing value in pointing table for {key}. This key will not be updated.",
                 AiapyUserWarning,
+                stacklevel=3,
             )
         else:
             new_meta[key] = value

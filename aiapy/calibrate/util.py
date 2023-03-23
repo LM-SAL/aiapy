@@ -135,7 +135,7 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, ver
     if len(table) == 0:
         extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
         raise ValueError(
-            f"Correction table does not contain calibration for version {version} for {channel}." + extra_msg
+            f"Correction table does not contain calibration for version {version} for {channel}." + extra_msg,
         )
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table["T_START"], obstime < table["T_STOP"])
@@ -148,6 +148,7 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, ver
         warnings.warn(
             f"Multiple valid epochs for {obstime}. Using the most recent one",
             AiapyUserWarning,
+            stacklevel=3,
         )
     # Create new table with only first and obstime epochs
     return QTable(table[[0, i_epoch[-1]]])

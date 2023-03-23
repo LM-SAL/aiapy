@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup  # isort:skip
-import os
+from pathlib import Path
 from itertools import chain
 
 try:
@@ -26,5 +26,5 @@ extras["all"] = list(chain.from_iterable(ex_extras.values()))
 
 setup(
     extras_require=extras,
-    use_scm_version={"write_to": os.path.join("aiapy", "_version.py")},
+    use_scm_version={"write_to": Path("aiapy") / Path("_version.py")},
 )

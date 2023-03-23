@@ -129,6 +129,4 @@ def estimate_error(
     chianti = error_table["CHIANTI"] if include_chianti else 0
     chianti = chianti * counts
 
-    error_sum = np.sqrt(shot**2 + dark**2 + read**2 + quant**2 + compress**2 + chianti**2 + calib**2)
-
-    return error_sum
+    return np.sqrt(shot**2 + dark**2 + read**2 + quant**2 + compress**2 + chianti**2 + calib**2)

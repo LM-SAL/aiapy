@@ -6,10 +6,13 @@ try:
         from ._dev.scm_version import version
     except ImportError:
         from ._version import version
-except Exception:
+except Exception:  # NOQA
     import warnings
 
-    warnings.warn(f'could not determine {__name__.split(".")[0]} package version; this indicates a broken installation')
+    warnings.warn(
+        f'could not determine {__name__.split(".")[0]} package version; this indicates a broken installation',
+        stacklevel=3,
+    )
     del warnings
 
     version = "0.0.0"

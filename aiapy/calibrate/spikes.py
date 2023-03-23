@@ -83,6 +83,7 @@ def respike(smap, spikes=None):
                 "reinserted in the incorrect pixel positions."
             ),
             AiapyUserWarning,
+            stacklevel=3,
         )
     # FIXME: Should raise an exception? Or just return with a warning?
     # Or better yet, why can't the logic below just handle the case of
@@ -170,7 +171,7 @@ def fetch_spikes(smap, as_coords=False):
                     x_coords < smap.dimensions.x.value,
                     y_coords < smap.dimensions.y.value,
                 ),
-            )
+            ),
         )
         x_coords = x_coords[match]
         y_coords = y_coords[match]
