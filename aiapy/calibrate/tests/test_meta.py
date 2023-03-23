@@ -19,14 +19,14 @@ def test_fix_observer_location(aia_171_map):
     assert smap_fixed.meta["dsun_obs"] == smap_fixed.observer_coordinate.radius.value
 
 
-@pytest.fixture
+@pytest.fixture()
 def pointing_table(aia_171_map):
     return get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h)
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_pointing_table():
-    table = QTable(
+    return QTable(
         [
             Time("2010-09-29 21:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
             Time("2010-09-30 00:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
@@ -44,10 +44,9 @@ def mock_pointing_table():
             "A_171_IMSCALE",
         ),
     )
-    return table
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_fix_pointing(aia_171_map, pointing_table):
     keys = ["CRPIX1", "CRPIX2", "CDELT1", "CDELT2", "CROTA2"]
     # Remove keys to at least test that they get set
@@ -63,9 +62,9 @@ def test_fix_pointing(aia_171_map, pointing_table):
         assert aia_map_updated.meta[k] == aia_map_updated2.meta[k]
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 @pytest.mark.parametrize(
-    "t_delt_factor,expected_entry",
+    ("t_delt_factor", "expected_entry"),
     [
         # T_OBS = T_START[i] chooses the i-th entry
         (0, 0),
@@ -88,7 +87,7 @@ def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, ex
     assert aia_map_updated.reference_pixel.y == pointing_table[expected_entry]["A_171_Y0"]
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_update_pointing_missing_tobs_raises_warning(aia_171_map, pointing_table):
     # Tests that a warning is raised if T_OBS is not present.
     aia_171_map.meta.pop("T_OBS")
@@ -96,7 +95,7 @@ def test_update_pointing_missing_tobs_raises_warning(aia_171_map, pointing_table
         update_pointing(aia_171_map, pointing_table=pointing_table)
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_update_pointing_submap_raises_exception(aia_171_map, pointing_table):
     m = aia_171_map.submap(
         SkyCoord(0, 0, unit="arcsec", frame=aia_171_map.coordinate_frame),
@@ -106,14 +105,14 @@ def test_update_pointing_submap_raises_exception(aia_171_map, pointing_table):
         update_pointing(m, pointing_table=pointing_table)
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_update_pointing_resampled_raises_exception(aia_171_map, pointing_table):
     m = aia_171_map.resample((512, 512) * u.pixel)
     with pytest.raises(ValueError, match="Input must be at the full resolution"):
         update_pointing(m, pointing_table=pointing_table)
 
 
-@pytest.mark.remote_data
+@pytest.mark.remote_data()
 def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table):
     # This tests that an exception is thrown when entry corresponding to
     # T_START <= T_OBS < T_END cannot be found in the pointing table.

@@ -1,8 +1,9 @@
-import os
+from pathlib import Path
 from contextlib import nullcontext
 
 import numpy as np
 import pytest
+from numpy.random import default_rng
 
 import astropy.units as u
 
@@ -11,6 +12,7 @@ from aiapy.calibrate.util import get_error_table
 from aiapy.tests.data import get_test_filepath
 
 # These are not fixtures so that they can be easily used in the parametrize mark
+RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 table_local = get_error_table(get_test_filepath("aia_V3_error_table.txt"))
 
@@ -26,14 +28,14 @@ def test_error_all_channels(channel):
     "counts",
     [
         1,
-        np.random.rand(1),
-        np.random.rand(10),
-        np.random.rand(100, 200),
-        np.random.rand(10, 10, 5),
+        RANDOM_GENERATOR.standard_normal(1),
+        RANDOM_GENERATOR.standard_normal(10),
+        RANDOM_GENERATOR.standard_normal((100, 200)),
+        RANDOM_GENERATOR.standard_normal((10, 10, 5)),
     ],
 )
 def test_counts_shapes(counts):
-    counts = counts * 1000 * u.ct / u.pix
+    counts = np.abs(counts) * 1000 * u.ct / u.pix
     errors = estimate_error(counts, 171 * u.angstrom, error_table=table_local)
     if counts.shape == ():
         assert errors.shape == (1,)
@@ -42,7 +44,7 @@ def test_counts_shapes(counts):
 
 
 @pytest.mark.parametrize(
-    "include_preflight,include_eve,include_chianti,expectation",
+    ("include_preflight", "include_eve", "include_chianti", "expectation"),
     [
         (False, True, False, nullcontext()),
         (True, False, False, nullcontext()),
@@ -70,7 +72,7 @@ def test_flags(include_preflight, include_eve, include_chianti, expectation):
 
 
 @pytest.mark.parametrize(
-    "channel,counts,include_eve,include_preflight,include_chianti",
+    ("channel", "counts", "include_eve", "include_preflight", "include_chianti"),
     [[c, 10 * u.ct / u.pixel] + 3 * [False] for c in CHANNELS]
     + [
         [171 * u.angstrom, 1000 * u.ct / u.pix, True, False, False],
@@ -85,7 +87,7 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     channel = {{ channel }}
     error=aia_bp_estimate_error(data,channel,n_sample=1{{ include_eve }}{{ include_preflight }}{{ include_chianti }})
     """
-    error_table = os.path.join(idl_environment.ssw_home, "sdo", "aia", "response", "aia_V3_error_table.txt")
+    error_table = Path(idl_environment.ssw_home) / "sdo" / "aia" / "response" / "aia_V3_error_table.txt"
     ssw = idl_environment.run(
         idl,
         save_vars=["error"],

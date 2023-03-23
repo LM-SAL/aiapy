@@ -77,6 +77,7 @@ def register(smap, missing=None, order=3, method="scipy"):
         warnings.warn(
             "Image registration should only be applied to level 1 data",
             AiapyUserWarning,
+            stacklevel=3,
         )
     # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
     # map has already been rescaled.
@@ -145,7 +146,10 @@ def correct_degradation(smap, correction_table=None, calibration_version=None):
     degradation
     """
     d = degradation(
-        smap.wavelength, smap.date, correction_table=correction_table, calibration_version=calibration_version
+        smap.wavelength,
+        smap.date,
+        correction_table=correction_table,
+        calibration_version=calibration_version,
     )
     return smap._new_instance(smap.data / d, smap.meta)
 
@@ -153,7 +157,10 @@ def correct_degradation(smap, correction_table=None, calibration_version=None):
 @u.quantity_input
 @validate_channel("channel")
 def degradation(
-    channel: u.angstrom, obstime, correction_table=None, calibration_version=None
+    channel: u.angstrom,
+    obstime,
+    correction_table=None,
+    calibration_version=None,
 ) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -237,7 +244,7 @@ def normalize_exposure(smap):
     if not isinstance(smap, AIAMap):
         raise ValueError("Input must be an AIAMap")
     if smap.exposure_time <= 0.0 * u.s:
-        warnings.warn("Exposure time is less than or equal to 0.0 seconds.", AiapyUserWarning)
+        warnings.warn("Exposure time is less than or equal to 0.0 seconds.", AiapyUserWarning, stacklevel=3)
     newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value, copy.deepcopy(smap.meta))
     newmap.meta["exptime"] = 1.0
     newmap.meta["BUNIT"] = "ct / s"

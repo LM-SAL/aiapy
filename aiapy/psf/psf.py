@@ -4,6 +4,7 @@ Calculate the point spread function (PSF) for the AIA telescopes.
 import numpy as np
 
 import astropy.units as u
+from sunpy import log
 
 from aiapy.util.decorators import validate_channel
 
@@ -54,31 +55,47 @@ def filter_mesh_parameters(use_preflightcore=False):
     See Also
     --------
     psf : Calculate the composite point spread function
+
+    Notes
+    -----
+    These parameters were calculated from the following images and
+    reference background images.
+
+    94:
+
+    * image: 'AIA20101016_191039_0094.fits'
+    * reference: 'AIA20101016_190903_0094.fits'
+
+    131:
+
+    * image: 'AIA20101016_191035_0131.fits'
+    * reference: 'AIA20101016_190911_0131.fits'
+
+    171:
+
+    * image: 'AIA20101016_191037_0171.fits'
+    * reference: 'AIA20101016_190901_0171.fits'
+
+    193:
+
+    * image: 'AIA20101016_191056_0193.fits'
+    * reference: 'AIA20101016_190844_0193.fits'
+
+    211:
+
+    * image: 'AIA20101016_191038_0211.fits'
+    * reference: 'AIA20101016_190902_0211.fits'
+
+    304:
+
+    * image: 'AIA20101016_191021_0304.fits'
+    * reference: 'AIA20101016_190845_0304.fits'
+
+    335:
+
+    * image: 'AIA20101016_191041_0335.fits'
+    * reference: 'AIA20101016_190905_0335.fits'
     """
-    # These parameters were calculated from the following images and
-    # reference background images:
-    #   94:
-    #       image: 'AIA20101016_191039_0094.fits'
-    #       reference: 'AIA20101016_190903_0094.fits'
-    #   131:
-    #       image: 'AIA20101016_191035_0131.fits'
-    #       reference: 'AIA20101016_190911_0131.fits'
-    #   171:
-    #       image: 'AIA20101016_191037_0171.fits'
-    #       reference: 'AIA20101016_190901_0171.fits'
-    #   193:
-    #       image: 'AIA20101016_191056_0193.fits'
-    #       reference: 'AIA20101016_190844_0193.fits'
-    #   211:
-    #       image: 'AIA20101016_191038_0211.fits'
-    #       reference: 'AIA20101016_190902_0211.fits'
-    #   304:
-    #       image: 'AIA20101016_191021_0304.fits'
-    #       reference: 'AIA20101016_190845_0304.fits'
-    #   335:
-    #       image: 'AIA20101016_191041_0335.fits'
-    #       reference: 'AIA20101016_190905_0335.fits'
-    # TODO: put this in another file, either JSON or asdf
     return {
         94
         * u.angstrom: {
@@ -285,6 +302,8 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
 
 def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
     psf = np.zeros((4096, 4096), dtype=float)
+    if use_gpu and not HAS_CUPY:
+        log.info("cupy not installed or working, falling back to CPU")
     # If cupy is available, cast to a cupy array
     if HAS_CUPY and use_gpu:
         psf = cupy.array(psf)
@@ -313,5 +332,4 @@ def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
             psf += np.exp(-width_x * x_centered * x_centered - width_y * y_centered * y_centered) * intensity
     # Contribution from core
     psf_core = np.exp(-width_x * (x - 0.5 * Nx - 0.5) ** 2 - width_y * (y - 0.5 * Ny - 0.5) ** 2)
-    psf_total = (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()
-    return psf_total
+    return (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()

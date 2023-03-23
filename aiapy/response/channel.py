@@ -44,7 +44,7 @@ URL_HASH = {
 }
 
 
-class Channel(object):
+class Channel:
     """
     Interface to AIA channel properties and response functions.
 
@@ -204,8 +204,7 @@ class Channel(object):
         # Contamination missing for FUV channels
         if "contam" in self._data:
             return u.Quantity(self._data["contam"])
-        else:
-            return u.Quantity([1])
+        return u.Quantity([1])
 
     @property
     @u.quantity_input
@@ -287,8 +286,7 @@ class Channel(object):
                 * cross.quantum_efficiency
                 * cross.contamination
             )
-        else:
-            return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
+        return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
     @u.quantity_input
     def eve_correction(self, obstime, **kwargs) -> u.dimensionless_unscaled:

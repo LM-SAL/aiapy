@@ -30,4 +30,4 @@ file_list = file_dict.values()
 for keyname, filename in file_dict.items():
     __doc__ += f"   * - ``{keyname}``\n     - {Path(filename).name}\n"
 
-__all__ = list(_SAMPLE_FILES.values()) + ["file_dict", "file_list"]
+__all__ = [*list(_SAMPLE_FILES.values()), "file_dict", "file_list"]

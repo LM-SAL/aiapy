@@ -94,14 +94,14 @@ left_corner = 500 * u.arcsec, -600 * u.arcsec
 right_corner = 1000 * u.arcsec, -100 * u.arcsec
 fig = plt.figure()
 m_sub = m.submap(
-    SkyCoord(*left_corner, frame=m.coordinate_frame),
-    SkyCoord(*right_corner, frame=m.coordinate_frame),
+    bottom_left=SkyCoord(*left_corner, frame=m.coordinate_frame),
+    top_right=SkyCoord(*right_corner, frame=m.coordinate_frame),
 )
 ax = fig.add_subplot(121, projection=m_sub)
 m_sub.plot(axes=ax, norm=norm)
 m_deconvolved_sub = m_deconvolved.submap(
-    SkyCoord(*left_corner, frame=m_deconvolved.coordinate_frame),
-    SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame),
+    bottom_left=SkyCoord(*left_corner, frame=m_deconvolved.coordinate_frame),
+    top_right=SkyCoord(*right_corner, frame=m_deconvolved.coordinate_frame),
 )
 ax = fig.add_subplot(122, projection=m_deconvolved_sub)
 m_deconvolved_sub.plot(axes=ax, annotate=False, norm=norm)
