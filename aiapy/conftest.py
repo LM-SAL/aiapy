@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 
-@pytest.fixture
+@pytest.fixture()
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
@@ -30,10 +30,9 @@ def aia_171_map():
 def idl_environment():
     if idl_available():
         return hissw.Environment(ssw_packages=["sdo/aia"], ssw_paths=["aia"])
-    else:
-        pytest.skip(
-            "A working IDL installation is not available. You will not be able to run portions of the test suite."
-        )
+    pytest.skip(
+        "A working IDL installation is not available. You will not be able to run portions of the test suite.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -49,5 +48,5 @@ def idl_available():
 
         hissw.Environment().run("")
         return True
-    except Exception:
+    except Exception:  # NOQA
         return False

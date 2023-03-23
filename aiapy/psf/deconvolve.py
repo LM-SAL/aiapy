@@ -6,6 +6,8 @@ import warnings
 
 import numpy as np
 
+from sunpy import log
+
 try:
     import cupy
 
@@ -69,9 +71,12 @@ def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
         warnings.warn(
             "Image contains negative intensity values. Consider setting clip_negative to True",
             AiapyUserWarning,
+            stacklevel=3,
         )
     if psf is None:
         psf = calculate_psf(smap.wavelength)
+    if use_gpu and not HAS_CUPY:
+        log.info("cupy not installed or working, falling back to CPU")
     if HAS_CUPY and use_gpu:
         img = cupy.array(img)
         psf = cupy.array(psf)
