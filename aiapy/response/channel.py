@@ -368,9 +368,6 @@ class Channel:
         electron_per_ev = self._data["elecperev"] * _e / u.eV
         energy_per_photon = const.h * const.c / self.wavelength / u.ph
         electron_per_photon = (electron_per_ev * energy_per_photon).to(_e / u.ph)
-        # Cannot discharge less than one electron per photon
-        discharge_floor = electron_per_photon < (1 * _e / u.ph)
-        electron_per_photon[discharge_floor] = 1 * _e / u.ph
         return electron_per_photon / (self._data["elecperdn"] * _e / u.count)
 
     @u.quantity_input
