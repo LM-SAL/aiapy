@@ -151,7 +151,7 @@ def correct_degradation(smap, correction_table=None, calibration_version=None):
         correction_table=correction_table,
         calibration_version=calibration_version,
     )
-    return smap._new_instance(smap.data / d, smap.meta)
+    return smap / d
 
 
 @u.quantity_input
