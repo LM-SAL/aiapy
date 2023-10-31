@@ -1,6 +1,8 @@
 from pathlib import Path
 from urllib.parse import urljoin
 
+from parfive import SessionConfig
+
 from sunpy import log
 from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
@@ -15,6 +17,7 @@ _SAMPLE_DATA = {
     "AIA_171_IMAGE": "aia_lev1_171a_2019_01_01t00_00_09_35z_image_lev1.fits",
 }
 _SAMPLE_FILES = {v: k for k, v in _SAMPLE_DATA.items()}
+DOWNLOAD_CONFIG = SessionConfig(headers={"Accept-Encoding": "identity"})
 
 
 def _download_sample_data(base_url, sample_files, overwrite):
@@ -35,7 +38,7 @@ def _download_sample_data(base_url, sample_files, overwrite):
     `parfive.Results`
         Download results. Will behave like a list of files.
     """
-    dl = Downloader(overwrite=overwrite, progress=True, headers={"Accept-Encoding": "identity"})
+    dl = Downloader(overwrite=overwrite, progress=True, config=DOWNLOAD_CONFIG)
     for url_file_name, fname in sample_files:
         url = urljoin(base_url, url_file_name)
         dl.enqueue_file(url, filename=fname)
@@ -43,7 +46,7 @@ def _download_sample_data(base_url, sample_files, overwrite):
 
 
 def _retry_sample_data(results, new_url_base):
-    dl = Downloader(overwrite=True, progress=True, headers={"Accept-Encoding": "identity"})
+    dl = Downloader(overwrite=True, progress=True, config=DOWNLOAD_CONFIG)
     for err in results.errors:
         file_name = err.url.split("/")[-1]
         log.debug(f"Failed to download {_SAMPLE_FILES[file_name]} from {err.url}: {err.exception}")
