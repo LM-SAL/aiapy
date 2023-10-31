@@ -12,7 +12,7 @@ from sunpy.util.exceptions import (
 from pathlib import Path
 from packaging.version import Version
 
-os.environ["JSOC_EMAIL"] = "nabil.freij@gmail.com"
+os.environ["JSOC_EMAIL"] = "jsoc@sunpy.org"
 os.environ["HIDE_PARFIVE_PROGESS"] = "True"
 
 release = __version__
@@ -83,9 +83,9 @@ intersphinx_mapping = {
 }
 
 # -- Options for HTML output -------------------------------------------------
-from sunpy_sphinx_theme.conf import *  # NOQA
 
-html_theme_options["logo_url"] = "https://aiapy.readthedocs.io/en/stable/"
+html_theme = "sunpy"
+
 graphviz_output_format = "svg"
 graphviz_dot_args = [
     "-Nfontsize=10",
