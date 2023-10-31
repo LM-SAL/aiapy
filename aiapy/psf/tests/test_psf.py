@@ -37,8 +37,8 @@ def psf_idl(idl_environment, channels):
 def test_filter_mesh_parameters(use_preflightcore, channels):
     params = aiapy.psf.filter_mesh_parameters(use_preflightcore=use_preflightcore)
     assert isinstance(params, dict)
-    assert all([c in params for c in channels])
-    assert all([all([p in params[c] for p in MESH_PROPERTIES]) for c in channels])
+    assert all(c in params for c in channels)
+    assert all(all(p in params[c] for p in MESH_PROPERTIES) for c in channels)
 
 
 def test_psf(psf):

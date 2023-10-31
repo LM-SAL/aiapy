@@ -68,7 +68,7 @@ def test_has_channel_data(channel):
 
 
 def test_channel_data_has_keys(channel, required_keys):
-    assert all([k in channel._data for k in required_keys])
+    assert all(k in channel._data for k in required_keys)
 
 
 def test_has_wavelength(channel):
@@ -227,7 +227,7 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     # There are a few corner cases for the 1600, 1700, and 4500 channels
     channel = Channel(channel_wavelength)
-    assert all([k in channel._data for k in required_keys])
+    assert all(k in channel._data for k in required_keys)
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
     assert channel.contamination == u.Quantity(
