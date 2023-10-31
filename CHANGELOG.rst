@@ -212,7 +212,7 @@ Features
 Features
 --------
 
-- Added a function (:func:`aiapy.calibrate.normalize_exposure`) to normalize an image by its exposure time. (`#78 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/78>`__)
+- Added a function (``aiapy.calibrate.normalize_exposure``) to normalize an image by its exposure time. (`#78 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/78>`__)
 - :func:`aiapy.calibrate.degradation` can now accept `~astropy.time.Time` objects with length greater than 1.
   This makes it easier to compute the channel degradation over long intervals. (`#80 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/80>`__)
 - Citation information for `aiapy` is now available from `aiapy.__citation__`. (`#82 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/82>`__)

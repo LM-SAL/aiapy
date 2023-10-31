@@ -13,7 +13,7 @@ This corresponds to the `aia_prep.pro` procedure as described in the `SDO Analys
 import sunpy.map
 
 import aiapy.data.sample as sample_data
-from aiapy.calibrate import normalize_exposure, register, update_pointing
+from aiapy.calibrate import register, update_pointing
 
 ###########################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
@@ -63,11 +63,6 @@ m_registered = register(m_updated_pointing)
 print(m_registered.scale)
 print(m_registered.rotation_matrix)
 
-###########################################################
-# Though it is not typically part of the level 1.5 "prep" data pipeline,
-# it is also common to normalize the image to the exposure time such that
-# the units of the image are DN / pixel / s.
-m_normalized = normalize_exposure(m_registered)
 
 ###########################################################
 # Finally, we can plot the exposure-normalized map.
@@ -76,4 +71,4 @@ m_normalized = normalize_exposure(m_registered)
 # This pedestal is then subtracted when the JSOC pipeline
 # performs dark (+pedestal) subtraction and flatfielding
 # to generate level 1 files.
-m_normalized.peek(vmin=0)
+m_registered.peek(vmin=0)
