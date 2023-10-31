@@ -1,22 +1,22 @@
 repos:
   - repo: https://github.com/myint/docformatter
-    rev: v1.6.0
+    rev: v1.7.5
     hooks:
       - id: docformatter
         args: [--in-place, --pre-summary-newline, --make-summary-multi]
   - repo: https://github.com/myint/autoflake
-    rev: v2.0.2
+    rev: v2.2.1
     hooks:
       - id: autoflake
         args: ['--in-place', '--remove-all-unused-imports', '--remove-unused-variable']
         exclude: ".*(.fits|.fts|.fit|.txt|tca.*|extern.*|.rst|.md|docs/conf.py)$"
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.261'
+    rev: 'v0.1.3'
     hooks:
       - id: ruff
-        args: ['--fix']
+        args: ['--fix', '--unsafe-fixes']
   -   repo: https://github.com/psf/black
-      rev: 23.3.0
+      rev: 23.10.1
       hooks:
       - id: black
         exclude: ".*(.fits|.fts|.fit|.txt|.csv)$"
@@ -26,7 +26,7 @@ repos:
       - id: isort
         exclude: ".*(.fits|.fts|.fit|.txt|.csv)$"
   -   repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.4.0
+      rev: v4.5.0
       hooks:
       - id: check-ast
       - id: check-case-conflict

@@ -210,7 +210,7 @@ def get_pointing_table(start, end):
             table[c].unit = "degree"
     # Remove masking on columns with pointing parameters
     for c in table.colnames:
-        if any([n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]]):
+        if any(n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]):
             if hasattr(table[c], "mask"):
                 table[c] = table[c].filled(np.nan)
     return table
