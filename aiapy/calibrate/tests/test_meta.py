@@ -54,7 +54,7 @@ def test_fix_pointing(aia_171_map, pointing_table):
         aia_171_map.meta.pop(k)
     aia_map_updated = update_pointing(aia_171_map)
     # FIXME: how do we check these values are accurate?
-    assert all([k in aia_map_updated.meta for k in keys])
+    assert all(k in aia_map_updated.meta for k in keys)
     # Check the case where we have specified the pointing
     # table ahead of time
     aia_map_updated2 = update_pointing(aia_171_map, pointing_table=pointing_table)

@@ -1,3 +1,22 @@
+0.7.4 (2023-10-31)
+==================
+
+Bug Fixes
+---------
+
+- Fixed mismatch with the sample data downloder.
+- Fixed theme build to use the new sunpy theme.
+
+
+0.7.3 (2023-04-05)
+==================
+
+Bug Fixes
+---------
+
+- Fixed missing citation. (`#177 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/177>`__)
+
+
 0.7.3 (2023-04-05)
 ==================
 

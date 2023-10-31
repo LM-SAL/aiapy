@@ -74,7 +74,7 @@ def respike(smap, spikes=None):
     # has been interpolated or not.
     nominal_scale = 0.6 * u.arcsec / u.pixel
     tol = 1e-3 * u.arcsec / u.pixel
-    if not all([u.allclose(s, nominal_scale, rtol=0, atol=tol) for s in smap.scale]):
+    if not all(u.allclose(s, nominal_scale, rtol=0, atol=tol) for s in smap.scale):
         warnings.warn(
             (
                 f"{smap.scale} is significantly different from the expected level "

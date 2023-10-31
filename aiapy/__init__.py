@@ -19,8 +19,7 @@ def _get_bibtex():
         lines = ref.split("\n")
         # Only read the lines which are indented
         lines = list(compress(lines, [line.startswith("   ") for line in lines]))
-        ref = textwrap.dedent("\n".join(lines))
-    return ref
+        return textwrap.dedent("\n".join(lines))
 
 
 __citation__ = __bibtex__ = _get_bibtex()

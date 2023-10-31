@@ -42,7 +42,7 @@ def test_correction_table(correction_table):
         "EFF_AREA",
         "EFF_WVLN",
     ]
-    assert all([cn in table.colnames for cn in expected_columns])
+    assert all(cn in table.colnames for cn in expected_columns)
     assert isinstance(table["T_START"], astropy.time.Time)
     assert isinstance(table["T_STOP"], astropy.time.Time)
 
@@ -62,7 +62,7 @@ def test_correction_table_selection(wavelength):
         "EFF_AREA",
         "EFF_WVLN",
     ]
-    assert all([cn in table.colnames for cn in expected_columns])
+    assert all(cn in table.colnames for cn in expected_columns)
     assert isinstance(table["T_START"], astropy.time.Time)
     assert isinstance(table["T_STOP"], astropy.time.Time)
 
@@ -104,7 +104,7 @@ def test_pointing_table():
     t = astropy.time.Time("2011-01-01T00:00:00", scale="utc")
     table = get_pointing_table(t - 3 * u.h, t + 3 * u.h)
     assert isinstance(table, astropy.table.QTable)
-    assert all([cn in table.colnames for cn in expected_columns])
+    assert all(cn in table.colnames for cn in expected_columns)
     assert isinstance(table["T_START"], astropy.time.Time)
     assert isinstance(table["T_STOP"], astropy.time.Time)
     # Ensure that none of the pointing parameters are masked columns
