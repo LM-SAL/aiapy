@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import astropy.units as u
 import sunpy.map
 
-from aiapy.calibrate import correct_degradation, normalize_exposure, register, update_pointing
+from aiapy.calibrate import correct_degradation, register, update_pointing
 from aiapy.calibrate.util import get_correction_table, get_pointing_table
 
 #####################################################
@@ -139,7 +139,7 @@ for a_map in level_1_maps:
     map_updated_pointing = update_pointing(a_map, pointing_table=pointing_table)
     map_registered = register(map_updated_pointing)
     map_degradation = correct_degradation(map_registered, correction_table=correction_table)
-    map_normalized = normalize_exposure(map_degradation)
+    map_normalized = map_degradation / map_degradation.exposure_time
     level_15_maps.append(map_normalized)
 sequence = sunpy.map.Map(level_15_maps, sequence=True)
 sequence.peek()

@@ -1,0 +1,2 @@
+Removed the ``aiapy.calibrate.normalize_exposure`` function.
+The same functionality can be achieved by dividing a `~sunpy.map.Map` by the exposure time property, ``my_map / my_map.exposure_time``.

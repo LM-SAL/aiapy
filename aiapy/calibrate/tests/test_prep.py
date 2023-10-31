@@ -10,7 +10,7 @@ import sunpy.data.test
 from astropy.io.fits.verify import VerifyWarning
 from sunpy.map import Map
 
-from aiapy.calibrate import correct_degradation, degradation, normalize_exposure, register
+from aiapy.calibrate import correct_degradation, degradation, register
 from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
 from aiapy.util import AiapyUserWarning
@@ -258,33 +258,6 @@ def test_degradation_time_array():
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
-
-
-def test_normalize_exposure(aia_171_map):
-    aia_171_map_norm = normalize_exposure(aia_171_map)
-    data_norm = aia_171_map.data / aia_171_map.exposure_time.to(u.s).value
-    assert np.allclose(aia_171_map_norm.data, data_norm)
-    assert aia_171_map_norm.exposure_time == 1.0 * u.s
-    assert aia_171_map_norm.meta["BUNIT"] == "ct / s"
-
-
-def test_normalize_exposure_twice(aia_171_map):
-    # Test that additional normalizations have no effect
-    aia_171_map_norm = normalize_exposure(aia_171_map)
-    aia_171_map_norm_norm = normalize_exposure(aia_171_map_norm)
-    assert np.allclose(aia_171_map_norm.data, aia_171_map_norm_norm.data)
-
-
-def test_normalize_exposure_zero(aia_171_map):
-    aia_171_map_exptime_zero = copy.deepcopy(aia_171_map)
-    aia_171_map_exptime_zero.meta["exptime"] = 0.0
-    with pytest.warns(AiapyUserWarning):
-        normalize_exposure(aia_171_map_exptime_zero)
-
-
-def test_normalize_exposure_non_sdo_map(non_sdo_map):
-    with pytest.raises(ValueError, match="Input must be an AIAMap"):
-        normalize_exposure(non_sdo_map)
 
 
 def test_register_cupy(aia_171_map):

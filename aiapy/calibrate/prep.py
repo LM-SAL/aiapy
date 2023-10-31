@@ -1,7 +1,6 @@
 """
 Functions for calibrating AIA images.
 """
-import copy
 import warnings
 
 import numpy as np
@@ -16,7 +15,7 @@ from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correc
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
 
-__all__ = ["register", "correct_degradation", "degradation", "normalize_exposure"]
+__all__ = ["register", "correct_degradation", "degradation"]
 
 
 @add_common_docstring(rotation_function_names=_rotation_function_names)
@@ -227,25 +226,3 @@ def degradation(
         # Polynomial correction to interpolate within epoch
         poly[i] = table["EFFA_P1"][-1] * dt + table["EFFA_P2"][-1] * dt**2 + table["EFFA_P3"][-1] * dt**3 + 1.0
     return u.Quantity(poly * ratio)
-
-
-def normalize_exposure(smap):
-    """
-    Apply exposure normalization to an AIA map.
-
-    This function applies exposure normalization to an AIA observation by
-    dividing the observed intensity by the exposure value extracted from the
-    `smap` header.
-
-    Parameters
-    ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
-    """
-    if not isinstance(smap, AIAMap):
-        raise ValueError("Input must be an AIAMap")
-    if smap.exposure_time <= 0.0 * u.s:
-        warnings.warn("Exposure time is less than or equal to 0.0 seconds.", AiapyUserWarning, stacklevel=3)
-    newmap = smap._new_instance(smap.data / smap.exposure_time.to(u.s).value, copy.deepcopy(smap.meta))
-    newmap.meta["exptime"] = 1.0
-    newmap.meta["BUNIT"] = "ct / s"
-    return newmap
