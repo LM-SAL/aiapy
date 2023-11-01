@@ -1,5 +1,6 @@
 =========
 ``aiapy``
+=========
 
 .. image:: https://github.com/LM-SAL/aiapy/workflows/CI/badge.svg?branch=main
     :target: https://github.com/LM-SAL/aiapy/actions
