@@ -1,6 +1,9 @@
 =========
 ``aiapy``
-=========
+
+.. image:: https://github.com/LM-SAL/aiapy/workflows/CI/badge.svg?branch=main
+    :target: https://github.com/LM-SAL/aiapy/actions
+    :alt: aiapy CI status
 
 .. image:: https://readthedocs.org/projects/aiapy/badge/?version=stable
     :target: https://aiapy.readthedocs.io/en/stable/?badge=stable
