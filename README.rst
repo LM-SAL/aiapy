@@ -2,6 +2,20 @@
 ``aiapy``
 =========
 
+.. |Documentation Status| image:: https://readthedocs.org/projects/aiapy/badge/?version=stable
+   :target: https://aiapy.readthedocs.io/en/stable/?badge=stable
+.. |PyPI Project| image:: https://img.shields.io/pypi/v/aiapy.svg
+   :target: https://pypi.org/project/aiapy/
+.. |SunPy Powered| image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat
+   :target: https://sunpy.org
+.. |Codecov coverage| image:: https://codecov.io/gh/LM-SAL/aiapy/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/LM-SAL/aiapy
+.. |Zenodo DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4016980.svg
+   :target: https://doi.org/10.5281/zenodo.4016980
+.. |JOSS| image:: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04/status.svg
+   :target: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04
+
+
 ``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
 For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
 For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
