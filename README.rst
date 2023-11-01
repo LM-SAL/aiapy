@@ -26,6 +26,7 @@
     :target: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04
     :alt: JOSS
 
+
 ``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
 For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
 For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
