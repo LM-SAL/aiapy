@@ -1,11 +1,10 @@
 import copy
 import tempfile
 
-import numpy as np
-import pytest
-
 import astropy.time
 import astropy.units as u
+import numpy as np
+import pytest
 import sunpy.data.test
 from astropy.io.fits.verify import VerifyWarning
 from sunpy.map import Map
@@ -104,7 +103,7 @@ def test_register_level_15(lvl_15_map):
     [
         pytest.param(None, None, marks=pytest.mark.remote_data),
         (
-            get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
+            get_correction_table(correction_table=get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
             8,
         ),
     ],
@@ -121,7 +120,8 @@ def test_correct_degradation(aia_171_map, correction_table, version):
         correction_table=correction_table,
         calibration_version=version,
     )
-    uncorrected_over_corrected = aia_171_map.data / original_corrected.data
+    with np.errstate(divide="ignore", invalid="ignore"):
+        uncorrected_over_corrected = aia_171_map.data / original_corrected.data
     # If intensity is zero, ratio will be NaN/infinite
     i_valid = aia_171_map.data > 0.0
     assert np.allclose(uncorrected_over_corrected[i_valid], d)
@@ -160,6 +160,7 @@ def test_correct_degradation(aia_171_map, correction_table, version):
         ),
     ],
 )
+@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation(correction_table, version, time_correction_truth):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
@@ -222,6 +223,7 @@ def test_degradation(correction_table, version, time_correction_truth):
         ),
     ],
 )
+@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation_all_wavelengths(wavelength, result):
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     time_correction = degradation(

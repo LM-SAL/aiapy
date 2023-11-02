@@ -1,10 +1,9 @@
 import collections
 from pathlib import Path
 
-import pytest
-
 import astropy.time
 import astropy.units as u
+import pytest
 from sunpy.util.metadata import MetaDict
 
 from aiapy.calibrate.util import get_correction_table
@@ -130,7 +129,7 @@ def test_effective_area(channel):
             1.0140386988603103 * u.dimensionless_unscaled,
         ),
         (
-            get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
+            get_correction_table(correction_table=get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
             8,
             1.0140386988603103 * u.dimensionless_unscaled,
         ),

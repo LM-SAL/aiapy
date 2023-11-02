@@ -1,9 +1,8 @@
 """
 Shared fixtures for PSF tests.
 """
-import pytest
-
 import astropy.units as u
+import pytest
 
 import aiapy.psf
 

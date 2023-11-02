@@ -17,7 +17,7 @@ _all_channels = [
 ]
 
 
-def validate_channel(argument, valid_channels="all"):
+def validate_channel(argument, *, valid_channels="all"):
     """
     Parameters
     ----------

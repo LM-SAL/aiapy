@@ -6,9 +6,8 @@ Deconvolving images with the instrument Point Spread Function (PSF)
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
-import matplotlib.pyplot as plt
-
 import astropy.units as u
+import matplotlib.pyplot as plt
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize, LogStretch
@@ -84,7 +83,7 @@ ax = fig.add_subplot(122, projection=m_deconvolved)
 m_deconvolved.plot(axes=ax, annotate=False, norm=norm)
 ax.coords[0].set_axislabel(" ")
 ax.coords[1].set_axislabel(" ")
-ax.coords[1].set_ticklabel_visible(False)
+ax.coords[1].set_ticklabel_visible(visible=False)
 plt.show()
 
 #################################################
@@ -107,5 +106,5 @@ ax = fig.add_subplot(122, projection=m_deconvolved_sub)
 m_deconvolved_sub.plot(axes=ax, annotate=False, norm=norm)
 ax.coords[0].set_axislabel(" ")
 ax.coords[1].set_axislabel(" ")
-ax.coords[1].set_ticklabel_visible(False)
+ax.coords[1].set_ticklabel_visible(visible=False)
 plt.show()

@@ -4,10 +4,9 @@ Functions for updating/fixing header keywords.
 import copy
 import warnings
 
-import numpy as np
-
 import astropy.time
 import astropy.units as u
+import numpy as np
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
 from sunpy.map import contains_full_disk
 
@@ -52,7 +51,7 @@ def fix_observer_location(smap):
     return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
 
 
-def update_pointing(smap, pointing_table=None):
+def update_pointing(smap, *, pointing_table=None):
     """
     Update pointing information in the `smap` header.
 

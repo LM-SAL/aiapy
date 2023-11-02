@@ -1,9 +1,8 @@
 import copy
 
+import astropy.units as u
 import numpy as np
 import pytest
-
-import astropy.units as u
 import sunpy.map
 from astropy.coordinates import SkyCoord
 from sunpy.map.mapbase import PixelPair

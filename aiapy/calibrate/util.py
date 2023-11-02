@@ -6,10 +6,9 @@ import pathlib
 import warnings
 from urllib.parse import urljoin
 
-import numpy as np
-
 import astropy.io.ascii
 import astropy.units as u
+import numpy as np
 from astropy.table import QTable
 from astropy.time import Time
 from sunpy.data import manager
@@ -43,7 +42,7 @@ URL_HASH = {
 }
 
 
-def get_correction_table(correction_table=None):
+def get_correction_table(*, correction_table=None):
     """
     Return table of degradation correction factors.
 
@@ -111,7 +110,7 @@ def get_correction_table(correction_table=None):
 
 @u.quantity_input
 @validate_channel("channel")
-def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, version=None):
+def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, *, version=None):
     """
     Return correction table with only the first epoch and the epoch in which
     `obstime` falls and for only one given calibration version.
@@ -197,7 +196,7 @@ def get_pointing_table(start, end):
     if len(table.columns) == 0:
         # If there's no pointing information available between these times,
         # JSOC will raise a cryptic KeyError
-        # (see https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/issues/84)
+        # (see https://github.com/LM-SAL/aiapy/issues/71)
         raise RuntimeError(f"Could not find any pointing information between {start} and {end}")
     table["T_START"] = Time(table["T_START"], scale="utc")
     table["T_STOP"] = Time(table["T_STOP"], scale="utc")
@@ -219,6 +218,7 @@ def get_pointing_table(start, end):
 def get_error_table(error_table=None):
     if error_table is None:
         # This is to work around a parfive bug
+        # https://github.com/Cadair/parfive/issues/121
         os.environ["PARFIVE_DISABLE_RANGE"] = "1"
         error_table = fetch_error_table()
         os.environ.pop("PARFIVE_DISABLE_RANGE")

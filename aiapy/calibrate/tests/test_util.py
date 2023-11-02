@@ -1,8 +1,7 @@
-import pytest
-
 import astropy.table
 import astropy.time
 import astropy.units as u
+import pytest
 
 from aiapy.calibrate.util import (
     _select_epoch_from_correction_table,

@@ -1,11 +1,10 @@
 from pathlib import Path
 from contextlib import nullcontext
 
+import astropy.units as u
 import numpy as np
 import pytest
 from numpy.random import default_rng
-
-import astropy.units as u
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.util import get_error_table
