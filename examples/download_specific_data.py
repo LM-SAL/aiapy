@@ -19,7 +19,7 @@ from sunpy.net import Fido, attrs
 from aiapy.calibrate import correct_degradation, register, update_pointing
 from aiapy.calibrate.util import get_correction_table, get_pointing_table
 
-#####################################################
+###############################################################################
 # Exporting data from the JSOC requires registering your
 # email first. Please replace the text after the ``=``
 # with your email address once you have registered.
@@ -27,7 +27,7 @@ from aiapy.calibrate.util import get_correction_table, get_pointing_table
 
 jsoc_email = os.environ.get("JSOC_EMAIL")
 
-#####################################################
+###############################################################################
 # Our goal is to request data of a recent X-class flare.
 # The X-class flare occurred on the 2021/07/03 at 14:30:00 UTC.
 # We will focus on the 5 minutes before and after this time.
@@ -45,7 +45,7 @@ query = Fido.search(
 
 print(query)
 
-#####################################################
+###############################################################################
 # Now we will download the data and "aia prep" the
 # data with every feature of `aiapy` and plot the
 # data sequence using `sunpy`.
@@ -70,8 +70,8 @@ for a_map in level_1_maps:
     map_cropped = map_normalized.submap(bottom_left, top_right=top_right)
     level_15_maps.append(map_cropped)
 
-#####################################################
-# Finally, we create a sequence of maps and animate it
+###############################################################################
+# Finally, we create a sequence of maps and animate it:
 
 sequence = sunpy.map.Map(level_15_maps, sequence=True)
 

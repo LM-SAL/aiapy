@@ -1,36 +1,76 @@
+.. _aia_docs_index:
+
+===================
 aiapy documentation
 ===================
 
-``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard the Solar Dynamics Observatory (SDO) spacecraft.
+``aiapy`` is a Python library for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard the Solar Dynamics Observatory (SDO) spacecraft.
 
-``aiapy`` includes software for converting AIA images from level 1 to level 1.5, point spread function deconvolution, and computing the wavelength and temperature response functions for the EUV channels.
+It allows for converting AIA images from level 1 to level 1.5, point spread function deconvolution, and computing the wavelength and temperature response functions for the EUV channels.
 
 .. grid:: 1 2 2 2
-    :gutter: 3
+    :gutter: 2
 
-    .. grid-item-card::
-        :class-card: card
+    .. grid-item-card:: Topic Guide
+        :link: aiapy-topic-guide-index
+        :link-type: ref
+        :text-align: center
 
-        Getting started
-        ^^^^^^^^^^^^^^^
+        :material-outlined:`accessibility_new;8em;sd-text-secondary`
 
-        .. toctree::
-            :maxdepth: 1
+        **New users start here!**
+        Topic Guides on how to install and use the key features of aiapy.
 
-            getting_started
-            preparing_data
-            generated/gallery/index
-            code_ref/index
+    .. grid-item-card:: Example gallery
+        :link: generated/gallery
+        :text-align: center
 
-    .. grid-item-card::
-        :class-card: card
+        :material-outlined:`palette;8em;sd-text-secondary`
 
-        Other info
-        ^^^^^^^^^^
+        Examples including plots on accomplishing common tasks using aiapy.
 
-        .. toctree::
-            :maxdepth: 1
+    .. grid-item-card:: Reference
+        :link: aia_api_reference
+        :link-type: ref
+        :text-align: center
 
-            citation
-            changelog
-            develop
+        :material-outlined:`code;8em;sd-text-secondary`
+
+        Technical description of the inputs, outputs, and behavior of each component of aiapy.
+
+    .. grid-item-card:: Get Help
+        :text-align: center
+
+        :material-outlined:`live_help;8em;sd-text-secondary`
+
+        .. button-link:: https://app.element.io/#/room/#sunpy:openastronomy.org
+            :shadow:
+            :expand:
+            :color: warning
+
+            **Join the chat**
+
+        .. button-link:: https://github.com/LM-SAL/aiapy/issues
+            :shadow:
+            :expand:
+            :color: warning
+
+            **Report an issue**
+
+        .. button-link:: https://community.openastronomy.org/c/sunpy/5
+            :shadow:
+            :expand:
+            :color: warning
+
+            **Post on Discourse**
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    tutorial/index
+    generated/gallery/index
+    code_ref/index
+    citation
+    changelog
+    develop

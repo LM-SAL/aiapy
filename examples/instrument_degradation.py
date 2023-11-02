@@ -17,7 +17,7 @@ from astropy.visualization import time_support
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
 
-###########################################################
+###############################################################################
 # The sensitivity of the AIA channels degrade over time. Possible causes include
 # the deposition of organic molecules from the telescope structure onto the
 # optical elements and the decrease in detector sensitivity following (E)UV
@@ -37,37 +37,46 @@ from aiapy.calibrate.util import get_correction_table
 # First, fetch this correction table. It is not strictly necessary to do this explicitly,
 # but will significantly speed up the calculation by only fetching the table
 # once.
+
 correction_table = get_correction_table()
 
-###########################################################
+###############################################################################
 # We want to compute the degradation for each EUV channel.
-channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 
-###########################################################
-# We can use the `~astropy.time` subpackage to create an array of times
+aia_channels = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
+
+###############################################################################
+# We can use `~astropy.time.Time` to create an array of times
 # between now and the start of the mission with a cadence of one week.
-time_0 = astropy.time.Time("2010-03-25T00:00:00", scale="utc")
-now = astropy.time.Time.now()
-time = time_0 + np.arange(0, (now - time_0).to(u.day).value, 7) * u.day
 
-###########################################################
+start_time = astropy.time.Time("2010-03-25T00:00:00", scale="utc")
+now = astropy.time.Time.now()
+time_range = start_time + np.arange(0, (now - start_time).to(u.day).value, 7) * u.day
+
+###############################################################################
 # Finally, we can use the `aiapy.calibrate.degradation` function to
 # compute the degradation for a particular channel and observation time.
 # This is modeled as the ratio of the effective area measured at a particular
 # calibration epoch over the uncorrected effective area with a polynomial
 # interpolation to the exact time.
-deg = {c: degradation(c, time, correction_table=correction_table) for c in channels}
+deg = {channel: degradation(channel, time_range, correction_table=correction_table) for channel in aia_channels}
 
-###########################################################
+###############################################################################
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
-time_support(format="jyear")  # This lets you pass astropy.time.Time objects directly to matplotlib
+
+# This lets you pass astropy.time.Time objects directly to matplotlib
+time_support(format="jyear")
+
 fig = plt.figure()
 ax = fig.gca()
-for c in channels:
-    ax.plot(time, deg[c], label=f"{c.value:.0f} Å")
-ax.set_xlim(time[[0, -1]])
+
+for channel in aia_channels:
+    ax.plot(time_range, deg[channel], label=f"{channel.value:.0f} Å")
+
+ax.set_xlim(time_range[[0, -1]])
 ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc="lower center")
 ax.set_xlabel("Time")
 ax.set_ylabel("Degradation")
+
 plt.show()
