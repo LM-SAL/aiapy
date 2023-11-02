@@ -5,7 +5,6 @@ import copy
 import warnings
 
 import numpy as np
-
 from sunpy import log
 
 try:
@@ -16,12 +15,13 @@ except ImportError:
     HAS_CUPY = False
 
 from aiapy.util import AiapyUserWarning
+
 from .psf import psf as calculate_psf
 
 __all__ = ["deconvolve"]
 
 
-def deconvolve(smap, psf=None, iterations=25, clip_negative=True, use_gpu=True):
+def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=True):
     """
     Deconvolve an AIA image with the point spread function.
 

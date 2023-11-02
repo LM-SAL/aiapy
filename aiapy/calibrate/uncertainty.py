@@ -1,12 +1,12 @@
 """
 Estimate uncertainty on intensities.
 """
-import numpy as np
-
 import astropy.units as u
+import numpy as np
 
 from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
+
 from .util import get_error_table
 
 __all__ = ["estimate_error"]
@@ -17,6 +17,7 @@ __all__ = ["estimate_error"]
 def estimate_error(
     counts: u.ct / u.pix,
     channel: u.angstrom,
+    *,
     n_sample=1,
     include_preflight=False,
     include_eve=False,
@@ -33,7 +34,7 @@ def estimate_error(
     contributions from the photometric calibration and errors in the atomic data.
 
     .. note:: This function is adapted directly from the
-              `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/ssw/sdo/aia/idl/response/aia_bp_estimate_error.pro>`_
+              `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_estimate_error.pro>`_
               routine in SolarSoft.
 
     Parameters

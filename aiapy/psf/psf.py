@@ -1,9 +1,8 @@
 """
 Calculate the point spread function (PSF) for the AIA telescopes.
 """
-import numpy as np
-
 import astropy.units as u
+import numpy as np
 from sunpy import log
 
 from aiapy.util.decorators import validate_channel
@@ -18,7 +17,7 @@ except ImportError:
 __all__ = ["psf", "filter_mesh_parameters", "_psf"]
 
 
-def filter_mesh_parameters(use_preflightcore=False):
+def filter_mesh_parameters(*, use_preflightcore=False):
     """
     Geometric parameters for meshes in AIA filters used to calculate the point
     spread function.
@@ -179,7 +178,7 @@ def filter_mesh_parameters(use_preflightcore=False):
 
 @u.quantity_input
 @validate_channel("channel", valid_channels=[94, 131, 171, 193, 211, 304, 335] * u.angstrom)
-def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
+def psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
     r"""
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
@@ -300,7 +299,7 @@ def psf(channel: u.angstrom, use_preflightcore=False, diffraction_orders=None, u
     return psf
 
 
-def _psf(meshinfo, angles, diffraction_orders, focal_plane=False, use_gpu=True):
+def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False, use_gpu=True):
     psf = np.zeros((4096, 4096), dtype=float)
     if use_gpu and not HAS_CUPY:
         log.info("cupy not installed or working, falling back to CPU")

@@ -1,7 +1,7 @@
 from pathlib import Path
-from .version import version as __version__
-
 from itertools import compress
+
+from .version import version as __version__
 
 _SSW_MIRROR = "https://sohoftp.nascom.nasa.gov/solarsoft/"
 

@@ -1,16 +1,15 @@
 # Configuration file for the Sphinx documentation builder.
 # -- Project information -----------------------------------------------------
-from aiapy import __version__
-from astropy.utils.exceptions import AstropyDeprecationWarning
-from datetime import datetime
 import os
 import warnings
-from sunpy.util.exceptions import (
-    SunpyDeprecationWarning,
-    SunpyPendingDeprecationWarning,
-)
 from pathlib import Path
+from datetime import datetime
+
+from astropy.utils.exceptions import AstropyDeprecationWarning
 from packaging.version import Version
+from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning
+
+from aiapy import __version__
 
 os.environ["JSOC_EMAIL"] = "jsoc@sunpy.org"
 os.environ["HIDE_PARFIVE_PROGESS"] = "True"

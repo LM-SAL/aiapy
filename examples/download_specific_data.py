@@ -14,10 +14,9 @@ and instead we will use the `drms <https://docs.sunpy.org/projects/drms/en/stabl
 import os
 from pathlib import Path
 
+import astropy.units as u
 import drms
 import matplotlib.pyplot as plt
-
-import astropy.units as u
 import sunpy.map
 
 from aiapy.calibrate import correct_degradation, register, update_pointing

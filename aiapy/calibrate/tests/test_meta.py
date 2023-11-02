@@ -1,7 +1,6 @@
+import astropy.units as u
 import numpy as np
 import pytest
-
-import astropy.units as u
 from astropy.coordinates.sky_coordinate import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time, TimeDelta

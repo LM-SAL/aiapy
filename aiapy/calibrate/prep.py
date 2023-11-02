@@ -3,9 +3,8 @@ Functions for calibrating AIA images.
 """
 import warnings
 
-import numpy as np
-
 import astropy.units as u
+import numpy as np
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
@@ -19,7 +18,7 @@ __all__ = ["register", "correct_degradation", "degradation"]
 
 
 @add_common_docstring(rotation_function_names=_rotation_function_names)
-def register(smap, missing=None, order=3, method="scipy"):
+def register(smap, *, missing=None, order=3, method="scipy"):
     """
     Processes a full-disk level 1 `~sunpy.map.sources.sdo.AIAMap` into a level
     1.5 `~sunpy.map.sources.sdo.AIAMap`.
@@ -37,7 +36,8 @@ def register(smap, missing=None, order=3, method="scipy"):
         update header: crpix1 and crpix2 by the difference divided by 2 in size along that axis.
         Then create a new map.
 
-        If you do not like this, please open an issue on the aiapy GitLab page.
+        Please open an issue on the `aiapy GitHub page <https://github.com/LM-SAL/aiapy/issues>`__
+        if you would like to see this changed.
 
     .. note::
 
@@ -110,7 +110,7 @@ def register(smap, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, correction_table=None, calibration_version=None):
+def correct_degradation(smap, *, correction_table=None, calibration_version=None):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -158,6 +158,7 @@ def correct_degradation(smap, correction_table=None, calibration_version=None):
 def degradation(
     channel: u.angstrom,
     obstime,
+    *,
     correction_table=None,
     calibration_version=None,
 ) -> u.dimensionless_unscaled:

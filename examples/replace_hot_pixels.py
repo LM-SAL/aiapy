@@ -6,9 +6,8 @@ Re-spiking level 1 images
 This example demonstrates how to "re-spike" AIA level 1 images
 """
 
-import matplotlib.pyplot as plt
-
 import astropy.units as u
+import matplotlib.pyplot as plt
 import sunpy.map
 from astropy.coordinates import SkyCoord
 
@@ -99,7 +98,7 @@ ax.set_title('Level 0.5 "re-spiked" data')
 lon, lat = ax.coords
 lon.set_axislabel("HPC Longitude")
 lat.set_axislabel(" ")
-lat.set_ticklabel_visible(False)
+lat.set_ticklabel_visible(visible=False)
 plt.show()
 
 ###########################################################

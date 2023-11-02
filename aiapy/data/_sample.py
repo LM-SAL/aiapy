@@ -2,7 +2,6 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 from parfive import SessionConfig
-
 from sunpy import log
 from sunpy.util.config import get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
@@ -66,7 +65,7 @@ def _handle_final_errors(results):
         log.error(f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors," "the file will not be available.")
 
 
-def download_sample_data(overwrite=False):
+def download_sample_data(*, overwrite=False):
     """
     Download all sample data at once. This will overwrite any existing files.
 

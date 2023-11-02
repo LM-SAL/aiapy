@@ -6,10 +6,9 @@ Correcting for instrument degradation
 This example demonstrates the degradation of the filters on AIA over time.
 """
 
-import matplotlib.pyplot as plt
-
 import astropy.time
 import astropy.units as u
+import matplotlib.pyplot as plt
 from astropy.visualization import quantity_support, time_support
 from sunpy.net import Fido
 from sunpy.net import attrs as a

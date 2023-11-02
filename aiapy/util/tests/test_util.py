@@ -1,5 +1,4 @@
 import pytest
-
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.util

@@ -1,10 +1,9 @@
 import copy
 import warnings
 
+import astropy.units as u
 import drms
 import numpy as np
-
-import astropy.units as u
 from astropy.io import fits
 from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.mapbase import PixelPair
@@ -15,7 +14,7 @@ from aiapy.util import AiapyUserWarning
 __all__ = ["respike", "fetch_spikes"]
 
 
-def respike(smap, spikes=None):
+def respike(smap, *, spikes=None):
     """
     Re-insert "spikes" or "hot pixels" into level 1 AIA images.
 
@@ -110,7 +109,7 @@ def respike(smap, spikes=None):
     )
 
 
-def fetch_spikes(smap, as_coords=False):
+def fetch_spikes(smap, *, as_coords=False):
     """
     Returns coordinates and values of removed spikes.
 

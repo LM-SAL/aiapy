@@ -4,10 +4,9 @@ Class for accessing response function data from each channel.
 import collections
 from urllib.parse import urljoin
 
-import numpy as np
-
 import astropy.constants as const
 import astropy.units as u
+import numpy as np
 from sunpy.data import manager
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
@@ -75,7 +74,7 @@ class Channel:
 
     @u.quantity_input
     @validate_channel("channel")
-    def __init__(self, channel: u.angstrom, instrument_file=None):
+    def __init__(self, channel: u.angstrom, *, instrument_file=None):
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
 
@@ -373,6 +372,7 @@ class Channel:
     @u.quantity_input
     def wavelength_response(
         self,
+        *,
         obstime=None,
         include_eve_correction=False,
         include_crosstalk=True,
