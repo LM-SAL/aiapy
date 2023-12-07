@@ -11,7 +11,7 @@ from sunpy.data import manager
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
-from aiapy import _SSW_MIRROR
+from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import telescope_number
@@ -20,23 +20,17 @@ from aiapy.util.decorators import validate_channel
 __all__ = ["Channel"]
 
 # TODO: Work out what changes with version.
-AIA_INSTRUMENT_FILE = urljoin(_SSW_MIRROR, "sdo/aia/response/aia_V{}_{}_fullinst.genx")
+AIA_INSTRUMENT_FILE = "sdo/aia/response/aia_V{}_{}_fullinst.genx"
 VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files
-# The URLs are left as a list so that possible mirrors for these files
-# can be specified
 URL_HASH = {
-    2: {"fuv": None, "euv": None},
-    3: {"fuv": None, "euv": None},
-    4: {"fuv": None, "euv": None},
-    6: {"fuv": None, "euv": None},
     8: {
         "fuv": (
-            (AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "fuv")),
+            [urljoin(mirror, AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "fuv")) for mirror in _SSW_MIRRORS],
             "8635166d8f6dde48da4f135925f4e8f48a0574f129c2c2ca24da6628550f5430",
         ),
         "euv": (
-            (AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "all"),),
+            [urljoin(mirror, AIA_INSTRUMENT_FILE.format(VERSION_NUMBER, "all")) for mirror in _SSW_MIRRORS],
             "3940648e6b02876c45a9893f40806bbcc50baa994ae3fa2d95148916988426dd",
         ),
     },

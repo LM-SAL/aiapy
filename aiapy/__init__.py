@@ -3,7 +3,10 @@ from itertools import compress
 
 from .version import version as __version__
 
-_SSW_MIRROR = "https://sohoftp.nascom.nasa.gov/solarsoft/"
+_SSW_MIRRORS = [
+    "https://soho.nascom.nasa.gov/solarsoft/",
+    "https://hesperia.gsfc.nasa.gov/ssw/",
+]
 
 
 def _get_bibtex():
@@ -23,4 +26,4 @@ def _get_bibtex():
 
 
 __citation__ = __bibtex__ = _get_bibtex()
-__all__ = ["__version__", "__citation__", "_SSW_MIRROR"]
+__all__ = ["__version__", "__citation__", "_SSW_MIRRORS"]
