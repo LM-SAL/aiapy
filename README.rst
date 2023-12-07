@@ -22,8 +22,8 @@
     :target: https://codecov.io/gh/LM-SAL/aiapy
     :alt: Codecov coverage
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4016980.svg
-    :target: https://doi.org/10.5281/zenodo.4016980
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10064346.svg
+    :target: https://doi.org/10.5281/zenodo.10064346
     :alt: Zenodo DOI
 
 .. image:: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04/status.svg
