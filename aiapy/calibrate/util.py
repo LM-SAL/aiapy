@@ -8,9 +8,11 @@ from urllib.parse import urljoin
 
 import astropy.io.ascii
 import astropy.units as u
+import drms
 import numpy as np
 from astropy.table import QTable
 from astropy.time import Time
+from erfa.core import ErfaWarning
 from sunpy.data import manager
 from sunpy.net import attrs, jsoc
 
@@ -76,32 +78,35 @@ def get_correction_table(*, correction_table=None):
         else:
             raise ValueError("correction_table must be a file path, an existing table, or None.")
     else:
-        now = Time.now()
-        q = jsoc.JSOCClient().search(
-            # FIXME: more accurate time range?
-            attrs.Time(start=now - 100 * u.year, end=now + 100 * u.year),
-            # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
-            # the query to find records that are ordinarily considered
-            # identical because the PrimeKeys for this series are WAVE_STR
-            # and T_START. Without the !1=1! the query only returns the
-            # latest record for each unique combination of those keywords.
-            attrs.jsoc.Series("aia.response[!1=1!]"),
-        )
-        table = q.show(
-            "DATE",
-            "VER_NUM",
-            "WAVE_STR",
-            "WAVELNTH",
-            "T_START",
-            "T_STOP",
-            "EFFA_P1",
-            "EFFA_P2",
-            "EFFA_P3",
-            "EFF_AREA",
-            "EFF_WVLN",
-        )
+        # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
+        # the query to find records that are ordinarily considered
+        # identical because the PrimeKeys for this series are WAVE_STR
+        # and T_START. Without the !1=1! the query only returns the
+        # latest record for each unique combination of those keywords.
+        table = drms.Client().query("aia.response[][!1=1!]", key="**ALL**")
+        table = QTable.from_pandas(table)
+    selected_cols = [
+        "DATE",
+        "VER_NUM",
+        "WAVE_STR",
+        "WAVELNTH",
+        "T_START",
+        "T_STOP",
+        "EFFA_P1",
+        "EFFA_P2",
+        "EFFA_P3",
+        "EFF_AREA",
+        "EFF_WVLN",
+    ]
+    table = table[selected_cols]
     table["T_START"] = Time(table["T_START"], scale="utc")
-    table["T_STOP"] = Time(table["T_STOP"], scale="utc")
+    # NOTE: The warning from erfa here is due to the fact that dates in
+    # this table include at least one date from 2030 and converting this
+    # date to UTC is ambiguous as the UTC conversion is not well defined
+    # at this date.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ErfaWarning)
+        table["T_STOP"] = Time(table["T_STOP"], scale="utc")
     table["WAVELNTH"].unit = "Angstrom"
     table["EFF_WVLN"].unit = "Angstrom"
     table["EFF_AREA"].unit = "cm2"
@@ -192,7 +197,7 @@ def get_pointing_table(start, end):
         attrs.Time(start, end=end),
         attrs.jsoc.Series.aia_master_pointing3h,
     )
-    table = q.show()
+    table = QTable(q)
     if len(table.columns) == 0:
         # If there's no pointing information available between these times,
         # JSOC will raise a cryptic KeyError
@@ -229,8 +234,15 @@ def get_error_table(error_table=None):
     else:
         raise ValueError("error_table must be a file path, an existing table, or None.")
     table = QTable(table)
-    for col in ["DATE", "T_START", "T_STOP"]:
-        table[col] = Time(table[col], scale="utc")
+    table["DATE"] = Time(table["DATE"], scale="utc")
+    table["T_START"] = Time(table["T_START"], scale="utc")
+    # NOTE: The warning from erfa here is due to the fact that dates in
+    # this table include at least one date from 2030 and converting this
+    # date to UTC is ambiguous as the UTC conversion is not well defined
+    # at this date.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ErfaWarning)
+        table["T_STOP"] = Time(table["T_STOP"], scale="utc")
     table["WAVELNTH"] = u.Quantity(table["WAVELNTH"], "Angstrom")
     table["DNPERPHT"] = u.Quantity(table["DNPERPHT"], "ct photon-1")
     return table

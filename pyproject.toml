@@ -114,7 +114,6 @@ filterwarnings = [
   "ignore:numpy.ufunc size changed:RuntimeWarning",
   "ignore:numpy.ndarray size changed:RuntimeWarning",
   "ignore:.*unitfix.*",
-  "ignore::erfa.core.ErfaWarning",
   "ignore:invalid value encountered in sqrt",
 ]
 
