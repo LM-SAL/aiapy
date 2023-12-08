@@ -18,6 +18,7 @@ import astropy.units as u
 import drms
 import matplotlib.pyplot as plt
 import sunpy.map
+from astropy.visualization import AsinhStretch, ImageNormalize
 
 from aiapy.calibrate import correct_degradation, register, update_pointing
 from aiapy.calibrate.util import get_correction_table, get_pointing_table
@@ -140,7 +141,14 @@ for a_map in level_1_maps:
     map_degradation = correct_degradation(map_registered, correction_table=correction_table)
     map_normalized = map_degradation / map_degradation.exposure_time
     level_15_maps.append(map_normalized)
+
+#####################################################
+# Finally, we create a sequence of maps and animate it
+#
 sequence = sunpy.map.Map(level_15_maps, sequence=True)
-sequence.peek()
+
+fig = plt.figure()
+ax = fig.add_subplot(projection=sequence.maps[0])
+ani = sequence.plot(axes=ax, norm=ImageNormalize(vmin=0, vmax=1e3, stretch=AsinhStretch()))
 
 plt.show()
