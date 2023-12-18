@@ -52,15 +52,18 @@ repository = "https://github.com/LM-SAL/aiapy"
 changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
 
 [project.optional-dependencies]
+all = ["aiapy"]
 cupy = [
   'cupy',
 ]
 tests = [
+    "aiapy[all]",
     "hissw",
     "pytest",
     "pytest-astropy",
 ]
 docs = [
+    "aiapy[all]",
     "sphinx",
     "sphinx-automodapi",
     "sphinx-changelog",
@@ -73,7 +76,7 @@ docs = [
     # Remove next line when fixed in towncrier; see https://github.com/twisted/towncrier/issues/528
     "importlib-resources<6",
 ]
-dev = ["aiapy[all,tests,docs]"]
+dev = ["aiapy[tests,docs]"]
 
 [tool.setuptools]
 packages = ["aiapy"]
