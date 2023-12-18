@@ -1,0 +1,1 @@
+Catch all `erfa.core.ErfaWarning` that are raised when we convert the times from the error and degradation tables into UTC while making them `astropy.time.Time` objects.
