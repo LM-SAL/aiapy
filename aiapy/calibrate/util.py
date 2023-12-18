@@ -16,7 +16,7 @@ from erfa.core import ErfaWarning
 from sunpy.data import manager
 from sunpy.net import attrs, jsoc
 
-from aiapy import _SSW_MIRROR
+from aiapy import _SSW_MIRRORS
 from aiapy.util.decorators import validate_channel
 from aiapy.util.exceptions import AiapyUserWarning
 
@@ -26,19 +26,17 @@ __all__ = ["get_correction_table", "get_pointing_table", "get_error_table"]
 # This needs to be incremented as the calibration is updated in JSOC.
 CALIBRATION_VERSION = 10
 # Error table filename available from SSW
-AIA_ERROR_FILE = urljoin(_SSW_MIRROR, "sdo/aia/response/aia_V{}_error_table.txt")
+AIA_ERROR_FILE = "sdo/aia/response/aia_V{}_error_table.txt"
 # Most recent version number for error tables; increment as new versions become available
 ERROR_VERSION = 3
 # URLs and SHA-256 hashes for each version of the error tables
-# The URLs are left as a list so that possible mirrors for these files
-# can be specified
 URL_HASH = {
     2: (
-        (AIA_ERROR_FILE.format(2)),
+        [urljoin(mirror, AIA_ERROR_FILE.format(2)) for mirror in _SSW_MIRRORS],
         "ac97ccc48057809723c27e3ef290c7d78ee35791d9054b2188baecfb5c290d0a",
     ),
     3: (
-        (AIA_ERROR_FILE.format(3)),
+        [urljoin(mirror, AIA_ERROR_FILE.format(3)) for mirror in _SSW_MIRRORS],
         "66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894",
     ),
 }
