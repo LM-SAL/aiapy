@@ -13,12 +13,12 @@ import numpy as np
 from astropy.table import QTable
 from astropy.time import Time
 from erfa.core import ErfaWarning
+from sunpy import log
 from sunpy.data import manager
 from sunpy.net import attrs, jsoc
 
 from aiapy import _SSW_MIRRORS
 from aiapy.util.decorators import validate_channel
-from aiapy.util.exceptions import AiapyUserWarning
 
 __all__ = ["get_correction_table", "get_pointing_table", "get_error_table"]
 
@@ -147,10 +147,8 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, *, 
     # use the most up-to-date one.
     i_epoch = np.where(obstime_in_epoch)[0]
     if i_epoch.shape[0] > 1:
-        warnings.warn(
+        log.debug(
             f"Multiple valid epochs for {obstime}. Using the most recent one",
-            AiapyUserWarning,
-            stacklevel=3,
         )
     # Create new table with only first and obstime epochs
     return QTable(table[[0, i_epoch[-1]]])

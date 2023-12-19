@@ -160,7 +160,6 @@ def test_correct_degradation(aia_171_map, correction_table, version):
         ),
     ],
 )
-@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation(correction_table, version, time_correction_truth):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
@@ -223,7 +222,6 @@ def test_degradation(correction_table, version, time_correction_truth):
         ),
     ],
 )
-@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation_all_wavelengths(wavelength, result):
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     time_correction = degradation(
