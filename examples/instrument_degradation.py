@@ -65,7 +65,7 @@ deg = {channel: degradation(channel, time_range, correction_table=correction_tab
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
 
-# This lets you pass astropy.time.Time objects directly to matplotlib
+# This lets you pass `astropy.time.Time` objects directly to matplotlib
 time_support(format="jyear")
 
 fig = plt.figure()
