@@ -7,7 +7,7 @@ This example demonstrates how to convert AIA images to a common pointing,
 rescale them to a common plate scale, and remove the roll angle.
 This process is often referred to as "aia_prep" and the resulting data are typically referred to as level 1.5 data.
 In this example, we will demonstrate how to do this with `aiapy`.
-This corresponds to the `aia_prep.pro` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
+This corresponds to the ``aia_prep.pro`` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 """
 import matplotlib.pyplot as plt
 import sunpy.map
@@ -64,7 +64,7 @@ aia_map_registered = register(aia_map_updated_pointing)
 # If we look again at the plate scale and rotation matrix, we
 # should find that the plate scale in each direction is :math:`0.6''`
 # per pixel and that the rotation matrix is diagonalized.
-# The image in `m_registered` is now a level 1.5 data product.
+# The image in ``aia_map_registered`` is now a level 1.5 data product.
 
 print(aia_map_registered.scale)
 print(aia_map_registered.rotation_matrix)

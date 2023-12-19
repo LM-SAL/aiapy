@@ -1,1 +1,1 @@
-Fixed incorrect IDL routine reference in the `aiapy.calibrate.uncertainty.estimate_error` documentation.
+Fixed incorrect IDL routine reference in the `aiapy.calibrate.estimate_error` documentation.

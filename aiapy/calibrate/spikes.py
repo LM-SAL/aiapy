@@ -37,30 +37,30 @@ def respike(smap, *, spikes=None):
 
     .. note:: If the image series of interest is large, it is advised to
               obtain the spike data via JSOC externally and specify them
-              via the `spikes` keyword argument. To retrieve the coordinates
+              via the ``spikes`` keyword argument. To retrieve the coordinates
               of the positions of the spikes use the function
               `aiapy.calibrate.fetch_spikes`.
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
         Level 1 AIA image. This can be a cutout or a full-frame image.
     spikes : array-like, with shape ``(2, N)``, optional
         Tuple of pixel positions of the spikes in the coordinate system of
-        the level 1 AIA image in `smap` (first entry) and original intensity
+        the level 1 AIA image in ``smap`` (first entry) and original intensity
         values (second entry). This can be calculated using `fetch_spikes`. If
         not specified, the spike positions and intensities are automatically
         queried from the JSOC.
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap`
-        A level 0.5 version of `smap` with the spike data re-inserted at the
-        appropriate pixels
+    `~sunpy.map.sources.AIAMap`
+        A level 0.5 version of ``smap`` with the spike data re-inserted at the
+        appropriate pixels.
 
     See Also
     --------
-    fetch_spikes
+    `fetch_spikes`
     """
     if not isinstance(smap, AIAMap):
         raise ValueError("Input must be an AIAMap.")
@@ -131,7 +131,7 @@ def fetch_spikes(smap, *, as_coords=False):
     -------
     `~astropy.coordinates.SkyCoord` or `~sunpy.map.mapbase.PixelPair`
         Locations of the removed spikes. By default, these are represented as
-        pixel coordinates. If `as_coords=True`, the locations are returned in
+        pixel coordinates. If ``as_coords=True``, the locations are returned in
         the projected coordinate system of the image.
     array-like
         Original intensity values of the spikes

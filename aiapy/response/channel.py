@@ -295,7 +295,7 @@ class Channel:
         where :math:`A_{eff}(\lambda_n,t_0)` is the effective area at the
         nominal wavelength of the channel (:math:`\lambda_n`) at the first
         calibration epoch and :math:`A_{eff}(\lambda_E,t_e)` is the effective
-        area at the ``obstime`` calibration epoch interpolated to the effective
+        area at the ```obstime``` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`).
 
         .. note:: This function is adapted directly from the
@@ -399,7 +399,7 @@ class Channel:
         obstime : `~astropy.time.Time`, optional
             If specified, a time-dependent correction is applied to account for degradation.
         include_eve_correction : `bool`, optional
-            If true and `obstime` is not `None`, include correction to EVE calibration.
+            If true and ``obstime`` is not `None`, include correction to EVE calibration.
             The time-dependent correction is also included.
         include_crosstalk : `bool`, optional
             If true, include the effect of crosstalk between channels that share a telescope

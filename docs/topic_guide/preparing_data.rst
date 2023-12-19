@@ -10,7 +10,7 @@ each channel may have a slightly different resolution.
 Typically, before performing any sort of data analysis on AIA images, you will want to promote your AIA data from level 1 to level 1.5.
 This promotion involves updating the pointing keywords, removing the roll angle, scaling the image to a resolution of 0.6 arcseconds per pixel, and translating the image such that the center of the Sun is located in the center of the image.
 
-In IDL, this is done with the `aia_prep.pro` procedure in SSWIDL as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
+In IDL, this is done with the ``aia_prep.pro`` procedure in SSWIDL as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 The following example, :ref:`sphx_glr_generated_gallery_prepping_level_1_data.py` demonstrates how to achieve this in Python with ``aiapy``.
 
 Additional data processing steps (e.g. a PSF deconvolution) should be done in the following order:

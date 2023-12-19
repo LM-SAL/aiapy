@@ -57,8 +57,8 @@ print(aia_map_updated_pointing.reference_pixel)
 print(aia_map_updated_pointing.rotation_matrix)
 
 ###############################################################################
-# We find that the relevant keywords, `CRPIX1`, `CRPIX2`, `CDELT1`, `CDELT2`,
-# and `CROTA2`, have been updated.
+# We find that the relevant keywords, ``CRPIX1``, ``CRPIX2``, ``CDELT1``, ``CDELT2``,
+# and ``CROTA2``, have been updated.
 #
 # Similarly, the Heliographic Stonyhurst (HGS) coordinates of the observer
 # location in the header are inaccurate. If we check the HGS longitude keyword
@@ -84,7 +84,7 @@ print(aia_map_observer_fixed.meta["hgln_obs"])
 print(aia_map_observer_fixed.meta["hglt_obs"])
 
 ###############################################################################
-# Note that in `~sunpy.map.AIAMap`, the `~sunpy.map.Map.observer_coordinate`
+# Note that in `~sunpy.map.sources.AIAMap`, the `~sunpy.map.GenericMap.observer_coordinate`
 # attribute is already derived from the HAE coordinates such that it is not
 # strictly necessary to apply `aiapy.calibrate.fix_observer_location`. For
 # example, the unfixed `~sunpy.map.Map` will still have an accurate derived
@@ -94,7 +94,7 @@ print(aia_map_updated_pointing.observer_coordinate)
 
 ###############################################################################
 # However, we suggest that users apply this fix such that the information
-# stored in `~sunpy.map.Map.meta` is accurate and consistent.
+# stored in `~sunpy.map.GenericMap.meta` is accurate and consistent.
 #
 # Finally, plot the fixed map.
 

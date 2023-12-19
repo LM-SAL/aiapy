@@ -23,7 +23,7 @@ from aiapy.calibrate import fetch_spikes, respike
 # physically meaningful. In this example, we will demonstrate how to revert
 # this removal by putting back all the removed pixel values with the
 # `aiapy.calibrate.respike` in function. This corresponds to the
-# `aia_respike.pro` IDL procedure as described in the
+# ``aia_respike.pro`` IDL procedure as described in the
 # `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
 #
 # The header keywords ``LVL_NUM`` and ``NSPIKES`` describe the level number of the
@@ -31,7 +31,7 @@ from aiapy.calibrate import fetch_spikes, respike
 # (i.e. the "spikes"). The data containing the information of the pixel
 # position and the intensities of the removed hot pixels are available from the
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ as a
-# separate segment of the `aia.lev1_euv_12s` and `aia.lev1_uv_24s` data series
+# separate segment of the ``aia.lev1_euv_12s`` and ``aia.lev1_uv_24s`` data series
 
 ###############################################################################
 # First, let's read a level 1 193 Å AIA image from the aiapy sample data
@@ -61,7 +61,7 @@ positions, values = fetch_spikes(aia_map)
 # `aiapy.calibrate.respike` function performs the respike operation on the given
 # input image and returns a `~sunpy.map.Map` with the respiked image. This
 # operation also alters the metadata by updating the ``LVL_NUM``, ``NSPIKES``,
-# and `COMMENTS` keywords.
+# and ``COMMENTS`` keywords.
 #
 # Note that explicitly specifying the spike positions and values is optional.
 # If they are not given, they are automatically queried from the JSOC.

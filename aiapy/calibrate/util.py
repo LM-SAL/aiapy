@@ -49,10 +49,10 @@ def get_correction_table(*, correction_table=None):
     This function returns a table of parameters for estimating the
     time-dependent degradation of the instrument. By default, this table
     is queried from `aia.response` series in
-    `JSOC <http://jsoc.stanford.edu/>`_. The correction table can also be read
-    from a file by passing a filepath to `correction_table`. These files are
+    `JSOC <http://jsoc.stanford.edu/>`__. The correction table can also be read
+    from a file by passing a filepath to ``correction_table``. These files are
     typically included in the SDO tree of an SSW installation in
-    `$SSW/sdo/aia/response/` with filenames like `aia_V*_response_table.txt`.
+    ``$SSW/sdo/aia/response/`` with filenames like ``aia_V*_response_table.txt``.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def get_correction_table(*, correction_table=None):
 def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, *, version=None):
     """
     Return correction table with only the first epoch and the epoch in which
-    `obstime` falls and for only one given calibration version.
+    ``obstime`` falls and for only one given calibration version.
 
     Parameters
     ----------
@@ -160,7 +160,7 @@ def get_pointing_table(start, end):
 
     This function queries `JSOC <http://jsoc.stanford.edu/>`__ for
     the 3-hourly master pointing table (MPT) in the interval defined by
-    `start` and `end`.
+    ``start`` and ``end``.
     The 3-hourly MPT entries are computed from limb fits of images with
     ``T_OBS`` between ``T_START`` and ``T_STOP``.
 
