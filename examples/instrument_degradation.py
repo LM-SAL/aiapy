@@ -72,7 +72,7 @@ fig = plt.figure()
 ax = fig.gca()
 
 for channel in aia_channels:
-    ax.plot(time_range, deg[channel], label=f"{channel.value:.0f} Å")
+    ax.plot(time_range, deg[channel], label=f"{channel:latex}")
 
 ax.set_xlim(time_range[[0, -1]])
 ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc="lower center")
