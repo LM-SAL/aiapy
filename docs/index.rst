@@ -6,7 +6,7 @@ aiapy documentation
 
 ``aiapy`` is a Python library for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard the Solar Dynamics Observatory (SDO) spacecraft.
 
-It allows for converting AIA images from level 1 to level 1.5, point spread function deconvolution, and computing the wavelength and temperature response functions for the EUV channels.
+It allows for converting AIA images from level 1 to level 1.5, point spread function deconvolution, and computing the wavelength response functions for the EUV channels.
 
 .. grid:: 1 2 2 2
     :gutter: 2
