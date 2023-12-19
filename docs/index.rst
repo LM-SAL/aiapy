@@ -68,7 +68,7 @@ It allows for converting AIA images from level 1 to level 1.5, point spread func
     :maxdepth: 1
     :hidden:
 
-    tutorial/index
+    topic_guide/index
     generated/gallery/index
     code_ref/index
     citation
