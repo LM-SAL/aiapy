@@ -18,7 +18,6 @@ It allows for converting AIA images from level 1 to level 1.5, point spread func
 
         :material-outlined:`accessibility_new;8em;sd-text-secondary`
 
-        **New users start here!**
         Topic Guides on how to install and use the key features of aiapy.
 
     .. grid-item-card:: Example gallery
