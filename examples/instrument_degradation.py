@@ -1,13 +1,12 @@
 """
-========================================
+======================================
 Modeling channel degradation over time
-========================================
+======================================
 
 This example demonstrates how to model the degradation
 of the AIA channels as a function of time over the entire
 lifetime of the instrument.
 """
-
 import astropy.time
 import astropy.units as u
 import matplotlib.pyplot as plt
@@ -16,6 +15,9 @@ from astropy.visualization import time_support
 
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import get_correction_table
+
+# This lets you pass `astropy.time.Time` objects directly to matplotlib
+time_support(format="jyear")
 
 ###############################################################################
 # The sensitivity of the AIA channels degrade over time. Possible causes include
@@ -59,20 +61,20 @@ time_range = start_time + np.arange(0, (now - start_time).to(u.day).value, 7) * 
 # This is modeled as the ratio of the effective area measured at a particular
 # calibration epoch over the uncorrected effective area with a polynomial
 # interpolation to the exact time.
-deg = {channel: degradation(channel, time_range, correction_table=correction_table) for channel in aia_channels}
+
+degradations = {
+    channel: degradation(channel, time_range, correction_table=correction_table) for channel in aia_channels
+}
 
 ###############################################################################
 # Plotting the different degradation curves as a function of time, we can
 # easily visualize how the different channels have degraded over time.
 
-# This lets you pass `astropy.time.Time` objects directly to matplotlib
-time_support(format="jyear")
-
 fig = plt.figure()
 ax = fig.gca()
 
 for channel in aia_channels:
-    ax.plot(time_range, deg[channel], label=f"{channel:latex}")
+    ax.plot(time_range, degradations[channel], label=f"{channel:latex}")
 
 ax.set_xlim(time_range[[0, -1]])
 ax.legend(frameon=False, ncol=4, bbox_to_anchor=(0.5, 1), loc="lower center")

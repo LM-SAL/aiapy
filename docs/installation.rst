@@ -1,10 +1,10 @@
-.. _aiapy-topic-guide-installing:
+.. _aiapy-installing:
 
-************
-Installation
-************
+******************
+aiapy Installation
+******************
 
-This topic guide details how to get a working installation of Python and ``aiapy``.
+This page details how to get a working installation of Python and ``aiapy``.
 
 Installing Python
 =================

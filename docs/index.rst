@@ -11,14 +11,14 @@ It allows for converting AIA images from level 1 to level 1.5, point spread func
 .. grid:: 1 2 2 2
     :gutter: 2
 
-    .. grid-item-card:: Topic Guide
-        :link: aiapy-topic-guide-index
+    .. grid-item-card:: Getting Started
+        :link: aiapy-getting-started-index
         :link-type: ref
         :text-align: center
 
         :material-outlined:`accessibility_new;8em;sd-text-secondary`
 
-        Topic Guides on how to install and use the key features of aiapy.
+        How to install aiapy and what its key features are.
 
     .. grid-item-card:: Example gallery
         :link: generated/gallery
@@ -67,7 +67,7 @@ It allows for converting AIA images from level 1 to level 1.5, point spread func
     :maxdepth: 1
     :hidden:
 
-    topic_guide/index
+    getting_started
     generated/gallery/index
     reference/index
     citation

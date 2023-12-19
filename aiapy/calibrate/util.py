@@ -48,7 +48,7 @@ def get_correction_table(*, correction_table=None):
 
     This function returns a table of parameters for estimating the
     time-dependent degradation of the instrument. By default, this table
-    is queried from `aia.response` series in
+    is queried from ``aia.response`` series in
     `JSOC <http://jsoc.stanford.edu/>`__. The correction table can also be read
     from a file by passing a filepath to ``correction_table``. These files are
     typically included in the SDO tree of an SSW installation in

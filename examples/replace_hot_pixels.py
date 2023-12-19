@@ -80,7 +80,7 @@ aia_map_respiked_cutout = aia_map_respiked.submap(bottom_left, top_right=top_rig
 ###############################################################################
 # Note that we can also retrieve the positions of the spikes
 # as `~astropy.coordinates.SkyCoord` objects in the projected coordinate
-# system of the image using the `as_coords=True` keyword argument. This
+# system of the image using the ``as_coords=True`` keyword argument. This
 # gives us only those spikes in the field of view of the cutout.
 
 spike_coords, _ = fetch_spikes(aia_map_cutout, as_coords=True)
