@@ -143,10 +143,11 @@ media
 static
 
 # Specifc Template
-docs/_build
-docs/generated
-docs/api
 aiapy/_version.py
+docs/_build
+docs/api
+docs/generated
+docs/sg_execution_times.rst
 htmlcov/
 
 # VS Code
