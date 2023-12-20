@@ -120,6 +120,12 @@ filterwarnings = [
   "ignore:invalid value encountered in sqrt",
 ]
 
+[tool.coverage.run]
+branch = true
+omit = [
+  "*test_idl.py",
+]
+
 [tool.black]
 line-length = 120
 target-version = ['py39']
