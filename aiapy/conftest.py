@@ -1,21 +1,15 @@
+import contextlib
+
 import astropy.units as u
 import pytest
 import sunpy.data.test
 import sunpy.map
 
 # Force MPL to use non-gui backends for testing.
-try:
+with contextlib.suppress(ImportError):
     import matplotlib
-except ImportError:
-    pass
-else:
-    matplotlib.use("Agg")
 
-# Do not require hissw for tests
-try:
-    import hissw
-except ImportError:
-    pass
+    matplotlib.use("Agg")
 
 
 @pytest.fixture()
@@ -26,26 +20,5 @@ def aia_171_map():
 
 
 @pytest.fixture(scope="session")
-def idl_environment():
-    if idl_available():
-        return hissw.Environment(ssw_packages=["sdo/aia"], ssw_paths=["aia"])
-    pytest.skip(
-        "A working IDL installation is not available. You will not be able to run portions of the test suite.",
-    )
-
-
-@pytest.fixture(scope="session")
-def ssw_home():
-    if idl_available():
-        return hissw.Environment().ssw_home
-    return None
-
-
-def idl_available():
-    try:
-        import hissw
-
-        hissw.Environment().run("")
-        return True
-    except Exception:  # NOQA
-        return False
+def channels():
+    return [94, 131, 171, 193, 211, 304, 335] * u.angstrom

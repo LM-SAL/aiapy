@@ -1,15 +1,9 @@
 """
 Shared fixtures for PSF tests.
 """
-import astropy.units as u
 import pytest
 
 import aiapy.psf
-
-
-@pytest.fixture(scope="module")
-def channels():
-    return [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 
 
 @pytest.fixture()

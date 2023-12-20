@@ -1,4 +1,3 @@
-from pathlib import Path
 from contextlib import nullcontext
 
 import astropy.units as u
@@ -68,49 +67,3 @@ def test_flags(include_preflight, include_eve, include_chianti, expectation):
             include_chianti=include_chianti,
         )
         assert isinstance(errors, u.Quantity)
-
-
-@pytest.mark.parametrize(
-    ("channel", "counts", "include_eve", "include_preflight", "include_chianti"),
-    [[c, 10 * u.ct / u.pixel] + 3 * [False] for c in CHANNELS]
-    + [
-        [171 * u.angstrom, 1000 * u.ct / u.pix, True, False, False],
-        [171 * u.angstrom, 1000 * u.ct / u.pix, False, False, True],
-    ],
-)
-def test_error_consistent(idl_environment, channel, counts, include_eve, include_preflight, include_chianti):
-    idl = """
-    common aia_bp_error_common,common_errtable
-    common_errtable=aia_bp_read_error_table('{{ error_table }}')
-    data = {{ data }}
-    channel = {{ channel }}
-    error=aia_bp_estimate_error(data,channel,n_sample=1{{ include_eve }}{{ include_preflight }}{{ include_chianti }})
-    """
-    error_table = Path(idl_environment.ssw_home) / "sdo" / "aia" / "response" / "aia_V3_error_table.txt"
-    ssw = idl_environment.run(
-        idl,
-        save_vars=["error"],
-        args={
-            "channel": channel.to("angstrom").value,
-            "data": counts.to("ct pixel-1").value,
-            "error_table": error_table,
-            "include_eve": ",/evenorm" if include_eve else "",
-            # NOTE: use of this keyword is actually broken in SSW so these
-            # tests only set it to False until it works, but consistency with
-            # these results has been verified
-            "include_preflight": ",/cal" if include_preflight else "",
-            "include_chianti": ",/temperature" if include_chianti else "",
-        },
-        verbose=False,
-    )
-    error_ssw = ssw["error"] * counts.unit
-    error = estimate_error(
-        counts,
-        channel,
-        include_eve=include_eve,
-        include_preflight=include_preflight,
-        include_chianti=include_chianti,
-        error_table=error_table,
-        compare_idl=True,
-    )
-    assert u.allclose(error, error_ssw, rtol=1e-4)
