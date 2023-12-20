@@ -78,6 +78,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     if use_gpu and not HAS_CUPY:
         log.info("cupy not installed or working, falling back to CPU")
     if HAS_CUPY and use_gpu:
+        log.info("Using a GPU via cupy")
         img = cupy.array(img)
         psf = cupy.array(psf)
     # Center PSF at pixel (0,0)
