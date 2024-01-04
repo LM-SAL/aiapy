@@ -5,7 +5,7 @@ Preparing AIA data from level 1 to level 1.5
 ============================================
 
 AIA data products provided by the JSOC are level 1 data products.
-This means that the images still include the roll angle of the satellite and each channel may have a slightly pixel scale.
+This means that the images still include the roll angle of the satellite and each channel may have a slightly different pixel scale.
 Typically, before performing any sort of data analysis on AIA images, you will want to promote your AIA data from level 1 to level 1.5.
 This is important if you want to compare images from different channels or create Differential Emission Measure (DEM) maps.
 
@@ -14,7 +14,7 @@ The promotion to level 1.5 involves updating the pointing keywords, removing the
 In IDL, this is done with the ``aia_prep.pro`` procedure in SSWIDL as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 The following example, :ref:`sphx_glr_generated_gallery_prepping_level_1_data.py` demonstrates how to achieve this in Python with ``aiapy``.
 
-However, this is not the entire possible processing steps that can be done to AIA level 1 data products.
+There are also additional processing steps that can be applied to the level 1 AIA images.
 If you want to do any additional data processing steps (e.g., PSF deconvolution) should be done in the following order:
 
 1. Pointing correction (`aiapy.calibrate.update_pointing`)
