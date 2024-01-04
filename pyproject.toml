@@ -57,24 +57,24 @@ cupy = [
   'cupy',
 ]
 tests = [
-    "aiapy[all]",
-    "hissw",
-    "pytest",
-    "pytest-astropy",
+  "aiapy[all]",
+  "hissw",
+  "pytest",
+  "pytest-astropy",
 ]
 docs = [
-    "aiapy[all]",
-    "sphinx",
-    "sphinx-automodapi",
-    "sphinx-changelog",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinx-hoverxref",
-    "sphinxext-opengraph",
-    "sunpy-sphinx-theme",
-    # Remove next line when fixed in towncrier; see https://github.com/twisted/towncrier/issues/528
-    "importlib-resources<6",
+  "aiapy[all]",
+  "sphinx",
+  "sphinx-automodapi",
+  "sphinx-changelog",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinx-gallery",
+  "sphinx-hoverxref",
+  "sphinxext-opengraph",
+  "sunpy-sphinx-theme",
+  # Remove next line when fixed in towncrier; see https://github.com/twisted/towncrier/issues/528
+  "importlib-resources<6",
 ]
 dev = ["aiapy[tests,docs]"]
 
@@ -120,6 +120,12 @@ filterwarnings = [
   "ignore:invalid value encountered in sqrt",
 ]
 
+[tool.coverage.run]
+branch = true
+omit = [
+  "*test_idl.py",
+]
+
 [tool.black]
 line-length = 120
 target-version = ['py39']
@@ -136,41 +142,41 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py39"
 line-length = 120
 exclude = [
-    ".eggs",
-    ".git",
-    ".mypy_cache",
-    ".ruff_cache",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+  ".eggs",
+  ".git",
+  ".mypy_cache",
+  ".ruff_cache",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
 ]
 select = [
-       "E",
-       "F",
-       "W",
-       "UP",
-       "PT",
-       "RET",
-       "TID",
-       "PLE",
-       "NPY",
-       "RUF",
-       "PGH",
-       "PTH",
-       "BLE",
-       "FBT",
-       "B",
-       "A",
-       "COM",
-       "C4",
-       "T20",
-       "RSE",
-       "ERA",
+  "E",
+  "F",
+  "W",
+  "UP",
+  "PT",
+  "RET",
+  "TID",
+  "PLE",
+  "NPY",
+  "RUF",
+  "PGH",
+  "PTH",
+  "BLE",
+  "FBT",
+  "B",
+  "A",
+  "COM",
+  "C4",
+  "T20",
+  "RSE",
+  "ERA",
 ]
 ignore = ["E501"]
 extend-ignore = [
@@ -179,11 +185,11 @@ extend-ignore = [
 
 [tool.ruff.per-file-ignores]
 "examples/*.py" = [
-    "T201", # We need print in our examples
+  "T201", # We need print in our examples
 ]
 "docs/*.py" = [
-    "INP001", # implicit-namespace-package. The examples are not a package.
-    "A001", # Variable `copyright` is shadowing a python builtin
+  "INP001", # implicit-namespace-package. The examples are not a package.
+  "A001", # Variable `copyright` is shadowing a python builtin
 ]
 "aiapy/data/sample.py" = [
 "A001", # Variable `__doc__` is shadowing a python builtin
@@ -197,43 +203,43 @@ convention = "numpy"
 ignore-words-list = "emiss"
 
 [tool.towncrier]
-    package = "aiapy"
-    filename = "CHANGELOG.rst"
-    directory = "changelog/"
-    issue_format = "`#{issue} <https://github.com/LM-SAL/aiapy/pull/{issue}>`__"
-    title_format = "{version} ({project_date})"
+  package = "aiapy"
+  filename = "CHANGELOG.rst"
+  directory = "changelog/"
+  issue_format = "`#{issue} <https://github.com/LM-SAL/aiapy/pull/{issue}>`__"
+  title_format = "{version} ({project_date})"
 
-    [[tool.towncrier.type]]
-        directory = "breaking"
-        name = "Breaking Changes"
-        showcontent = true
+  [[tool.towncrier.type]]
+    directory = "breaking"
+    name = "Breaking Changes"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "deprecation"
-      name = "Deprecations"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "deprecation"
+    name = "Deprecations"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "removal"
-      name = "Removals"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "removal"
+    name = "Removals"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "feature"
-      name = "New Features"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "feature"
+    name = "New Features"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "bugfix"
-      name = "Bug Fixes"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "bugfix"
+    name = "Bug Fixes"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "doc"
-      name = "Documentation"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "doc"
+    name = "Documentation"
+    showcontent = true
 
-    [[tool.towncrier.type]]
-      directory = "trivial"
-      name = "Internal Changes"
-      showcontent = true
+  [[tool.towncrier.type]]
+    directory = "trivial"
+    name = "Internal Changes"
+    showcontent = true
