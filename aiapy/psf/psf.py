@@ -35,13 +35,13 @@ def filter_mesh_parameters(*, use_preflightcore=False):
         describing filter mesh properties of that channel
         (see Table 2 of [1]_):
 
-        * `angle_arm`: Angles of the four entrance filter arms
-        * `error_angle_arm`: Error in angle of the four entrance filter arms
-        * `spacing_e`: Distance between diffraction spikes from entrance filter
-        * `spacing_fp`: Distance between diffraction spikes from focal plane filter
-        * `mesh_pitch`: Pitch of the mesh
-        * `mesh_width`: Width of the mesh
-        * `width`: Width applied to the Gaussian such that *after*
+        * ``angle_arm``: Angles of the four entrance filter arms
+        * ``error_angle_arm``: Error in angle of the four entrance filter arms
+        * ``spacing_e``: Distance between diffraction spikes from entrance filter
+        * ``spacing_fp``: Distance between diffraction spikes from focal plane filter
+        * ``mesh_pitch``: Pitch of the mesh
+        * ``mesh_width``: Width of the mesh
+        * ``width``: Width applied to the Gaussian such that *after*
           convolution we have the proper width
           (:math:`4/3` at :math:`1/e` of max)
 

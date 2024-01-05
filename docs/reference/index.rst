@@ -1,3 +1,5 @@
+.. _aia_api_reference:
+
 =============
 API reference
 =============

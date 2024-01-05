@@ -20,13 +20,13 @@ __all__ = ["register", "correct_degradation", "degradation"]
 @add_common_docstring(rotation_function_names=_rotation_function_names)
 def register(smap, *, missing=None, order=3, method="scipy"):
     """
-    Processes a full-disk level 1 `~sunpy.map.sources.sdo.AIAMap` into a level
-    1.5 `~sunpy.map.sources.sdo.AIAMap`.
+    Processes a full-disk level 1 `~sunpy.map.sources.AIAMap` into a level
+    1.5 `~sunpy.map.sources.AIAMap`.
 
     Rotates, scales and translates the image so that solar North is aligned
     with the y axis, each pixel is 0.6 arcsec across, and the center of the
     Sun is at the center of the image. The actual transformation is done by
-    the `~sunpy.map.mapbase.GenericMap.rotate` method.
+    the `~sunpy.map.GenericMap.rotate` method.
 
     .. warning::
 
@@ -48,7 +48,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
+    smap : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
         A `~sunpy.map.Map` containing a full-disk AIA image or HMI magnetogram
     missing : `float`, optional
         If there are missing values after the interpolation, they will be
@@ -61,8 +61,8 @@ def register(smap, *, missing=None, order=3, method="scipy"):
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`:
-        A level 1.5 copy of `~sunpy.map.sources.sdo.AIAMap` or
+    `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`:
+        A level 1.5 copy of `~sunpy.map.sources.AIAMap` or
         `~sunpy.map.sources.sdo.HMIMap`.
     """
     # This implementation is taken directly from the `aiaprep` method in
@@ -121,7 +121,7 @@ def correct_degradation(smap, *, correction_table=None, calibration_version=None
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
         Map to be corrected.
     correction_table : `~astropy.table.Table` or `str`, optional
         Table of correction parameters or path to correction table file.
@@ -138,7 +138,7 @@ def correct_degradation(smap, *, correction_table=None, calibration_version=None
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap`
+    `~sunpy.map.sources.AIAMap`
 
     See Also
     --------
@@ -167,20 +167,20 @@ def degradation(
 
     The correction factor to account for the time-varying degradation of
     the telescopes is given by a normalization to the calibration epoch
-    closest to `obstime` and an interpolation within that epoch to
-    `obstime`,
+    closest to ``obstime`` and an interpolation within that epoch to
+    ``obstime``,
 
     .. math::
 
         \frac{A_{eff}(t_{e})}{A_{eff}(t_0)}(1 + p_1\delta t + p_2\delta t^2 + p_3\delta t^3)
 
     where :math:`A_{eff}(t_e)` is the effective area calculated at the
-    calibration epoch for `obstime`, :math:`A_{eff}(t_0)` is the effective
+    calibration epoch for ``obstime``, :math:`A_{eff}(t_0)` is the effective
     area at the first calibration epoch (i.e. at launch),
     :math:`p_1,p_2,p_3` are the interpolation coefficients for the
-    `obstime` epoch, and :math:`\delta t` is the difference between the
-    start time of the epoch and `obstime`.
-    All calibration terms are taken from the `aia.response` series in JSOC
+    ``obstime`` epoch, and :math:`\delta t` is the difference between the
+    start time of the epoch and ``obstime``.
+    All calibration terms are taken from the ``aia.response`` series in JSOC
     or read from the table input by the user.
 
     .. note:: This function is adapted directly from the
@@ -206,8 +206,7 @@ def degradation(
 
     See Also
     --------
-    degradation
-    aiapy.calibrate.get_correction_table
+    aiapy.calibrate.util.get_correction_table
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """

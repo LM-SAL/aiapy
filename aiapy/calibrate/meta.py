@@ -25,13 +25,20 @@ def fix_observer_location(smap):
     keywords using the heliocentric aries ecliptic keywords, ``HAEX_OBS,
     HAEY_OBS, HAEZ_OBS``.
 
-    .. note:: `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
-              HGS keywords by using the HAE keywords to construct the
-              derived observer location.
+    .. note::
+
+        `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
+        HGS keywords by using the HAE keywords to construct the
+        derived observer location.
 
     Parameters
     ----------
-    smap : `~sunpy.map.source.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
+        Input map.
+
+    Returns
+    -------
+    `~sunpy.map.sources.AIAMap`
     """
     # Create observer coordinate from HAE coordinates
     coord = SkyCoord(
@@ -53,38 +60,48 @@ def fix_observer_location(smap):
 
 def update_pointing(smap, *, pointing_table=None):
     """
-    Update pointing information in the `smap` header.
+    Update the pointing information in the input map header.
 
-    This function updates the pointing information in `smap` by
+    This function updates the pointing information in ``smap`` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
-    in the header using the information provided in `pointing_table`.
-    If `pointing_table` is not specified, the 3-hour pointing
+    in the header using the information provided in ``pointing_table``.
+    If ``pointing_table`` is not specified, the 3-hour pointing
     information is queried from the `JSOC <http://jsoc.stanford.edu/>`_.
 
-    .. note:: The method removes any ``PCi_j`` matrix keys in the header and
-              updates the ``CROTA2`` keyword.
+    .. note::
 
-    .. note:: If correcting pointing information for a large number of images,
-              it is strongly recommended to query the table once for the
-              appropriate interval and then pass this table in rather than
-              executing repeated queries.
+        The method removes any ``PCi_j`` matrix keys in the header and
+        updates the ``CROTA2`` keyword.
+
+    .. note::
+
+        If correcting pointing information for a large number of images,
+        it is strongly recommended to query the table once for the
+        appropriate interval and then pass this table in rather than
+        executing repeated queries.
+
+    .. warning::
+
+        This function is only intended to be used for full-disk images
+        at the full resolution of 4096x4096 pixels. It will raise a
+        ``ValueError`` if the input map does not meet these criteria.
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
+        Input map.
     pointing_table : `~astropy.table.QTable`, optional
         Table of pointing information. If not specified, the table
         will be retrieved from JSOC.
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap`
+    `~sunpy.map.sources.AIAMap`
 
     See Also
     --------
-    aiapy.calibrate.util.get_pointing_table
+    `aiapy.calibrate.util.get_pointing_table`
     """
-    # This function can only be applied to full-resolution, full-frame images
     if not contains_full_disk(smap):
         raise ValueError("Input must be a full disk image.")
     shape_full_frame = (4096, 4096)
