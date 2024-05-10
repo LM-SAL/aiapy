@@ -7,6 +7,7 @@ This example shows how to request a specific series of AIA images from the JSOC.
 
 We will be filtering the data we require by keywords and requesting short exposure images from a recent (at time of writing) flare.
 """
+
 import os
 
 import astropy.units as u

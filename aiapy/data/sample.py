@@ -9,6 +9,7 @@ downloaded when this module is imported for the first time.
    * - Variable name
      - Name of downloaded file
 """
+
 import sys
 from pathlib import Path
 

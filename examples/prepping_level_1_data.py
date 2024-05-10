@@ -9,6 +9,7 @@ This process is often referred to as "aia_prep" and the resulting data are typic
 In this example, we will demonstrate how to do this with `aiapy`.
 This corresponds to the ``aia_prep.pro`` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 """
+
 import matplotlib.pyplot as plt
 import sunpy.map
 

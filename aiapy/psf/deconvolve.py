@@ -1,6 +1,7 @@
 """
 Deconvolve an AIA image with the channel point spread function.
 """
+
 import copy
 import warnings
 

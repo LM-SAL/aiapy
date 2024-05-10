@@ -1,6 +1,7 @@
 """
 Contains all the the IDL specific tests for aiapy.
 """
+
 from pathlib import Path
 
 import astropy.units as u

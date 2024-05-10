@@ -1,6 +1,7 @@
 """
 Class for accessing response function data from each channel.
 """
+
 import collections
 from urllib.parse import urljoin
 

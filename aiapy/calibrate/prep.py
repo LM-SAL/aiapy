@@ -1,6 +1,7 @@
 """
 Functions for calibrating AIA images.
 """
+
 import warnings
 
 import astropy.units as u

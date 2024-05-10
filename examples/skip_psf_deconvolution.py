@@ -6,6 +6,7 @@ Deconvolving images with the instrument Point Spread Function (PSF)
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
+
 import astropy.units as u
 import matplotlib.pyplot as plt
 import sunpy.map

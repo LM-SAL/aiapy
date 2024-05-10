@@ -1,6 +1,7 @@
 """
 Utilities for computing intensity corrections.
 """
+
 import os
 import pathlib
 import warnings

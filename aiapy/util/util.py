@@ -1,6 +1,7 @@
 """
 Miscellaneous utility functions.
 """
+
 import astropy.units as u
 import drms
 import numpy as np

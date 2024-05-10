@@ -8,6 +8,7 @@ an AIA FITS file to ensure that it has the most accurate
 information regarding the spacecraft pointing and observer
 position.
 """
+
 import matplotlib.pyplot as plt
 import sunpy.map
 

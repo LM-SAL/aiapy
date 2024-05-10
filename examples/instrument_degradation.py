@@ -7,6 +7,7 @@ This example demonstrates how to model the degradation
 of the AIA channels as a function of time over the entire
 lifetime of the instrument.
 """
+
 import astropy.time
 import astropy.units as u
 import matplotlib.pyplot as plt

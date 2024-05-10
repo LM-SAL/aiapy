@@ -5,6 +5,7 @@ Correcting for instrument degradation
 
 This example demonstrates the degradation of the filters on AIA and how to correct it.
 """
+
 import astropy.time
 import astropy.units as u
 import matplotlib.pyplot as plt

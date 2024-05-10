@@ -1,6 +1,7 @@
 """
 Shared fixtures for PSF tests.
 """
+
 import pytest
 
 import aiapy.psf
