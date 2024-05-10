@@ -69,10 +69,12 @@ def register(smap, *, missing=None, order=3, method="scipy"):
     # This implementation is taken directly from the `aiaprep` method in
     # sunpy.instr.aia.aiaprep under the terms of the BSD 2 Clause license.
     # See licenses/SUNPY.rst.
-    if not isinstance(smap, (AIAMap, HMIMap)):
-        raise ValueError("Input must be an AIAMap or HMIMap.")
+    if not isinstance(smap, AIAMap | HMIMap):
+        msg = "Input must be an AIAMap or HMIMap."
+        raise TypeError(msg)
     if not contains_full_disk(smap):
-        raise ValueError("Input must be a full disk image.")
+        msg = "Input must be a full disk image."
+        raise ValueError(msg)
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
             "Image registration should only be applied to level 1 data",

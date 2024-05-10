@@ -20,9 +20,9 @@ import aiapy.psf
 # AIA images are subject to convolution with the instrument point-spread
 # function (PSF) due to effects introduced by the filter mesh of the telescope
 # and the CCD, among others. This has the effect of "blurring" the image.
-# The PSF diffraction pattern may also be particularly noticable during the
+# The PSF diffraction pattern may also be particularly noticeable during the
 # impulsive phase of a flare where the intensity enhancement is very localized.
-# To remove these artifacts, the PSF must be deconvolved from the image.
+# To remove these artifacts, the PSF must be de-convolved from the image.
 #
 # First, we'll use a single level 1 image from the 171 Å channel from
 # 15 March 2019. Note that deconvolution should be performed on level 1 images

@@ -78,7 +78,7 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map):
     with pytest.raises(ValueError, match="Input must be a full disk image."):
         register(original_cutout)
     # A Map besides AIA or HMI
-    with pytest.raises(ValueError, match="Input must be an AIAMap"):
+    with pytest.raises(TypeError, match="Input must be an AIAMap"):
         register(non_sdo_map)
 
 
@@ -95,7 +95,7 @@ def test_register_level_15(lvl_15_map):
         AiapyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
-        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
+        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))  # NOQA: SLF001
 
 
 @pytest.mark.parametrize(
@@ -256,7 +256,7 @@ def test_degradation_time_array():
         calibration_version=8,
     )
     assert time_correction.shape == obstime.shape
-    for o, tc in zip(obstime, time_correction):
+    for o, tc in zip(obstime, time_correction, strict=True):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
 
 

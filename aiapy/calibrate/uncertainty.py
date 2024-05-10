@@ -119,7 +119,8 @@ def estimate_error(
 
     # Photometric calibration
     if include_eve and include_preflight:
-        raise ValueError("Cannot include both EVE and pre-flight correction.")
+        msg = "Cannot include both EVE and pre-flight correction."
+        raise ValueError(msg)
     calib = 0
     if include_eve:
         calib = error_table["EVEERR"]

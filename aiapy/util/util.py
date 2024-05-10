@@ -39,7 +39,8 @@ def sdo_location(time):
         key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS",
     )
     if keys is None or len(keys) == 0:
-        raise ValueError("No DRMS records near this time")
+        msg = "No DRMS records near this time"
+        raise ValueError(msg)
     # Linear interpolation between the nearest records within the returned set
     times = Time(list(keys["T_OBS"]), scale="utc")
     x = np.interp(t.mjd, times.mjd, keys["HAEX_OBS"])

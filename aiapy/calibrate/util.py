@@ -72,10 +72,11 @@ def get_correction_table(*, correction_table=None):
     if isinstance(correction_table, astropy.table.QTable):
         return correction_table
     if correction_table is not None:
-        if isinstance(correction_table, (str, pathlib.Path)):
+        if isinstance(correction_table, str | pathlib.Path):
             table = QTable(astropy.io.ascii.read(correction_table))
         else:
-            raise ValueError("correction_table must be a file path, an existing table, or None.")
+            msg = "correction_table must be a file path, an existing table, or None."
+            raise ValueError(msg)
     else:
         # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
         # the query to find records that are ordinarily considered
@@ -143,7 +144,8 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, *, 
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table["T_START"], obstime < table["T_STOP"])
     if not obstime_in_epoch.any():
-        raise ValueError(f"No valid calibration epoch for {obstime}")
+        msg = f"No valid calibration epoch for {obstime}"
+        raise ValueError(msg)
     # NOTE: In some cases, there may be multiple entries for a single epoch. We want to
     # use the most up-to-date one.
     i_epoch = np.where(obstime_in_epoch)[0]
@@ -199,7 +201,8 @@ def get_pointing_table(start, end):
         # If there's no pointing information available between these times,
         # JSOC will raise a cryptic KeyError
         # (see https://github.com/LM-SAL/aiapy/issues/71)
-        raise RuntimeError(f"Could not find any pointing information between {start} and {end}")
+        msg = f"Could not find any pointing information between {start} and {end}"
+        raise RuntimeError(msg)
     table["T_START"] = Time(table["T_START"], scale="utc")
     table["T_STOP"] = Time(table["T_STOP"], scale="utc")
     for c in table.colnames:
@@ -211,9 +214,8 @@ def get_pointing_table(start, end):
             table[c].unit = "degree"
     # Remove masking on columns with pointing parameters
     for c in table.colnames:
-        if any(n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]):
-            if hasattr(table[c], "mask"):
-                table[c] = table[c].filled(np.nan)
+        if any(n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]) and hasattr(table[c], "mask"):
+            table[c] = table[c].filled(np.nan)
     return table
 
 
@@ -224,12 +226,13 @@ def get_error_table(error_table=None):
         os.environ["PARFIVE_DISABLE_RANGE"] = "1"
         error_table = fetch_error_table()
         os.environ.pop("PARFIVE_DISABLE_RANGE")
-    if isinstance(error_table, (str, pathlib.Path)):
+    if isinstance(error_table, str | pathlib.Path):
         table = astropy.io.ascii.read(error_table)
     elif isinstance(error_table, QTable):
         table = error_table
     else:
-        raise ValueError("error_table must be a file path, an existing table, or None.")
+        msg = f"error_table must be a file path, an existing table, or None, not {type(error_table)}"
+        raise TypeError(msg)
     table = QTable(table)
     table["DATE"] = Time(table["DATE"], scale="utc")
     table["T_START"] = Time(table["T_START"], scale="utc")

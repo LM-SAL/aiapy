@@ -63,9 +63,11 @@ def respike(smap, *, spikes=None):
     `fetch_spikes`
     """
     if not isinstance(smap, AIAMap):
-        raise ValueError("Input must be an AIAMap.")
+        msg = "Input must be an AIAMap."
+        raise TypeError(msg)
     if smap.meta["lvl_num"] != 1.0:
-        raise ValueError("Can only apply respike procedure to level 1 data")
+        msg = "Can only apply respike procedure to level 1 data"
+        raise ValueError(msg)
     # Approximate check to make sure the input map has not been interpolated
     # in any way. Note that the level 1 plate scales are not exactly 0.6
     # ''/pixel, but should not differ by more than 0.1%. This is only a
@@ -88,7 +90,8 @@ def respike(smap, *, spikes=None):
     # Or better yet, why can't the logic below just handle the case of
     # no spikes?
     if smap.meta["nspikes"] == 0:
-        raise ValueError("No spikes were present in the level 0 data.")
+        msg = "No spikes were present in the level 0 data."
+        raise ValueError(msg)
     if spikes is None:
         coords, values = fetch_spikes(smap, as_coords=False)
     else:
@@ -102,7 +105,7 @@ def respike(smap, *, spikes=None):
     new_meta["lvl_num"] = 0.5
     new_meta["comments"] = f"Respike applied; {values.shape[0]} hot pixels reinserted."
     new_meta["nspikes"] = 0
-    return smap._new_instance(
+    return smap._new_instance(  # NOQA: SLF001
         new_data,
         new_meta,
         plot_settings=smap.plot_settings,
@@ -151,7 +154,7 @@ def fetch_spikes(smap, *, as_coords=False):
     # If this is a cutout, need to transform the full-frame pixel
     # coordinates into the cutout pixel coordinates and then only select
     # those in the FOV of the cutout
-    if not all(d == (s * u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
+    if not all(d == (s * u.pixel) for d, s in zip(smap.dimensions, shape_full_frame, strict=True)):
         # Construct WCS for full frame
         wcs_full_frame = copy.deepcopy(smap.wcs)
         wcs_full_frame.wcs.crval = np.array([0.0, 0.0])

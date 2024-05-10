@@ -58,7 +58,7 @@ class Channel:
     --------
     >>> import astropy.units as u
     >>> from aiapy.response import Channel
-    >>> c = Channel(171*u.angstrom)  # doctest: +REMOTE_DATA
+    >>> c = Channel(171 * u.angstrom)  # doctest: +REMOTE_DATA
     >>> c.telescope_number  # doctest: +REMOTE_DATA
     3
     >>> c.name  # doctest: +REMOTE_DATA
@@ -88,10 +88,7 @@ class Channel:
         if isinstance(instrument_file, collections.OrderedDict):
             return instrument_file
         if instrument_file is None:
-            if self.is_fuv:
-                instrument_file = self._get_fuv_instrument_file()
-            else:
-                instrument_file = self._get_euv_instrument_file()
+            instrument_file = self._get_fuv_instrument_file() if self.is_fuv else self._get_euv_instrument_file()
         return read_genx(instrument_file)
 
     @manager.require("instrument_file_euv", *URL_HASH[VERSION_NUMBER]["euv"])

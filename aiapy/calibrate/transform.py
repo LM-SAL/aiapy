@@ -10,10 +10,10 @@ __all__ = ["_rotation_cupy", "_rotation_function_names"]
     handles_image_nans=False,
     handles_nan_missing=True,
 )
-def _rotation_cupy(image, matrix, shift, order, missing, clip):
+def _rotation_cupy(image, matrix, shift, order, missing, clip):  # NOQA: ARG001
     """
     * Rotates using `cupyx.scipy.ndimage.affine_transform` from `cupy <https://docs.cupy.dev/en/stable/index.html>`__
-    * Coverts from a numpy array to a cupy array and then back again.
+    * Converts from a numpy array to a cupy array and then back again.
     * The ``order`` parameter is the order of the spline interpolation, and ranges
       from 0 to 5.
     * The ``mode`` parameter for :func:`~cupyx.scipy.ndimage.affine_transform` is fixed to
@@ -23,8 +23,9 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):
         import cupy
         import cupyx.scipy.ndimage
     except ImportError as e:
+        msg = "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method."
         raise ImportError(
-            "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method.",
+            msg,
         ) from e
     rotated_image = cupyx.scipy.ndimage.affine_transform(
         cupy.array(image).T,

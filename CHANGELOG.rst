@@ -235,7 +235,7 @@ Features
 - :func:`aiapy.calibrate.degradation` can now accept `~astropy.time.Time` objects with length greater than 1.
   This makes it easier to compute the channel degradation over long intervals. (`#80 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/80>`__)
 - Citation information for `aiapy` is now available from ``aiapy.__citation__``. (`#82 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/82>`__)
-- The pointing table can now be passsed in as a keyword argument to :func:`aiapy.calibrate.update_pointing`.
+- The pointing table can now be passed in as a keyword argument to :func:`aiapy.calibrate.update_pointing`.
   Added a :func:`aiapy.calibrate.util.get_pointing_table` to retrieve the 3-hour pointing table from JSOC over a given time interval. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
 
 Bug Fixes

@@ -1,5 +1,5 @@
-from pathlib import Path
 from itertools import compress
+from pathlib import Path
 
 from .version import version as __version__
 

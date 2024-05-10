@@ -11,9 +11,9 @@ CHANNELS = (94, 131, 171, 193, 211, 304, 335) * u.angstrom
 
 # Force MPL to use non-gui backends for testing.
 with contextlib.suppress(ImportError):
-    import matplotlib
+    import matplotlib as mpl
 
-    matplotlib.use("Agg")
+    mpl.use("Agg")
 
 
 @pytest.fixture()
@@ -45,8 +45,8 @@ def idl_available():
         import hissw
 
         hissw.Environment().run("")
-        return True
-    except Exception as e:  # NOQA
+        return True  # NOQA: TRY300
+    except Exception as e:  # NOQA: BLE001
         log.warning(e)
         return False
 
