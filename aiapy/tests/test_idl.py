@@ -58,7 +58,6 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     assert u.allclose(error, error_ssw, rtol=1e-4)
 
 
-
 @pytest.fixture(params=CHANNELS)
 def psf_idl(idl_environment, request):
     """

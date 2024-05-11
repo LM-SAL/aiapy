@@ -2,7 +2,7 @@
 This module provides the following sample data files.
 
 When a sample shortname is accessed, the corresponding file is downloaded if needed.
-All files can be downloaded by calling :func:`~irispy.data.sample.download_all`.
+All files can be downloaded by calling :func:`~aiapy.data.sample.download_all`.
 
 Summary variables
 -----------------

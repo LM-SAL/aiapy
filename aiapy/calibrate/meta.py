@@ -141,9 +141,7 @@ def update_pointing(smap, *, pointing_table=None):
             f'with first T_START date of {pointing_table[0]["T_START"]} '
             f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.'
         )
-        raise IndexError(
-            msg,
-        )
+        raise IndexError(msg)
     i_nearest = np.where(t_obs_in_interval)[0][0]
     w_str = f"{smap.wavelength.to(u.angstrom).value:03.0f}"
     new_meta = copy.deepcopy(smap.meta)
