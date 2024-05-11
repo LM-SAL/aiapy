@@ -11,7 +11,7 @@ name = "aiapy"
 dynamic = ["version"]
 description = "Python library for AIA data analysis."
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE.txt"}
 keywords = [
   "solar physics",
@@ -25,7 +25,7 @@ keywords = [
 ]
 authors = [
   {email = "freij@baeri.org"},
-  {name = "AIA Instrument Team"}
+  {name = "AIA Instrument Team @ LMSAL"}
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -35,7 +35,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -54,13 +53,15 @@ changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
 [project.optional-dependencies]
 all = ["aiapy"]
 cupy = [
-  'cupy',
+  "cupy",
 ]
 tests = [
   "aiapy[all]",
   "hissw",
   "pytest",
   "pytest-astropy",
+  "pytest-cov",
+  "pytest-xdist",
 ]
 docs = [
   "aiapy[all]",
@@ -87,117 +88,11 @@ write_to = "aiapy/_version.py"
 [tool.setuptools.exclude-package-data]
 aiapy = ["aiapy._dev"]
 
-[tool.pytest.ini_options]
-testpaths = [
-  "aiapy",
-  "docs",
-]
-norecursedirs = [
-  ".tox",
-  "build",
-  '''docs[\/]_build''',
-  '''docs[\/]generated''',
-  "*.egg-info",
-  "examples",
-  '''aiapy[/\]_dev''',
-  ".jupyter",
-  ".history",
-]
-doctest_plus = "enabled"
-doctest_optionflags = "NORMALIZE_WHITESPACE FLOAT_CMP ELLIPSIS"
-addopts = "--doctest-rst --doctest-ignore-import-errors -p no:unraisableexception -p no:threadexception"
-markers = [
-  "remote_data: marks this test function as needing remote data.",
-]
-remote_data_strict = "True"
-filterwarnings = [
-  "error",
-  "always::pytest.PytestConfigWarning",
-  "ignore:.*deprecated and slated for removal in Python 3.13",
-  "ignore:numpy.ufunc size changed:RuntimeWarning",
-  "ignore:numpy.ndarray size changed:RuntimeWarning",
-  "ignore:.*unitfix.*",
-  "ignore:invalid value encountered in sqrt",
-]
-
 [tool.coverage.run]
 branch = true
 omit = [
   "*test_idl.py",
 ]
-
-[tool.black]
-line-length = 120
-target-version = ['py39']
-
-[tool.isort]
-profile = "black"
-line_length = 120
-length_sort = "False"
-length_sort_sections = "stdlib"
-
-[tool.ruff]
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-target-version = "py39"
-line-length = 120
-exclude = [
-  ".eggs",
-  ".git",
-  ".mypy_cache",
-  ".ruff_cache",
-  ".tox",
-  ".venv",
-  "__pypackages__",
-  "_build",
-  "build",
-  "dist",
-  "node_modules",
-  "venv",
-]
-select = [
-  "E",
-  "F",
-  "W",
-  "UP",
-  "PT",
-  "RET",
-  "TID",
-  "PLE",
-  "NPY",
-  "RUF",
-  "PGH",
-  "PTH",
-  "BLE",
-  "FBT",
-  "B",
-  "A",
-  "COM",
-  "C4",
-  "T20",
-  "RSE",
-  "ERA",
-]
-ignore = ["E501"]
-extend-ignore = [
-    "PGH004", # NOQA IS THE BEST OF ALL TIME
-]
-
-[tool.ruff.per-file-ignores]
-"examples/*.py" = [
-  "T201", # We need print in our examples
-]
-"docs/*.py" = [
-  "INP001", # implicit-namespace-package. The examples are not a package.
-  "A001", # Variable `copyright` is shadowing a python builtin
-]
-"aiapy/data/sample.py" = [
-"A001", # Variable `__doc__` is shadowing a python builtin
-"PLE0604", # Invalid object in `__all__`, must contain only strings
-]
-
-[tool.ruff.pydocstyle]
-convention = "numpy"
 
 [tool.codespell]
 ignore-words-list = "emiss"

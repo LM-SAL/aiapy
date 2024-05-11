@@ -1,45 +1,15 @@
 """
 Contains all the the IDL specific tests for aiapy.
 """
+
 from pathlib import Path
 
 import astropy.units as u
 import numpy as np
 import pytest
-from sunpy import log
 
 from aiapy.calibrate import estimate_error
 from aiapy.conftest import CHANNELS
-
-
-def idl_available():
-    try:
-        import hissw
-
-        hissw.Environment().run("")
-        return True
-    except Exception as e:  # NOQA
-        log.warning(e)
-        return False
-
-
-@pytest.fixture(scope="session")
-def idl_environment():
-    if idl_available():
-        import hissw
-
-        return hissw.Environment(
-            ssw_packages=["sdo/aia"],
-            ssw_paths=["aia"],
-        )
-    pytest.skip(
-        "A working IDL installation is not available. You will not be able to run portions of the test suite.",
-    )
-
-
-@pytest.fixture(scope="session")
-def ssw_home(idl_environment):
-    return idl_environment.ssw_home if idl_available() else None
 
 
 @pytest.mark.parametrize(
@@ -88,15 +58,14 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     assert u.allclose(error, error_ssw, rtol=1e-4)
 
 
-@pytest.fixture(scope="module")
-@pytest.mark.parametrize("channel", CHANNELS)
-def psf_idl(idl_environment, channels):
+@pytest.fixture(params=CHANNELS)
+def psf_idl(idl_environment, request):
     """
     The point spread function as calculated by aia_calc_psf.pro.
     """
     r = idl_environment.run(
         "psf = aia_calc_psf({{channel}},/use_preflightcore)",
-        args={"channel": f"{channels[0].value:.0f}"},
+        args={"channel": f"{request.value:.0f}"},
         save_vars=["psf"],
         verbose=False,
     )

@@ -78,7 +78,7 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map):
     with pytest.raises(ValueError, match="Input must be a full disk image."):
         register(original_cutout)
     # A Map besides AIA or HMI
-    with pytest.raises(ValueError, match="Input must be an AIAMap"):
+    with pytest.raises(TypeError, match="Input must be an AIAMap"):
         register(non_sdo_map)
 
 
@@ -95,7 +95,7 @@ def test_register_level_15(lvl_15_map):
         AiapyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
-        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
+        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))  # NOQA: SLF001
 
 
 @pytest.mark.parametrize(
@@ -160,7 +160,6 @@ def test_correct_degradation(aia_171_map, correction_table, version):
         ),
     ],
 )
-@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation(correction_table, version, time_correction_truth):
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
@@ -223,7 +222,6 @@ def test_degradation(correction_table, version, time_correction_truth):
         ),
     ],
 )
-@pytest.mark.filterwarnings("ignore:Multiple valid epochs for")
 def test_degradation_all_wavelengths(wavelength, result):
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     time_correction = degradation(
@@ -258,7 +256,7 @@ def test_degradation_time_array():
         calibration_version=8,
     )
     assert time_correction.shape == obstime.shape
-    for o, tc in zip(obstime, time_correction):
+    for o, tc in zip(obstime, time_correction, strict=True):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
 
 

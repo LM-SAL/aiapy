@@ -134,5 +134,5 @@ def test_error_table(error_table):
 
 
 def test_invalid_error_table_input():
-    with pytest.raises(ValueError, match="error_table must be a file path, an existing table, or None."):
+    with pytest.raises(TypeError, match="error_table must be a file path, an existing table, or None"):
         get_error_table(error_table=-1)

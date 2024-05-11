@@ -1,6 +1,7 @@
 """
 Deconvolve an AIA image with the channel point spread function.
 """
+
 import copy
 import warnings
 
@@ -78,6 +79,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     if use_gpu and not HAS_CUPY:
         log.info("cupy not installed or working, falling back to CPU")
     if HAS_CUPY and use_gpu:
+        log.info("Using a GPU via cupy")
         img = cupy.array(img)
         psf = cupy.array(psf)
     # Center PSF at pixel (0,0)
@@ -91,7 +93,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
         ratio = img / np.fft.irfft2(np.fft.rfft2(img_decon) * psf)
         img_decon = img_decon * np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
 
-    return smap._new_instance(
+    return smap._new_instance(  # NOQA: SLF001
         cupy.asnumpy(img_decon) if (HAS_CUPY and use_gpu) else img_decon,
         copy.deepcopy(smap.meta),
         plot_settings=copy.deepcopy(smap.plot_settings),

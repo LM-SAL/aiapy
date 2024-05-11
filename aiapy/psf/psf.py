@@ -1,6 +1,7 @@
 """
 Calculate the point spread function (PSF) for the AIA telescopes.
 """
+
 import astropy.units as u
 import numpy as np
 from sunpy import log
@@ -35,13 +36,13 @@ def filter_mesh_parameters(*, use_preflightcore=False):
         describing filter mesh properties of that channel
         (see Table 2 of [1]_):
 
-        * `angle_arm`: Angles of the four entrance filter arms
-        * `error_angle_arm`: Error in angle of the four entrance filter arms
-        * `spacing_e`: Distance between diffraction spikes from entrance filter
-        * `spacing_fp`: Distance between diffraction spikes from focal plane filter
-        * `mesh_pitch`: Pitch of the mesh
-        * `mesh_width`: Width of the mesh
-        * `width`: Width applied to the Gaussian such that *after*
+        * ``angle_arm``: Angles of the four entrance filter arms
+        * ``error_angle_arm``: Error in angle of the four entrance filter arms
+        * ``spacing_e``: Distance between diffraction spikes from entrance filter
+        * ``spacing_fp``: Distance between diffraction spikes from focal plane filter
+        * ``mesh_pitch``: Pitch of the mesh
+        * ``mesh_width``: Width of the mesh
+        * ``width``: Width applied to the Gaussian such that *after*
           convolution we have the proper width
           (:math:`4/3` at :math:`1/e` of max)
 
@@ -96,8 +97,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
     * reference: 'AIA20101016_190905_0335.fits'
     """
     return {
-        94
-        * u.angstrom: {
+        94 * u.angstrom: {
             "angle_arm": [49.81, 40.16, -40.28, -49.92] * u.deg,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 8.99 * u.pixel,
@@ -107,8 +107,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (0.951 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.600109, 0.600109] * u.arcsec,
         },
-        131
-        * u.angstrom: {
+        131 * u.angstrom: {
             "angle_arm": [50.27, 40.17, -39.70, -49.95] * u.deg,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 12.37 * u.pixel,
@@ -118,8 +117,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (1.033 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.600698, 0.600698] * u.arcsec,
         },
-        171
-        * u.angstrom: {
+        171 * u.angstrom: {
             "angle_arm": [49.81, 39.57, -40.13, -50.38] * u.deg,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 16.26 * u.pixel,
@@ -129,8 +127,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (0.962 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.599489, 0.599489] * u.arcsec,
         },
-        193
-        * u.angstrom: {
+        193 * u.angstrom: {
             "angle_arm": [49.82, 39.57, -40.12, -50.37] * u.deg,
             "error_angle_arm": [0.02, 0.02, 0.03, 0.04] * u.deg,
             "spacing_e": 18.39 * u.pixel,
@@ -140,8 +137,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (1.512 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.600758, 0.600758] * u.arcsec,
         },
-        211
-        * u.angstrom: {
+        211 * u.angstrom: {
             "angle_arm": [49.78, 40.08, -40.34, -49.95] * u.deg,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 19.97 * u.pixel,
@@ -151,8 +147,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (1.199 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.600758, 0.600758] * u.arcsec,
         },
-        304
-        * u.angstrom: {
+        304 * u.angstrom: {
             "angle_arm": [49.76, 40.18, -40.14, -49.90] * u.degree,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 28.87 * u.pixel,
@@ -162,8 +157,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
             "width": (1.247 if use_preflightcore else 4.5) * u.pixel,
             "CDELT": [0.600165, 0.600165] * u.arcsec,
         },
-        335
-        * u.angstrom: {
+        335 * u.angstrom: {
             "angle_arm": [50.40, 39.80, -39.64, -50.25] * u.degree,
             "error_angle_arm": [0.02, 0.02, 0.02, 0.02] * u.deg,
             "spacing_e": 31.83 * u.pixel,
@@ -324,7 +318,7 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False, use_gpu=Tru
         if order == 0:
             continue
         intensity = np.sinc(order / mesh_ratio) ** 2  # I_0
-        for dx, dy in zip(spacing_x.value, spacing_y.value):
+        for dx, dy in zip(spacing_x.value, spacing_y.value, strict=True):
             x_centered = x - (0.5 * Nx + dx * order + 0.5)
             y_centered = y - (0.5 * Ny + dy * order + 0.5)
             # NOTE: this step is the bottleneck and is VERY slow on a CPU

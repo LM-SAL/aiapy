@@ -1,5 +1,5 @@
-import inspect
 import functools
+import inspect
 
 import astropy.units as u
 
@@ -32,14 +32,16 @@ def validate_channel(argument, *, valid_channels="all"):
     def outer(function):
         sig = inspect.signature(function)
         if argument not in sig.parameters:
-            raise ValueError(f"Did not find {argument} in function signature ({sig}).")
+            msg = f"Did not find {argument} in function signature ({sig})."
+            raise ValueError(msg)
 
         @functools.wraps(function)
         def inner(*args, **kwargs):
             all_args = sig.bind(*args, **kwargs)
             channel = all_args.arguments[argument]
             if channel not in valid_channels:
-                raise ValueError(f'channel "{channel}" not in ' f"list of valid channels: {valid_channels}.")
+                msg = f'channel "{channel}" not in ' f"list of valid channels: {valid_channels}."
+                raise ValueError(msg)
             return function(*args, **kwargs)
 
         return inner

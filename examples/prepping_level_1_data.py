@@ -7,23 +7,25 @@ This example demonstrates how to convert AIA images to a common pointing,
 rescale them to a common plate scale, and remove the roll angle.
 This process is often referred to as "aia_prep" and the resulting data are typically referred to as level 1.5 data.
 In this example, we will demonstrate how to do this with `aiapy`.
-This corresponds to the `aia_prep.pro` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
+This corresponds to the ``aia_prep.pro`` procedure as described in the `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 """
 
+import matplotlib.pyplot as plt
 import sunpy.map
 
 import aiapy.data.sample as sample_data
 from aiapy.calibrate import register, update_pointing
 
-###########################################################
+###############################################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
 # each of the AIA channels have slightly different spatial scales and roll
 # angles. Furthermore, the estimates of the pointing keywords (``CDELT1``, ``CDELT2``, ``CRPIX1``,
-# ``CRPIX2``, ``CROTA2``) may have been improved due to limb fitting procedures. The
-# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
+# ``CRPIX2``, ``CROTA2``) may have been improved due to limb fitting procedures after
+# the level 1 file has been created.
+# The `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
 # AIA image data and metadata separately; when users download AIA data, these
 # two data types are combined to produce a FITS file. While metadata are
-# continuously updated at JSOC, previously downloaded FITS files will not
+# continuously updated at the JSOC, previously downloaded FITS files will not
 # contain the most recent information.
 #
 # Thus, before performing any multi-wavelength analyses, level 1 data
@@ -33,42 +35,51 @@ from aiapy.calibrate import register, update_pointing
 #
 # First, let's read a level 1 94 Å AIA image from the ``aiapy`` sample data into
 # a `~sunpy.map.Map` object.
-m = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 
-###########################################################
+aia_map = sunpy.map.Map(sample_data.AIA_094_IMAGE)
+
+###############################################################################
 # The first step in this process is to update the metadata of the map to the
 # most recent pointing using  the `aiapy.calibrate.update_pointing` function.
 # This function queries the JSOC for the most recent pointing information,
 # updates the metadata, and returns a `sunpy.map.Map` with updated metadata.
-m_updated_pointing = update_pointing(m)
 
-###########################################################
+aia_map_updated_pointing = update_pointing(aia_map)
+
+###############################################################################
 # If we take a look at the plate scale and rotation matrix of the map, we
 # find that the scale is slightly off from the expected value of :math:`0.6''` per
 # pixel and that the rotation matrix has off-diagonal entries.
-print(m_updated_pointing.scale)
-print(m_updated_pointing.rotation_matrix)
 
-###########################################################
+print(aia_map_updated_pointing.scale)
+print(aia_map_updated_pointing.rotation_matrix)
+
+###############################################################################
 # We can use the `aiapy.calibrate.register` function to scale the image to
 # the :math:`0.6''` per pixel and derotate the image such that the y-axis is aligned
 # with solar North.
-m_registered = register(m_updated_pointing)
 
-###########################################################
+aia_map_registered = register(aia_map_updated_pointing)
+
+###############################################################################
 # If we look again at the plate scale and rotation matrix, we
 # should find that the plate scale in each direction is :math:`0.6''`
 # per pixel and that the rotation matrix is diagonalized.
-# The image in `m_registered` is now a level 1.5 data product.
-print(m_registered.scale)
-print(m_registered.rotation_matrix)
+# The image in ``aia_map_registered`` is now a level 1.5 data product.
 
+print(aia_map_registered.scale)
+print(aia_map_registered.rotation_matrix)
 
-###########################################################
+###############################################################################
 # Finally, we can plot the exposure-normalized map.
 # Note that small negative pixel values are possible because
 # CCD images were taken with a pedestal set at ~100 DN.
 # This pedestal is then subtracted when the JSOC pipeline
-# performs dark (+pedestal) subtraction and flatfielding
+# performs dark (+ pedestal) subtraction and flat fielding
 # to generate level 1 files.
-m_registered.peek(vmin=0)
+
+fig = plt.figure()
+ax = fig.add_subplot(projection=aia_map_registered)
+aia_map_registered.plot(axes=ax)
+
+plt.show()

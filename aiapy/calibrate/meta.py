@@ -1,6 +1,7 @@
 """
 Functions for updating/fixing header keywords.
 """
+
 import copy
 import warnings
 
@@ -25,13 +26,20 @@ def fix_observer_location(smap):
     keywords using the heliocentric aries ecliptic keywords, ``HAEX_OBS,
     HAEY_OBS, HAEZ_OBS``.
 
-    .. note:: `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
-              HGS keywords by using the HAE keywords to construct the
-              derived observer location.
+    .. note::
+
+        `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
+        HGS keywords by using the HAE keywords to construct the
+        derived observer location.
 
     Parameters
     ----------
-    smap : `~sunpy.map.source.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
+        Input map.
+
+    Returns
+    -------
+    `~sunpy.map.sources.AIAMap`
     """
     # Create observer coordinate from HAE coordinates
     coord = SkyCoord(
@@ -48,48 +56,60 @@ def fix_observer_location(smap):
     new_meta["hglt_obs"] = coord.lat.to(u.degree).value
     new_meta["dsun_obs"] = coord.radius.to(u.m).value
 
-    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
+    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)  # NOQA: SLF001
 
 
 def update_pointing(smap, *, pointing_table=None):
     """
-    Update pointing information in the `smap` header.
+    Update the pointing information in the input map header.
 
-    This function updates the pointing information in `smap` by
+    This function updates the pointing information in ``smap`` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
-    in the header using the information provided in `pointing_table`.
-    If `pointing_table` is not specified, the 3-hour pointing
+    in the header using the information provided in ``pointing_table``.
+    If ``pointing_table`` is not specified, the 3-hour pointing
     information is queried from the `JSOC <http://jsoc.stanford.edu/>`_.
 
-    .. note:: The method removes any ``PCi_j`` matrix keys in the header and
-              updates the ``CROTA2`` keyword.
+    .. note::
 
-    .. note:: If correcting pointing information for a large number of images,
-              it is strongly recommended to query the table once for the
-              appropriate interval and then pass this table in rather than
-              executing repeated queries.
+        The method removes any ``PCi_j`` matrix keys in the header and
+        updates the ``CROTA2`` keyword.
+
+    .. note::
+
+        If correcting pointing information for a large number of images,
+        it is strongly recommended to query the table once for the
+        appropriate interval and then pass this table in rather than
+        executing repeated queries.
+
+    .. warning::
+
+        This function is only intended to be used for full-disk images
+        at the full resolution of 4096x4096 pixels. It will raise a
+        ``ValueError`` if the input map does not meet these criteria.
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
+    smap : `~sunpy.map.sources.AIAMap`
+        Input map.
     pointing_table : `~astropy.table.QTable`, optional
         Table of pointing information. If not specified, the table
         will be retrieved from JSOC.
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap`
+    `~sunpy.map.sources.AIAMap`
 
     See Also
     --------
-    aiapy.calibrate.util.get_pointing_table
+    `aiapy.calibrate.util.get_pointing_table`
     """
-    # This function can only be applied to full-resolution, full-frame images
     if not contains_full_disk(smap):
-        raise ValueError("Input must be a full disk image.")
+        msg = "Input must be a full disk image."
+        raise ValueError(msg)
     shape_full_frame = (4096, 4096)
-    if not all(d == (s * u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
-        raise ValueError(f"Input must be at the full resolution of {shape_full_frame}")
+    if not all(d == (s * u.pixel) for d, s in zip(smap.dimensions, shape_full_frame, strict=True)):
+        msg = f"Input must be at the full resolution of {shape_full_frame}"
+        raise ValueError(msg)
     if pointing_table is None:
         # Make range wide enough to get closest 3-hour pointing
         pointing_table = get_pointing_table(smap.date - 12 * u.h, smap.date + 12 * u.h)
@@ -116,11 +136,12 @@ def update_pointing(smap, *, pointing_table=None):
     t_obs = astropy.time.Time(t_obs)
     t_obs_in_interval = np.logical_and(t_obs >= pointing_table["T_START"], t_obs < pointing_table["T_STOP"])
     if not t_obs_in_interval.any():
-        raise IndexError(
+        msg = (
             f"No valid entries for {t_obs} in pointing table "
             f'with first T_START date of {pointing_table[0]["T_START"]} '
-            f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.',
+            f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.'
         )
+        raise IndexError(msg)
     i_nearest = np.where(t_obs_in_interval)[0][0]
     w_str = f"{smap.wavelength.to(u.angstrom).value:03.0f}"
     new_meta = copy.deepcopy(smap.meta)
@@ -167,4 +188,4 @@ def update_pointing(smap, *, pointing_table=None):
     new_meta.pop("PC1_2")
     new_meta.pop("PC2_1")
     new_meta.pop("PC2_2")
-    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
+    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)  # NOQA: SLF001
