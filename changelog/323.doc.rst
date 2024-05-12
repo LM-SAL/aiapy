@@ -1,1 +1,0 @@
-Improved the "Requesting specific AIA images from the JSOC" Example to animate and use Fido instead of DRMS.
