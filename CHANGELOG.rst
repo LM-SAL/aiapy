@@ -1,3 +1,39 @@
+0.8.0 (2024-05-11)
+==================
+
+Breaking Changes
+----------------
+
+- Removed the ``aiapy.calibrate.normalize_exposure`` function.
+  The same functionality can be achieved by dividing a `~sunpy.map.Map` by the exposure time property, ``my_map / my_map.exposure_time``. (`#182 <https://github.com/LM-SAL/aiapy/pull/182>`__)
+- All the functions in aiapy, that took keywords have been made to only accept them as keyword arguments.
+  This means that you can no longer pass them as positional arguments. (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
+- Removed ``setup.cfg`` and ``setup.py`` files, this means you will need to use a modern version of pip (23.0 or above) to install this package now. (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
+- Increased the minimum version of Python to 3.10 (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
+- Downgraded warning for Multiple Valid Epochs (`aiapy.util.util._select_epoch_from_correction_table`) to a logging debug message. (`#318 <https://github.com/LM-SAL/aiapy/pull/318>`__)
+
+
+New Features
+------------
+
+- Added extra mirrors to fetch files from SSW. (`#322 <https://github.com/LM-SAL/aiapy/pull/322>`__)
+
+
+Documentation
+-------------
+
+- Cleaned up notes on AIA data preparation and included respiking procedure in the list of steps. (`#182 <https://github.com/LM-SAL/aiapy/pull/182>`__)
+- Transformed the documentation layout. (`#318 <https://github.com/LM-SAL/aiapy/pull/318>`__)
+- Fixed incorrect IDL routine reference in the `aiapy.calibrate.estimate_error` documentation. (`#322 <https://github.com/LM-SAL/aiapy/pull/322>`__)
+- Improved the "Requesting specific AIA images from the JSOC" Example to animate and use Fido instead of DRMS. (`#323 <https://github.com/LM-SAL/aiapy/pull/323>`__)
+
+
+Internal Changes
+----------------
+
+- Catch all `erfa.core.ErfaWarning` that are raised when we convert the times from the error and degradation tables into UTC while making them `astropy.time.Time` objects. (`#324 <https://github.com/LM-SAL/aiapy/pull/324>`__)
+
+
 0.7.4 (2023-10-31)
 ==================
 
