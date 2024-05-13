@@ -39,7 +39,7 @@ Citing
 ------
 
 If you use ``aiapy`` in your scientific work, we would appreciate you citing it in your publications.
-The latest citation information can be found in the `documentation <https://aiapy.readthedocs.io/en/latest/about.html>`__, or obtained with ``aiapy.__citation__``.
+The latest citation information can be found in the `documentation <https://aiapy.readthedocs.io/en/latest/citation.html>`__, or obtained with ``aiapy.__citation__``.
 
 Contributing
 ------------
