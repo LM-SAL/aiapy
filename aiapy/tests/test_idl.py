@@ -14,10 +14,10 @@ from aiapy.conftest import CHANNELS
 
 @pytest.mark.parametrize(
     ("channel", "counts", "include_eve", "include_preflight", "include_chianti"),
-    [[c, 10 * u.ct / u.pixel] + 3 * [False] for c in CHANNELS]
+    [[c, 10 * u.DN / u.pixel] + 3 * [False] for c in CHANNELS]
     + [
-        [171 * u.angstrom, 1000 * u.ct / u.pix, True, False, False],
-        [171 * u.angstrom, 1000 * u.ct / u.pix, False, False, True],
+        [171 * u.angstrom, 1000 * u.DN / u.pix, True, False, False],
+        [171 * u.angstrom, 1000 * u.DN / u.pix, False, False, True],
     ],
 )
 def test_error_consistent(idl_environment, channel, counts, include_eve, include_preflight, include_chianti):

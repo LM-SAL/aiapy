@@ -16,7 +16,7 @@ __all__ = ["estimate_error"]
 @u.quantity_input
 @validate_channel("channel")
 def estimate_error(
-    counts: u.ct / u.pix,
+    counts: u.DN / u.pix,
     channel: u.angstrom,
     *,
     n_sample=1,
@@ -25,7 +25,7 @@ def estimate_error(
     include_chianti=False,
     error_table=None,
     **kwargs,
-) -> u.ct / u.pix:
+) -> u.DN / u.pix:
     """
     Given an observed number of counts estimate the associated errors.
 
@@ -81,24 +81,24 @@ def estimate_error(
     # Dark noise
     # NOTE: The dark error of 0.18 is from an analysis of long-term trends in the residual
     # dark error from 2015.
-    dark = 0.18 * u.ct / u.pix
+    dark = 0.18 * u.DN / u.pix
 
     # Read noise
     if kwargs.get("compare_idl", False):
         # The IDL version hardcodes the read noise as 1.15 DN / pixel so we
         # want to use this when comparing against that code and not at any
         # other time. This is why this option is not documented.
-        read_noise = 1.15 * u.ct / u.pix
+        read_noise = 1.15 * u.DN / u.pix
     else:
         # NOTE: This lookup table comes from Table 6 of Boerner et al. (2012)
         # (http://adsabs.harvard.edu/abs/2012SoPh..275...41B). Each
         # channel is attached to one of the four cameras such that the
         # read noise for a given channel depends on what camera it is on.
         read_noise = {
-            1: 1.18 * u.ct / u.pix,
-            2: 1.20 * u.ct / u.pix,
-            3: 1.15 * u.ct / u.pix,
-            4: 1.14 * u.ct / u.pix,
+            1: 1.18 * u.DN / u.pix,
+            2: 1.20 * u.DN / u.pix,
+            3: 1.15 * u.DN / u.pix,
+            4: 1.14 * u.DN / u.pix,
         }[telescope_number(channel)]
     read = read_noise / np.sqrt(n_sample)
 
@@ -108,7 +108,7 @@ def estimate_error(
     # with the signal and has an approximately uniform distribution. The RMS value is thus the
     # standard deviation of this distribution, approximately 1/sqrt(12) LSB.
     # See https://en.wikipedia.org/wiki/Quantization_(signal_processing)
-    quant_rms = (1 / np.sqrt(12)) * u.ct / u.pix
+    quant_rms = (1 / np.sqrt(12)) * u.DN / u.pix
     quant = quant_rms / np.sqrt(n_sample)
 
     # Onboard compression

@@ -35,7 +35,7 @@ results = Fido.search(
 # metadata that was returned. We select those and nothing else.
 
 table = results["jsoc"].show("DATE__OBS", "DATAMEAN")
-table["DATAMEAN"].unit = u.ct
+table["DATAMEAN"].unit = u.DN
 table["DATE_OBS"] = astropy.time.Time(table["DATE__OBS"], scale="utc")
 del table["DATE__OBS"]
 
