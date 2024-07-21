@@ -244,7 +244,7 @@ def get_error_table(error_table=None):
         warnings.simplefilter("ignore", category=ErfaWarning)
         table["T_STOP"] = Time(table["T_STOP"], scale="utc")
     table["WAVELNTH"] = u.Quantity(table["WAVELNTH"], "Angstrom")
-    table["DNPERPHT"] = u.Quantity(table["DNPERPHT"], "ct photon-1")
+    table["DNPERPHT"] = u.Quantity(table["DNPERPHT"], "DN photon-1")
     return table
 
 
