@@ -337,7 +337,7 @@ class Channel:
     @u.quantity_input
     def gain(
         self,
-    ) -> u.count / u.ph:
+    ) -> u.DN / u.ph:
         r"""
         Gain of the CCD camera system.
 
@@ -359,7 +359,7 @@ class Channel:
         electron_per_ev = self._data["elecperev"] * _e / u.eV
         energy_per_photon = const.h * const.c / self.wavelength / u.ph
         electron_per_photon = (electron_per_ev * energy_per_photon).to(_e / u.ph)
-        return electron_per_photon / (self._data["elecperdn"] * _e / u.count)
+        return electron_per_photon / (self._data["elecperdn"] * _e / u.DN)
 
     @u.quantity_input
     def wavelength_response(
@@ -369,7 +369,7 @@ class Channel:
         include_eve_correction=False,
         include_crosstalk=True,
         **kwargs,
-    ) -> u.count / u.ph * u.cm**2:
+    ) -> u.DN / u.ph * u.cm**2:
         r"""
         The wavelength response function is the product of the gain and the
         effective area.

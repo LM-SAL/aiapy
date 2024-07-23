@@ -177,8 +177,8 @@ def test_wavelength_response_no_idl(channel):
 def test_wavelength_response_uncorrected(channel, idl_environment):
     r = channel.wavelength_response()
     ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.count / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.count / u.ph)
+    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 def test_wavelength_response_no_crosstalk(channel, idl_environment):
@@ -188,8 +188,8 @@ def test_wavelength_response_no_crosstalk(channel, idl_environment):
         save_vars=["r"],
         verbose=False,
     )
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.count / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.count / u.ph)
+    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 @pytest.mark.parametrize("include_eve_correction", [False, True])
@@ -217,8 +217,8 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         },
         verbose=False,
     )
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.count / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.count / u.ph)
+    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 @pytest.mark.remote_data()
