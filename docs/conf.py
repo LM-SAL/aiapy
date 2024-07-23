@@ -7,16 +7,16 @@ import os
 # This needs to be done before aiapy or sunpy is imported
 os.environ["PARFIVE_HIDE_PROGRESS"] = "True"
 
-import datetime  # NOQA: E402
-import warnings  # NOQA: E402
-from pathlib import Path  # NOQA: E402
+import datetime
+import warnings
+from pathlib import Path
 
-from astropy.utils.exceptions import AstropyDeprecationWarning  # NOQA: E402
-from matplotlib import MatplotlibDeprecationWarning  # NOQA: E402
-from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning  # NOQA: E402
-from sunpy_sphinx_theme import PNG_ICON  # NOQA: E402
+from astropy.utils.exceptions import AstropyDeprecationWarning
+from matplotlib import MatplotlibDeprecationWarning
+from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning
+from sunpy_sphinx_theme import PNG_ICON
 
-from aiapy import __version__  # NOQA: E402
+from aiapy import __version__
 
 # -- Project information -------------------------------------------------------
 project = "aiapy"
