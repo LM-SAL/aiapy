@@ -43,6 +43,7 @@ jobs:
       envs: |
         - windows: py310
         - macos: py311
+        - linux: py312-devdeps
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
