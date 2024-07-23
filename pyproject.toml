@@ -41,7 +41,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
-  'sunpy[net,image,map]>=5.0',
+  'sunpy[net,image,map]>=6.0',
 ]
 
 [project.urls]
@@ -74,8 +74,6 @@ docs = [
   "sphinx-hoverxref",
   "sphinxext-opengraph",
   "sunpy-sphinx-theme",
-  # Remove next line when fixed in towncrier; see https://github.com/twisted/towncrier/issues/528
-  "importlib-resources<6",
 ]
 dev = ["aiapy[tests,docs]"]
 
@@ -87,12 +85,6 @@ write_to = "aiapy/_version.py"
 
 [tool.setuptools.exclude-package-data]
 aiapy = ["aiapy._dev"]
-
-[tool.coverage.run]
-branch = true
-omit = [
-  "*test_idl.py",
-]
 
 [tool.codespell]
 ignore-words-list = "emiss"

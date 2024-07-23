@@ -1,3 +1,12 @@
+0.9.0 (2024-07-22)
+==================
+
+Breaking Changes
+----------------
+
+- All inputs and outputs that previously used "counts" or "ct" now use "DN". (`#338 <https://github.com/LM-SAL/aiapy/pull/338>`__)
+- Minimum version of ``sunpy`` supported is now ``sunpy`` 6.0.0
+
 0.8.0 (2024-05-11)
 ==================
 
