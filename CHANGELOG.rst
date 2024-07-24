@@ -1,3 +1,11 @@
+0.9.1 (2024-07-23)
+==================
+
+Bug Fixes
+---------
+
+- Fixed Spike issue with data being loaded as floats.
+
 0.9.0 (2024-07-22)
 ==================
 
