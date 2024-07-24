@@ -147,7 +147,8 @@ def fetch_spikes(smap, *, as_coords=False):
         seg="spikes",
     )
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
-    spikes = spikes.data
+    # Loaded as floats, but they are actually integers
+    spikes = spikes.data.astype(np.int32)
     shape_full_frame = (4096, 4096)
     values = spikes[1, :]
     y_coords, x_coords = np.unravel_index(spikes[0, :], shape=shape_full_frame)
