@@ -337,7 +337,14 @@ class Channel(AbstractChannel):
         }
         if self.channel not in crosstalk_lookup:
             return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
-        cross = Channel(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
+        cross = type(self)(
+            crosstalk_lookup[self.channel],
+            instrument_file=self._instrument_data,
+            include_eve_correction=self.include_eve_correction,
+            include_crosstalk=self.include_crosstalk,
+            correction_table=self.correction_table,
+            calibration_version=self.calibration_version,
+        )
         effective_area = (
             cross.geometrical_area
             * cross.mirror_reflectance
