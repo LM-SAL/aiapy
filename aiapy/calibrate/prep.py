@@ -8,6 +8,7 @@ import astropy.units as u
 import numpy as np
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
+from sunpy.time import parse_time
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
@@ -213,6 +214,7 @@ def degradation(
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """
+    obstime = parse_time(obstime)
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)

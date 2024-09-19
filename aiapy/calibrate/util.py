@@ -17,6 +17,7 @@ from erfa.core import ErfaWarning
 from sunpy import log
 from sunpy.data import manager
 from sunpy.net import attrs, jsoc
+from sunpy.time import parse_time
 
 from aiapy import _SSW_MIRRORS
 from aiapy.util.decorators import validate_channel
@@ -127,6 +128,7 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table, *, 
     table : `~astropy.table.QTable`
     version : `int`
     """
+    obstime = parse_time(obstime)
     version = CALIBRATION_VERSION if version is None else version
     # Select only this channel
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
