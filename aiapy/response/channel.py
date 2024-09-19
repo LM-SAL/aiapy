@@ -192,7 +192,7 @@ class Channel(AbstractChannel):
         """
         Combined reflectance of the primary and secondary mirrors.
         """
-        return self.primary_reflectance * self.secondary_reflectance
+        return self.primary_mirror_reflectance * self.secondary_mirror_reflectance
 
     @property
     @u.quantity_input
@@ -232,16 +232,19 @@ class Channel(AbstractChannel):
     @u.quantity_input
     def _preflight_contamination(self):
         # NOTE: Preflight contamination calibration data missing for FUV channels
-        return u.Quantity(self._data.get("contam"), np.ones(self.wavelength.shape))
+        return u.Quantity(self._data.get("contam", np.ones(self.wavelength.shape)))
 
+    @property
     @u.quantity_input
     def energy_per_electron(self) -> u.eV / u.electron:
         return 1 / self._data["elecperev"] * u.eV / u.electron
 
+    @property
     @u.quantity_input
     def camera_gain(self) -> u.DN / u.electron:
         return 1 / self._data["elecperdn"] * u.DN / u.electron
 
+    @property
     @u.quantity_input
     def pixel_solid_angle(
         self,
@@ -263,7 +266,10 @@ class Channel(AbstractChannel):
             get_correction_table(correction_table=self.correction_table),
             version=self.calibration_version,
         )
-        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
+        # NOTE: Explicitly setting obstime=None here because we should be
+        # interpolating to the uncorrected EA since this is part of the
+        # correction.
+        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area(obstime=None))
         return table["EFF_AREA"][0] / effective_area_interp
 
     @u.quantity_input
@@ -321,7 +327,7 @@ class Channel(AbstractChannel):
                 calibration_version=self.calibration_version,
             )
             if self.include_eve_correction:
-                contamination *= self.eve_correction(obstime)
+                contamination *= self._get_eve_correction(obstime)
         return contamination
 
     @u.quantity_input

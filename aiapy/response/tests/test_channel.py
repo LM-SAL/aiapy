@@ -24,19 +24,13 @@ def channel(request, ssw_home):  # NOQA: ARG001
 
 @pytest.fixture()
 def channel_properties():
+    # Properties that we need, but are not checked by the ABC
     return [
         "wavelength",
-        "primary_reflectance",
-        "secondary_reflectance",
-        "focal_plane_filter_efficiency",
-        "entrance_filter_efficiency",
-        "geometrical_collecting_area",
-        "quantum_efficiency",
-        "contamination",
-        "plate_scale",
-        "effective_area",
-        "gain",
-        "crosstalk",
+        "primary_mirror_reflectance",
+        "secondary_mirror_reflectance",
+        "focal_plane_filter_transmittance",
+        "entrance_filter_transmittance",
     ]
 
 
@@ -95,17 +89,16 @@ def test_channel_properties(channel, channel_properties):
         assert isinstance(getattr(channel, p), u.Quantity)
 
 
-def test_effective_area(channel):
-    effective_area = (
-        channel.primary_reflectance
-        * channel.secondary_reflectance
-        * channel.focal_plane_filter_efficiency
-        * channel.entrance_filter_efficiency
-        * channel.geometrical_collecting_area
-        * channel.quantum_efficiency
-        * channel.contamination
+def test_nominal_effective_area(channel):
+    # Test that calculated effective area is the same as that stored in
+    # the data file to within numerical precision
+    channel.include_crosstalk = False
+    assert u.allclose(
+        channel.effective_area(),
+        u.Quantity(channel._data["effarea"], "cm2"),  # noqa: SLF001
+        atol=None,
+        rtol=1e-6,
     )
-    assert (effective_area == channel.effective_area).all()
 
 
 @pytest.mark.parametrize(
@@ -147,49 +140,54 @@ def test_eve_correction(channel, correction_table, version, eve_correction_truth
     # results from the correction table file in SSW. The result returned by
     # JSOC are not necessarily the same as those in the correction table files
     # in SSW though they should be close.
-    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
-    eve_correction = channel.eve_correction(obstime, correction_table=correction_table, calibration_version=version)
-    assert u.allclose(eve_correction, eve_correction_truth, rtol=1e-10, atol=0.0)
+    channel.correction_table = correction_table
+    channel.calibration_version = version
+    eve_correction = channel._get_eve_correction("2015-01-01T00:00:00")  # noqa: SLF001
+    assert u.allclose(eve_correction, eve_correction_truth, rtol=1e-6, atol=None)
 
 
-def test_wavelength_response_no_idl(channel):
+@pytest.mark.parametrize(
+    ("obstime", "correction_table", "calibration_version", "include_eve_correction", "include_crosstalk"),
+    [
+        (None, None, None, False, True),
+        (None, None, None, False, False),
+        ("2020-01-01", get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, False, True),
+        (astropy.time.Time.now(), get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, True, True),
+    ],
+)
+def test_effective_area(
+    channel, obstime, correction_table, calibration_version, include_eve_correction, include_crosstalk
+):
     # NOTE: this does not test correctness, but just that the method can
     # be run with the various combinations of inputs. The tests below test the
     # correctness of the output as evaluated by their similarity to those
     # results from SSW.
-    r = channel.wavelength_response()
-    assert r.shape == channel.wavelength.shape
-    correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
-    channel.wavelength_response(include_crosstalk=False)
-    channel.wavelength_response(
-        obstime=astropy.time.Time.now(),
-        correction_table=correction_table,
-        calibration_version=8,
-    )
-    channel.wavelength_response(
-        obstime=astropy.time.Time.now(),
-        include_eve_correction=True,
-        correction_table=correction_table,
-        calibration_version=8,
-    )
+    channel.include_crosstalk = include_crosstalk
+    channel.include_eve_correction = include_eve_correction
+    channel.calibration_version = calibration_version
+    channel.correction_table = correction_table
+    assert channel.effective_area(obstime=obstime).shape == channel.wavelength.shape
 
 
 def test_wavelength_response_uncorrected(channel, idl_environment):
     r = channel.wavelength_response()
     ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    r_ssw *= channel.pixel_solid_angle
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=None)
 
 
 def test_wavelength_response_no_crosstalk(channel, idl_environment):
-    r = channel.wavelength_response(include_crosstalk=False)
+    channel.include_crosstalk = False
+    r = channel.wavelength_response()
     ssw = idl_environment.run(
         "r = aia_get_response(/area,/dn,/noblend,evenorm=0)",
         save_vars=["r"],
         verbose=False,
     )
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    r_ssw *= channel.pixel_solid_angle
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=None)
 
 
 @pytest.mark.parametrize("include_eve_correction", [False, True])
@@ -197,12 +195,11 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
     now = astropy.time.Time.now()
     correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
     calibration_version = 8
-    r = channel.wavelength_response(
-        obstime=now,
-        include_eve_correction=include_eve_correction,
-        correction_table=correction_table,
-        calibration_version=calibration_version,
-    )
+    channel.calibration_version = calibration_version
+    channel.correction_table = correction_table
+    channel.include_eve_correction = include_eve_correction
+    channel.include_crosstalk = True
+    r = channel.wavelength_response(obstime=now)
     ssw = idl_environment.run(
         """
         r = aia_get_response(/area,/dn,evenorm={{evenorm}}, $
@@ -218,19 +215,16 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         verbose=False,
     )
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    r_ssw *= channel.pixel_solid_angle
+    assert u.allclose(r, r_ssw, rtol=1e-4, atol=None)
 
 
 @pytest.mark.remote_data()
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     # There are a few corner cases for the 1600, 1700, and 4500 channels
-    channel = Channel(channel_wavelength)
+    channel = Channel(channel_wavelength, include_eve_correction=False)
     assert all(k in channel._data for k in required_keys)  # NOQA: SLF001
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
-    assert channel.contamination == u.Quantity(
-        [
-            1,
-        ],
-    )
+    assert u.allclose(channel.degradation(), 1, rtol=0.0, atol=None)
