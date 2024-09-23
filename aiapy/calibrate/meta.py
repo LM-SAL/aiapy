@@ -48,7 +48,12 @@ def fix_observer_location(smap):
         z=smap.meta["haez_obs"] * u.m,
         representation_type=CartesianRepresentation,
         frame=HeliocentricMeanEcliptic,
-        obstime=smap.reference_date,
+        # FIXME: Beginning in sunpy v6.0.0, the reference_date property
+        # was added as the date to be used to property instantiate the
+        # coordinate frame. As such, this should be used if possible.
+        # Once the minimum version of sunpy is 6.0.0 or above, this should
+        # just be set to reference_date.
+        obstime=getattr(smap, "reference_date", None) or smap.date,
     ).heliographic_stonyhurst
     # Update header
     new_meta = copy.deepcopy(smap.meta)
@@ -126,7 +131,7 @@ def update_pointing(smap, *, pointing_table=None):
     # FIXME: Beginning in sunpy v6.0.0, AIA maps use T_OBS as the reference date
     # As such, once that is the min version supported, the following lines should
     # be adjusted to just use smap.reference_date
-    t_obs = smap.meta.get("T_OBS")
+    t_obs = getattr(smap, "reference_date", None) or smap.meta.get("T_OBS") or smap.date
     t_obs = astropy.time.Time(t_obs)
     t_obs_in_interval = np.logical_and(t_obs >= pointing_table["T_START"], t_obs < pointing_table["T_STOP"])
     if not t_obs_in_interval.any():
