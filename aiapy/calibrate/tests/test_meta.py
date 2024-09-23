@@ -13,9 +13,9 @@ from aiapy.util.exceptions import AiapyUserWarning
 def test_fix_observer_location(aia_171_map):
     smap_fixed = fix_observer_location(aia_171_map)
     # NOTE: AIAMap already fixes the .observer_coordinate property with HAE
-    assert u.allclose(smap_fixed.meta["hgln_obs"], smap_fixed.observer_coordinate.lon.value, atol=None, rtol=1e-6)
-    assert u.allclose(smap_fixed.meta["hglt_obs"], smap_fixed.observer_coordinate.lat.value, atol=None, rtol=1e-6)
-    assert u.allclose(smap_fixed.meta["dsun_obs"], smap_fixed.observer_coordinate.radius.value, atol=None, rtol=1e-6)
+    assert smap_fixed.meta["hgln_obs"] == smap_fixed.observer_coordinate.lon.value
+    assert smap_fixed.meta["hglt_obs"] == smap_fixed.observer_coordinate.lat.value
+    assert smap_fixed.meta["dsun_obs"] == smap_fixed.observer_coordinate.radius.value
 
 
 @pytest.fixture()
