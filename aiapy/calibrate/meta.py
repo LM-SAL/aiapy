@@ -48,7 +48,7 @@ def fix_observer_location(smap):
         z=smap.meta["haez_obs"] * u.m,
         representation_type=CartesianRepresentation,
         frame=HeliocentricMeanEcliptic,
-        obstime=smap.date,
+        obstime=smap.reference_date,
     ).heliographic_stonyhurst
     # Update header
     new_meta = copy.deepcopy(smap.meta)
