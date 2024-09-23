@@ -123,16 +123,10 @@ def update_pointing(smap, *, pointing_table=None):
     # NOTE: For SDO data, T_OBS is preferred to DATE-OBS in the case of the
     # MPT, using DATE-OBS from near the slot boundary might result in selecting
     # an incorrect MPT record.
+    # FIXME: Beginning in sunpy v6.0.0, AIA maps use T_OBS as the reference date
+    # As such, once that is the min version supported, the following lines should
+    # be adjusted to just use smap.reference_date
     t_obs = smap.meta.get("T_OBS")
-    if t_obs is None:
-        warnings.warn(
-            "T_OBS key is missing from metadata. Falling back to Map.date. "
-            "This may result in selecting in incorrect record from the "
-            "master pointing table.",
-            AiapyUserWarning,
-            stacklevel=3,
-        )
-        t_obs = smap.date
     t_obs = astropy.time.Time(t_obs)
     t_obs_in_interval = np.logical_and(t_obs >= pointing_table["T_START"], t_obs < pointing_table["T_STOP"])
     if not t_obs_in_interval.any():
