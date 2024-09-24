@@ -343,27 +343,20 @@ class Channel(AbstractChannel):
         }
         if self.channel not in crosstalk_lookup:
             return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
-        cross = type(self)(
-            crosstalk_lookup[self.channel],
-            instrument_file=self._instrument_data,
-            include_eve_correction=self.include_eve_correction,
-            include_crosstalk=self.include_crosstalk,
-            correction_table=self.correction_table,
-            calibration_version=self.calibration_version,
-        )
+        cross = type(self)(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
         effective_area = (
             cross.geometrical_area
             * cross.mirror_reflectance
             * self.focal_plane_filter_transmittance
             * cross.entrance_filter_transmittance
             * cross.effective_quantum_efficiency
-            * cross._preflight_contamination  # noqa: SLF001
+            * cross.degradation(obstime=None)
         )
         # NOTE: This applies only the time-dependent component of the degradation for
         # the nominal channel. The logic here is that the nominal time-dependent correction
         # should be applied to the total (nominal + crosstalk) effective area since the
         # cross-calibration is done on the whole channel postflight which includes the crosstalk
-        effective_area *= self.degradation(obstime=obstime) / self._preflight_contamination
+        effective_area *= self.degradation(obstime=obstime) / self.degradation(obstime=None)
         return effective_area
 
     @u.quantity_input
@@ -396,7 +389,7 @@ class Channel(AbstractChannel):
         On telescopes 1, 3, and 4, both channels are always illuminated.
         This can lead to contamination in a channel from the channel with which it shares a telescope.
         This impacts the 94 and 304 Å channels as well as 131 and 335 Å.
-        For these channels, additional component is added to the effective area to model the cross-talk
+        For these channels, an additional component is added to the effective area to model the cross-talk
         between these channels.
         See Section 2.2.1 of [boerner]_ for more details.
 
