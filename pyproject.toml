@@ -43,7 +43,7 @@ classifiers = [
 dependencies = [
   'sunpy[net,image,map]>=6.0',
   # FIXME: Change to just sunkit-instruments once released or to main when merged
-  'sunkit-instruments@git+https://github.com/namurphy/sunkit-instruments#egg=add-abstract-channel',
+  'sunkit-instruments@git+https://github.com/namurphy/sunkit-instruments@add-abstract-channel',
 ]
 
 [project.urls]
