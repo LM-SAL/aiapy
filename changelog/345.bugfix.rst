@@ -1,0 +1,2 @@
+Use `~sunpy.map.GenericMap.reference_date` when constructing an observer coordinate and in place
+of pulling ``T_OBS`` directly from the header.
