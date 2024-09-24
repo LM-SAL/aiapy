@@ -79,7 +79,7 @@ def respike(smap, *, spikes=None):
         warnings.warn(
             (
                 f"{smap.scale} is significantly different from the expected level "
-                "1 plate scale {nominal_scale}. If this map has been interpolated "
+                f"1 plate scale {nominal_scale}. If this map has been interpolated "
                 "in any way from the level 1 image, the spike data will likely be "
                 "reinserted in the incorrect pixel positions."
             ),

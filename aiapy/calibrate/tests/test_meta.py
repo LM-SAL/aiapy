@@ -87,14 +87,6 @@ def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, ex
 
 
 @pytest.mark.remote_data()
-def test_update_pointing_missing_tobs_raises_warning(aia_171_map, pointing_table):
-    # Tests that a warning is raised if T_OBS is not present.
-    aia_171_map.meta.pop("T_OBS")
-    with pytest.warns(AiapyUserWarning, match="T_OBS key is missing from metadata."):
-        update_pointing(aia_171_map, pointing_table=pointing_table)
-
-
-@pytest.mark.remote_data()
 def test_update_pointing_submap_raises_exception(aia_171_map, pointing_table):
     m = aia_171_map.submap(
         SkyCoord(0, 0, unit="arcsec", frame=aia_171_map.coordinate_frame),

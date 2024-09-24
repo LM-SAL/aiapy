@@ -5,7 +5,6 @@ Functions for updating/fixing header keywords.
 import copy
 import warnings
 
-import astropy.time
 import astropy.units as u
 import numpy as np
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
@@ -48,7 +47,7 @@ def fix_observer_location(smap):
         z=smap.meta["haez_obs"] * u.m,
         representation_type=CartesianRepresentation,
         frame=HeliocentricMeanEcliptic,
-        obstime=smap.date,
+        obstime=smap.reference_date,
     ).heliographic_stonyhurst
     # Update header
     new_meta = copy.deepcopy(smap.meta)
@@ -123,21 +122,14 @@ def update_pointing(smap, *, pointing_table=None):
     # NOTE: For SDO data, T_OBS is preferred to DATE-OBS in the case of the
     # MPT, using DATE-OBS from near the slot boundary might result in selecting
     # an incorrect MPT record.
-    t_obs = smap.meta.get("T_OBS")
-    if t_obs is None:
-        warnings.warn(
-            "T_OBS key is missing from metadata. Falling back to Map.date. "
-            "This may result in selecting in incorrect record from the "
-            "master pointing table.",
-            AiapyUserWarning,
-            stacklevel=3,
-        )
-        t_obs = smap.date
-    t_obs = astropy.time.Time(t_obs)
-    t_obs_in_interval = np.logical_and(t_obs >= pointing_table["T_START"], t_obs < pointing_table["T_STOP"])
+    # NOTE: In sunpy >=6.0, the reference_date property was introduced which, for
+    # AIA maps, will always be pulled from "T_OBS"
+    t_obs_in_interval = np.logical_and(
+        smap.reference_date >= pointing_table["T_START"], smap.reference_date < pointing_table["T_STOP"]
+    )
     if not t_obs_in_interval.any():
         msg = (
-            f"No valid entries for {t_obs} in pointing table "
+            f"No valid entries for {smap.reference_date} in pointing table "
             f'with first T_START date of {pointing_table[0]["T_START"]} '
             f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.'
         )
@@ -150,16 +142,16 @@ def update_pointing(smap, *, pointing_table=None):
     # of the Sun in CCD pixel coordinates (0-based), but FITS WCS indexing is
     # 1-based. See Section 2.2 of
     # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
-    x0_mp = pointing_table[f"A_{w_str}_X0"][i_nearest].to("pix").value
-    y0_mp = pointing_table[f"A_{w_str}_Y0"][i_nearest].to("pix").value
+    x0_mp = pointing_table[f"A_{w_str}_X0"][i_nearest].to_value("pix")
+    y0_mp = pointing_table[f"A_{w_str}_Y0"][i_nearest].to_value("pix")
     crpix1 = x0_mp + 1
     crpix2 = y0_mp + 1
-    cdelt = pointing_table[f"A_{w_str}_IMSCALE"][i_nearest].to("arcsecond / pixel").value
+    cdelt = pointing_table[f"A_{w_str}_IMSCALE"][i_nearest].to_value("arcsecond / pixel")
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
     crota2 = pointing_table[f"A_{w_str}_INSTROT"][i_nearest] + smap.meta["SAT_ROT"] * u.degree
-    crota2 = crota2.to("deg").value
+    crota2 = crota2.to_value("deg")
     # Update headers
     for key, value in [
         ("crpix1", crpix1),
