@@ -32,4 +32,10 @@ class AIAParfiveDownloader(DownloaderBase):
 
 
 _download_dir = config.get("downloads", "remote_data_manager_dir")
-manager = DataManager(Cache(AIAParfiveDownloader(), SqliteStorage(_download_dir + "/data_manager.db"), _download_dir))
+manager = DataManager(
+    Cache(
+        AIAParfiveDownloader(),
+        SqliteStorage(f"{_download_dir}/data_manager.db"),
+        _download_dir,
+    )
+)
