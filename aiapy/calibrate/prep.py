@@ -4,8 +4,10 @@ Functions for calibrating AIA images.
 
 import warnings
 
-import astropy.units as u
 import numpy as np
+
+import astropy.units as u
+
 from sunpy.map import contains_full_disk
 from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring

@@ -5,9 +5,11 @@ Functions for updating/fixing header keywords.
 import copy
 import warnings
 
-import astropy.units as u
 import numpy as np
+
+import astropy.units as u
 from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
+
 from sunpy.map import contains_full_disk
 
 from aiapy.calibrate.util import get_pointing_table
@@ -55,7 +57,7 @@ def fix_observer_location(smap):
     new_meta["hglt_obs"] = coord.lat.to(u.degree).value
     new_meta["dsun_obs"] = coord.radius.to(u.m).value
 
-    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)  # NOQA: SLF001
+    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
 
 
 def update_pointing(smap, *, pointing_table=None):
@@ -180,4 +182,4 @@ def update_pointing(smap, *, pointing_table=None):
     new_meta.pop("PC1_2")
     new_meta.pop("PC2_1")
     new_meta.pop("PC2_2")
-    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)  # NOQA: SLF001
+    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)

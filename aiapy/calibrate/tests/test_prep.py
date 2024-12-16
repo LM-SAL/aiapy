@@ -1,12 +1,14 @@
 import copy
 import tempfile
 
-import astropy.time
-import astropy.units as u
 import numpy as np
 import pytest
-import sunpy.data.test
+
+import astropy.time
+import astropy.units as u
 from astropy.io.fits.verify import VerifyWarning
+
+import sunpy.data.test
 from sunpy.map import Map
 
 from aiapy.calibrate import correct_degradation, degradation, register
@@ -95,7 +97,7 @@ def test_register_level_15(lvl_15_map):
         AiapyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
-        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))  # NOQA: SLF001
+        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
 
 
 @pytest.mark.parametrize(

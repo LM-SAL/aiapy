@@ -1,4 +1,4 @@
-name: aiapy
+name: rtd_aiapy
 channels:
   - conda-forge
 dependencies:

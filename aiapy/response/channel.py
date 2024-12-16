@@ -5,9 +5,11 @@ Class for accessing response function data from each channel.
 import collections
 from urllib.parse import urljoin
 
+import numpy as np
+
 import astropy.constants as const
 import astropy.units as u
-import numpy as np
+
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 

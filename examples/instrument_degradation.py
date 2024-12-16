@@ -8,10 +8,11 @@ of the AIA channels as a function of time over the entire
 lifetime of the instrument.
 """
 
-import astropy.time
-import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
+
+import astropy.time
+import astropy.units as u
 from astropy.visualization import time_support
 
 from aiapy.calibrate import degradation

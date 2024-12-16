@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 import sunpy.data.test
 import sunpy.map
 
@@ -21,7 +22,7 @@ def test_deconvolve_specify_psf(aia_171_map, psf):
 
 
 def test_deconvolve_negative_pixels(aia_171_map, psf):
-    aia_171_map_neg = aia_171_map._new_instance(  # NOQA: SLF001
+    aia_171_map_neg = aia_171_map._new_instance(
         np.where(aia_171_map.data < 1, -1, aia_171_map.data),
         aia_171_map.meta,
     )

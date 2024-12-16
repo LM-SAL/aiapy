@@ -6,6 +6,7 @@ import copy
 import warnings
 
 import numpy as np
+
 from sunpy import log
 
 try:
@@ -16,7 +17,6 @@ except ImportError:
     HAS_CUPY = False
 
 from aiapy.util import AiapyUserWarning
-
 from .psf import psf as calculate_psf
 
 __all__ = ["deconvolve"]
@@ -93,7 +93,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
         ratio = img / np.fft.irfft2(np.fft.rfft2(img_decon) * psf)
         img_decon = img_decon * np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
 
-    return smap._new_instance(  # NOQA: SLF001
+    return smap._new_instance(
         cupy.asnumpy(img_decon) if (HAS_CUPY and use_gpu) else img_decon,
         copy.deepcopy(smap.meta),
         plot_settings=copy.deepcopy(smap.plot_settings),

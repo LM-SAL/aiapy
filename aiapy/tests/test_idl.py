@@ -4,9 +4,10 @@ Contains all the the IDL specific tests for aiapy.
 
 from pathlib import Path
 
-import astropy.units as u
 import numpy as np
 import pytest
+
+import astropy.units as u
 
 from aiapy.calibrate import estimate_error
 from aiapy.conftest import CHANNELS

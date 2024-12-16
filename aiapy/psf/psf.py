@@ -2,8 +2,10 @@
 Calculate the point spread function (PSF) for the AIA telescopes.
 """
 
-import astropy.units as u
 import numpy as np
+
+import astropy.units as u
+
 from sunpy import log
 
 from aiapy.util.decorators import validate_channel

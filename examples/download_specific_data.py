@@ -10,11 +10,13 @@ We will be filtering the data we require by keywords and requesting short exposu
 
 import os
 
-import astropy.units as u
 import matplotlib.pyplot as plt
-import sunpy.map
+
+import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize
+
+import sunpy.map
 from sunpy.net import Fido, attrs
 
 from aiapy.calibrate import correct_degradation, register, update_pointing
@@ -40,7 +42,7 @@ query = Fido.search(
     attrs.jsoc.Series("aia.lev1_euv_12s"),
     attrs.Wavelength(211 * u.AA),
     attrs.jsoc.Notify(jsoc_email),
-    attrs.jsoc.Keyword("EXPTIME") <= 2,  # NOQA: PLR2004
+    attrs.jsoc.Keyword("EXPTIME") <= 2,
     attrs.jsoc.Segment("image"),
 )
 

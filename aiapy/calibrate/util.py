@@ -7,13 +7,15 @@ import pathlib
 import warnings
 from urllib.parse import urljoin
 
-import astropy.io.ascii
-import astropy.units as u
 import drms
 import numpy as np
+from erfa.core import ErfaWarning
+
+import astropy.io.ascii
+import astropy.units as u
 from astropy.table import QTable
 from astropy.time import Time
-from erfa.core import ErfaWarning
+
 from sunpy import log
 from sunpy.net import attrs, jsoc
 

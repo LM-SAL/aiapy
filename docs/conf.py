@@ -5,19 +5,21 @@
 # http://www.sphinx-doc.org/en/master/config
 
 import datetime
-
+import os
+import warnings
 from packaging.version import Version
+from pathlib import Path
 
 # -- Read the Docs Specific Configuration --------------------------------------
 
 # This needs to be done before aiapy/sunpy is imported
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 if on_rtd:
-    os.environ['SUNPY_CONFIGDIR'] = '/home/docs/'
-    os.environ['HOME'] = '/home/docs/'
-    os.environ['LANG'] = 'C'
-    os.environ['LC_ALL'] = 'C'
-    os.environ['PARFIVE_HIDE_PROGRESS'] = 'True'
+    os.environ["SUNPY_CONFIGDIR"] = "/home/docs/"
+    os.environ["HOME"] = "/home/docs/"
+    os.environ["LANG"] = "C"
+    os.environ["LC_ALL"] = "C"
+    os.environ["PARFIVE_HIDE_PROGRESS"] = "True"
 
 # -- Project information -----------------------------------------------------
 
@@ -33,7 +35,7 @@ if _version.is_postrelease:
 elif _version.is_devrelease:
     version = release = f"{_version.base_version}.dev{_version.dev}"
 is_development = _version.is_devrelease
-is_release = not(_version.is_prerelease or _version.is_devrelease)
+is_release = not (_version.is_prerelease or _version.is_devrelease)
 
 project = "aiapy"
 author = "AIA Instrument Team @ LMSAL"
@@ -43,6 +45,7 @@ copyright = f"{datetime.datetime.now(datetime.timezone.utc).year}, {author}"  # 
 from astropy.utils.exceptions import AstropyDeprecationWarning
 from matplotlib import MatplotlibDeprecationWarning
 from sunpy.util.exceptions import SunpyDeprecationWarning, SunpyPendingDeprecationWarning
+
 # Need to make sure that our documentation does not raise any of these
 warnings.filterwarnings("error", category=SunpyDeprecationWarning)
 warnings.filterwarnings("error", category=SunpyPendingDeprecationWarning)
@@ -208,6 +211,9 @@ graphviz_dot_args = [
 autoclass_content = "both"
 
 # -- Sphinx Gallery ------------------------------------------------------------
+
+from sunpy_sphinx_theme import PNG_ICON
+
 # JSOC email os env
 # see https://github.com/sunpy/sunpy/wiki/Home:-JSOC
 os.environ["JSOC_EMAIL"] = "jsoc@sunpy.org"

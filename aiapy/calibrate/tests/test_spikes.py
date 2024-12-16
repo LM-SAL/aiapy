@@ -1,10 +1,12 @@
 import copy
 
-import astropy.units as u
 import numpy as np
 import pytest
-import sunpy.map
+
+import astropy.units as u
 from astropy.coordinates import SkyCoord
+
+import sunpy.map
 from sunpy.map.mapbase import PixelPair
 
 from aiapy.calibrate import fetch_spikes, respike

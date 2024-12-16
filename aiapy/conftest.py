@@ -1,7 +1,9 @@
 import contextlib
 
-import astropy.units as u
 import pytest
+
+import astropy.units as u
+
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
@@ -45,7 +47,7 @@ def idl_available():
         import hissw
 
         hissw.Environment().run("")
-        return True  # NOQA: TRY300
+        return True
     except Exception as e:  # NOQA: BLE001
         log.warning(e)
         return False

@@ -9,9 +9,10 @@ well as explore the different properties of the
 telescope channels.
 """
 
+import matplotlib.pyplot as plt
+
 import astropy.time
 import astropy.units as u
-import matplotlib.pyplot as plt
 
 from aiapy.response import Channel
 
