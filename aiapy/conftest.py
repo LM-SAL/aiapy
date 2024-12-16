@@ -16,24 +16,24 @@ with contextlib.suppress(ImportError):
     mpl.use("Agg")
 
 
-@pytest.fixture()
+@pytest.fixture
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
     return m.resample((4096, 4096) * u.pixel)
 
 
-@pytest.fixture()
+@pytest.fixture
 def all_channels():
     return CHANNELS
 
 
-@pytest.fixture()
+@pytest.fixture
 def channels():
     return CHANNELS
 
 
-@pytest.fixture()
+@pytest.fixture
 def psf_94(channels):
     import aiapy.psf
 

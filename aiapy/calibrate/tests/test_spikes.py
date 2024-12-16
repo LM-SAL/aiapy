@@ -11,7 +11,7 @@ from aiapy.calibrate import fetch_spikes, respike
 from aiapy.util import AiapyUserWarning
 
 
-@pytest.fixture()
+@pytest.fixture
 def despiked_map():
     # Need an actual 4K-by-4K map to do the spike replacement
     return sunpy.map.Map(
@@ -19,36 +19,36 @@ def despiked_map():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def respiked_map(despiked_map):
     return respike(despiked_map)
 
 
-@pytest.fixture()
+@pytest.fixture
 def spikes(despiked_map):
     return fetch_spikes(despiked_map)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_respike(respiked_map, spikes):
     coords, values = spikes
     for x, y, v in zip(coords.x.value, coords.y.value, values, strict=True):
         assert v == respiked_map.data[int(y), int(x)]
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_respike_meta(respiked_map):
     assert respiked_map.meta["lvl_num"] == 0.5
     assert respiked_map.meta["nspikes"] == 0
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_fetch_with_prefetched_spikes(despiked_map, respiked_map, spikes):
     respiked_map_prefetched = respike(despiked_map, spikes=spikes)
     assert np.allclose(respiked_map.data, respiked_map_prefetched.data)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_cutout(respiked_map, despiked_map):
     blc = (-500, -500) * u.arcsec
     trc = (500, 500) * u.arcsec
@@ -65,7 +65,7 @@ def test_cutout(respiked_map, despiked_map):
     assert np.allclose(respiked_map_cutout.data, cutout_map_respiked.data)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 @pytest.mark.parametrize(
     ("key", "value", "error", "match"),
     [
@@ -81,7 +81,7 @@ def test_exceptions(despiked_map, key, value, error, match):
         respike(sunpy.map.Map(despiked_map.data, new_meta))
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_resample_warning(despiked_map):
     despiked_map_resample = despiked_map.resample((512, 512) * u.pixel)
     with (
@@ -91,7 +91,7 @@ def test_resample_warning(despiked_map):
         respike(despiked_map_resample)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 @pytest.mark.parametrize(("as_coords", "kind"), [(True, SkyCoord), (False, PixelPair)])
 def test_fetch_spikes(despiked_map, as_coords, kind):
     n_spikes = despiked_map.meta["nspikes"]

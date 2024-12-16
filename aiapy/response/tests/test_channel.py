@@ -22,7 +22,7 @@ def channel(request, ssw_home):  # NOQA: ARG001
     return Channel(94 * u.angstrom, instrument_file=instrument_file)
 
 
-@pytest.fixture()
+@pytest.fixture
 def channel_properties():
     return [
         "wavelength",
@@ -40,7 +40,7 @@ def channel_properties():
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def required_keys():
     return [
         "wave",
@@ -221,7 +221,7 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
     assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
     # There are a few corner cases for the 1600, 1700, and 4500 channels

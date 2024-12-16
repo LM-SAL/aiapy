@@ -40,7 +40,7 @@ query = Fido.search(
     attrs.jsoc.Series("aia.lev1_euv_12s"),
     attrs.Wavelength(211 * u.AA),
     attrs.jsoc.Notify(jsoc_email),
-    attrs.jsoc.Keyword("EXPTIME") <= 2,
+    attrs.jsoc.Keyword("EXPTIME") <= 2,  # NOQA: PLR2004
     attrs.jsoc.Segment("image"),
 )
 

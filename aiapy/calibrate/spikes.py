@@ -11,7 +11,7 @@ from sunpy.map.sources.sdo import AIAMap
 
 from aiapy.util import AiapyUserWarning
 
-__all__ = ["respike", "fetch_spikes"]
+__all__ = ["fetch_spikes", "respike"]
 
 
 def respike(smap, *, spikes=None):

@@ -24,7 +24,7 @@ keywords = [
   "atmospheric imaging assembly",
 ]
 authors = [
-  {email = "freij@baeri.org"},
+  {email = "nfreij@seti.org"},
   {name = "AIA Instrument Team @ LMSAL"}
 ]
 classifiers = [
@@ -38,6 +38,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
@@ -52,16 +53,11 @@ changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
 
 [project.optional-dependencies]
 all = ["aiapy"]
-cupy = [
-  "cupy",
-]
 tests = [
   "aiapy[all]",
   "hissw",
   "pytest",
   "pytest-astropy",
-  "pytest-cov",
-  "pytest-xdist",
 ]
 docs = [
   "aiapy[all]",

@@ -15,12 +15,12 @@ from aiapy.tests.data import get_test_filepath
 from aiapy.util import AiapyUserWarning
 
 
-@pytest.fixture()
+@pytest.fixture
 def lvl_15_map(aia_171_map):
     return register(aia_171_map)
 
 
-@pytest.fixture()
+@pytest.fixture
 def non_sdo_map():
     return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
 
@@ -231,7 +231,7 @@ def test_degradation_all_wavelengths(wavelength, result):
     assert u.allclose(time_correction, result)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_degradation_4500():
     # 4500 has a max version of 3, so by default it will error
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")

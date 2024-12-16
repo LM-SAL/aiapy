@@ -8,13 +8,13 @@ from urllib.parse import urljoin
 import astropy.constants as const
 import astropy.units as u
 import numpy as np
-from sunpy.data import manager
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
 from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
+from aiapy.data._manager import manager
 from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
 
@@ -69,7 +69,7 @@ class Channel:
 
     @u.quantity_input
     @validate_channel("channel")
-    def __init__(self, channel: u.angstrom, *, instrument_file=None):
+    def __init__(self, channel: u.angstrom, *, instrument_file=None) -> None:
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
 

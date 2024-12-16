@@ -15,7 +15,7 @@ from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correc
 from aiapy.util import AiapyUserWarning
 from aiapy.util.decorators import validate_channel
 
-__all__ = ["register", "correct_degradation", "degradation"]
+__all__ = ["correct_degradation", "degradation", "register"]
 
 
 @add_common_docstring(rotation_function_names=_rotation_function_names)

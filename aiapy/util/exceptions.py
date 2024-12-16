@@ -4,7 +4,7 @@ Errors/exceptions and warnings to be used throughout aiapy.
 
 from astropy.utils.exceptions import AstropyWarning
 
-__all__ = ["AiapyWarning", "AiapyUserWarning"]
+__all__ = ["AiapyUserWarning", "AiapyWarning"]
 
 
 class AiapyWarning(AstropyWarning):

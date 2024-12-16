@@ -90,7 +90,7 @@ def test_obstime_out_of_range():
         _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local, version=8)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_pointing_table():
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
@@ -111,7 +111,7 @@ def test_pointing_table():
         assert not hasattr(table[c], "mask")
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 def test_pointing_table_unavailable():
     # Check that missing pointing data raises a nice error
     t = astropy.time.Time("1990-01-01")
