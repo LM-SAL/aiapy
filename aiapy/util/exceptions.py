@@ -4,19 +4,19 @@ Errors/exceptions and warnings to be used throughout aiapy.
 
 from astropy.utils.exceptions import AstropyWarning
 
-__all__ = ["AiapyUserWarning", "AiapyWarning"]
+__all__ = ["AIApyUserWarning", "AIApyWarning"]
 
 
-class AiapyWarning(AstropyWarning):
+class AIApyWarning(AstropyWarning):
     """
     The base warning class from which all aiapy warnings should inherit.
 
     This warning should not be issued in normal code. Use
-    "AiapyUserWarning" instead or a specific sub-class.
+    "AIApyUserWarning" instead or a specific sub-class.
     """
 
 
-class AiapyUserWarning(UserWarning, AiapyWarning):
+class AIApyUserWarning(UserWarning, AIApyWarning):
     """
     The primary warning class for aiapy.
 

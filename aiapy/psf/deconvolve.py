@@ -16,7 +16,7 @@ try:
 except ImportError:
     HAS_CUPY = False
 
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AIApyUserWarning
 from .psf import psf as calculate_psf
 
 __all__ = ["deconvolve"]
@@ -71,7 +71,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     if np.any(img < 0):
         warnings.warn(
             "Image contains negative intensity values. Consider setting clip_negative to True",
-            AiapyUserWarning,
+            AIApyUserWarning,
             stacklevel=3,
         )
     if psf is None:

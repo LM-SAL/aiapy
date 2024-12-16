@@ -17,7 +17,7 @@ table_local = get_error_table(get_test_filepath("aia_V3_error_table.txt"))
 
 
 @pytest.mark.parametrize("channel", CHANNELS)
-def test_error_all_channels(channel):
+def test_error_all_channels(channel) -> None:
     intensity = 10.0 * u.DN / u.pix
     error = estimate_error(intensity, channel, error_table=table_local)
     assert error.unit == intensity.unit
@@ -33,7 +33,7 @@ def test_error_all_channels(channel):
         RANDOM_GENERATOR.standard_normal((10, 10, 5)),
     ],
 )
-def test_counts_shapes(counts):
+def test_counts_shapes(counts) -> None:
     counts = np.abs(counts) * 1000 * u.DN / u.pix
     errors = estimate_error(counts, 171 * u.angstrom, error_table=table_local)
     if counts.shape == ():
@@ -57,7 +57,7 @@ def test_counts_shapes(counts):
         ),
     ],
 )
-def test_flags(include_preflight, include_eve, include_chianti, expectation):
+def test_flags(include_preflight, include_eve, include_chianti, expectation) -> None:
     with expectation:
         errors = estimate_error(
             1 * u.DN / u.pix,

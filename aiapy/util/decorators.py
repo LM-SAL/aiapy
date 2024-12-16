@@ -1,3 +1,8 @@
+"""
+This module contains decorators for validating arguments related to AIA
+channels.
+"""
+
 import inspect
 import functools
 

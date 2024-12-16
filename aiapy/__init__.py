@@ -1,3 +1,13 @@
+"""
+``aiapy``
+=========
+
+Python library for AIA data analysis.
+
+* Homepage: https://aia.lmsal.com
+* Documentation: https://aiapy.readthedocs.io/en/stable/
+"""
+
 from itertools import compress
 from pathlib import Path
 

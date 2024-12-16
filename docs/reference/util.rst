@@ -3,5 +3,5 @@ Utilities (``aiapy.util``)
 ==========================
 
 .. automodapi:: aiapy.util
-    :skip: AiapyWarning, AiapyUserWarning
+    :skip: AIApyWarning, AIApyUserWarning
     :no-inheritance-diagram:

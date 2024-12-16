@@ -1,5 +1,4 @@
 import copy
-import tempfile
 
 import numpy as np
 import pytest
@@ -14,7 +13,7 @@ from sunpy.map import Map
 from aiapy.calibrate import correct_degradation, degradation, register
 from aiapy.calibrate.util import get_correction_table
 from aiapy.tests.data import get_test_filepath
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AIApyUserWarning
 
 
 @pytest.fixture
@@ -27,7 +26,7 @@ def non_sdo_map():
     return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
 
 
-def test_register(aia_171_map, lvl_15_map):
+def test_register(aia_171_map, lvl_15_map) -> None:
     """
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
@@ -50,15 +49,15 @@ def test_register(aia_171_map, lvl_15_map):
     assert lvl_15_map.meta["lvl_num"] == 1.5
 
 
-def test_register_filesave(lvl_15_map):
+def test_register_filesave(lvl_15_map, tmp_path) -> None:
     """
     Test that adjusted header values are still correct after saving the map and
     reloading it.
     """
-    afilename = tempfile.NamedTemporaryFile(suffix=".fits").name
+    filename = tmp_path / "test_register_filesave.fits"
     with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
-        lvl_15_map.save(afilename, overwrite=True)
-    load_map = Map(afilename)
+        lvl_15_map.save(str(filename), overwrite=True)
+    load_map = Map(str(filename))
     # Check crpix values
     assert load_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
     assert load_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
@@ -71,7 +70,7 @@ def test_register_filesave(lvl_15_map):
     assert load_map.meta["lvl_num"] == 1.5
 
 
-def test_register_unsupported_maps(aia_171_map, non_sdo_map):
+def test_register_unsupported_maps(aia_171_map, non_sdo_map) -> None:
     """
     Make sure we raise an error when an unsupported map is passed in.
     """
@@ -84,9 +83,9 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map):
         register(non_sdo_map)
 
 
-def test_register_level_15(lvl_15_map):
+def test_register_level_15(lvl_15_map) -> None:
     with pytest.warns(
-        AiapyUserWarning,
+        AIApyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
         register(lvl_15_map)
@@ -94,7 +93,7 @@ def test_register_level_15(lvl_15_map):
     # Test case where processing_level is missing and returns None
     del new_meta["lvl_num"]
     with pytest.warns(
-        AiapyUserWarning,
+        AIApyUserWarning,
         match="Image registration should only be applied to level 1 data",
     ):
         register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
@@ -110,7 +109,7 @@ def test_register_level_15(lvl_15_map):
         ),
     ],
 )
-def test_correct_degradation(aia_171_map, correction_table, version):
+def test_correct_degradation(aia_171_map, correction_table, version) -> None:
     original_corrected = correct_degradation(
         aia_171_map,
         correction_table=correction_table,
@@ -162,7 +161,7 @@ def test_correct_degradation(aia_171_map, correction_table, version):
         ),
     ],
 )
-def test_degradation(correction_table, version, time_correction_truth):
+def test_degradation(correction_table, version, time_correction_truth) -> None:
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the specific correction table file.
@@ -224,7 +223,7 @@ def test_degradation(correction_table, version, time_correction_truth):
         ),
     ],
 )
-def test_degradation_all_wavelengths(wavelength, result):
+def test_degradation_all_wavelengths(wavelength, result) -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     time_correction = degradation(
         wavelength * u.angstrom,
@@ -234,7 +233,7 @@ def test_degradation_all_wavelengths(wavelength, result):
 
 
 @pytest.mark.remote_data
-def test_degradation_4500():
+def test_degradation_4500() -> None:
     # 4500 has a max version of 3, so by default it will error
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     with pytest.raises(
@@ -247,7 +246,7 @@ def test_degradation_4500():
     assert u.allclose(correction, 1.0 * u.dimensionless_unscaled)
 
 
-def test_degradation_time_array():
+def test_degradation_time_array() -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     obstime = obstime + np.linspace(0, 1, 100) * u.year
     correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
@@ -262,7 +261,7 @@ def test_degradation_time_array():
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
 
 
-def test_register_cupy(aia_171_map):
+def test_register_cupy(aia_171_map) -> None:
     pytest.importorskip("cupy")
     cupy_map = register(aia_171_map, method="cupy")
     scipy_map = register(aia_171_map, method="scipy")

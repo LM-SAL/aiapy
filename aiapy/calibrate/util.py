@@ -7,7 +7,6 @@ import pathlib
 import warnings
 from urllib.parse import urljoin
 
-import drms
 import numpy as np
 from erfa.core import ErfaWarning
 
@@ -16,6 +15,7 @@ import astropy.units as u
 from astropy.table import QTable
 from astropy.time import Time
 
+import drms
 from sunpy import log
 from sunpy.net import attrs, jsoc
 

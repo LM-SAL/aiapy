@@ -42,7 +42,7 @@ def psf_94(channels):
     return aiapy.psf.psf(channels[0], use_preflightcore=True)
 
 
-def idl_available():
+def idl_available() -> bool | None:
     try:
         import hissw
 

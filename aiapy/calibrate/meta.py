@@ -13,7 +13,7 @@ from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEclipti
 from sunpy.map import contains_full_disk
 
 from aiapy.calibrate.util import get_pointing_table
-from aiapy.util.exceptions import AiapyUserWarning
+from aiapy.util.exceptions import AIApyUserWarning
 
 __all__ = ["fix_observer_location", "update_pointing"]
 
@@ -127,7 +127,8 @@ def update_pointing(smap, *, pointing_table=None):
     # NOTE: In sunpy >=6.0, the reference_date property was introduced which, for
     # AIA maps, will always be pulled from "T_OBS"
     t_obs_in_interval = np.logical_and(
-        smap.reference_date >= pointing_table["T_START"], smap.reference_date < pointing_table["T_STOP"]
+        smap.reference_date >= pointing_table["T_START"],
+        smap.reference_date < pointing_table["T_STOP"],
     )
     if not t_obs_in_interval.any():
         msg = (
@@ -170,7 +171,7 @@ def update_pointing(smap, *, pointing_table=None):
             # these cases, we just want to skip updating the pointing information.
             warnings.warn(
                 f"Missing value in pointing table for {key}. This key will not be updated.",
-                AiapyUserWarning,
+                AIApyUserWarning,
                 stacklevel=3,
             )
         else:

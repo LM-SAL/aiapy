@@ -10,7 +10,7 @@ __all__ = ["_rotation_cupy", "_rotation_function_names"]
     handles_image_nans=False,
     handles_nan_missing=True,
 )
-def _rotation_cupy(image, matrix, shift, order, missing, clip):
+def _rotation_cupy(image, matrix, shift, order, missing, clip):  # NOQA: ARG001
     """
     * Rotates using `cupyx.scipy.ndimage.affine_transform` from `cupy <https://docs.cupy.dev/en/stable/index.html>`__
     * Converts from a numpy array to a cupy array and then back again.

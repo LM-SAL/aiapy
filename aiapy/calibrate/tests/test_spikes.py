@@ -10,7 +10,7 @@ import sunpy.map
 from sunpy.map.mapbase import PixelPair
 
 from aiapy.calibrate import fetch_spikes, respike
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AIApyUserWarning
 
 
 @pytest.fixture
@@ -32,26 +32,26 @@ def spikes(despiked_map):
 
 
 @pytest.mark.remote_data
-def test_respike(respiked_map, spikes):
+def test_respike(respiked_map, spikes) -> None:
     coords, values = spikes
     for x, y, v in zip(coords.x.value, coords.y.value, values, strict=True):
         assert v == respiked_map.data[int(y), int(x)]
 
 
 @pytest.mark.remote_data
-def test_respike_meta(respiked_map):
+def test_respike_meta(respiked_map) -> None:
     assert respiked_map.meta["lvl_num"] == 0.5
     assert respiked_map.meta["nspikes"] == 0
 
 
 @pytest.mark.remote_data
-def test_fetch_with_prefetched_spikes(despiked_map, respiked_map, spikes):
+def test_fetch_with_prefetched_spikes(despiked_map, respiked_map, spikes) -> None:
     respiked_map_prefetched = respike(despiked_map, spikes=spikes)
     assert np.allclose(respiked_map.data, respiked_map_prefetched.data)
 
 
 @pytest.mark.remote_data
-def test_cutout(respiked_map, despiked_map):
+def test_cutout(respiked_map, despiked_map) -> None:
     blc = (-500, -500) * u.arcsec
     trc = (500, 500) * u.arcsec
     respiked_map_cutout = respiked_map.submap(
@@ -76,7 +76,7 @@ def test_cutout(respiked_map, despiked_map):
         ("instrume", "not AIA", TypeError, "Input must be an AIAMap."),
     ],
 )
-def test_exceptions(despiked_map, key, value, error, match):
+def test_exceptions(despiked_map, key, value, error, match) -> None:
     new_meta = copy.deepcopy(despiked_map.meta)
     new_meta[key] = value
     with pytest.raises(error, match=match):
@@ -84,10 +84,10 @@ def test_exceptions(despiked_map, key, value, error, match):
 
 
 @pytest.mark.remote_data
-def test_resample_warning(despiked_map):
+def test_resample_warning(despiked_map) -> None:
     despiked_map_resample = despiked_map.resample((512, 512) * u.pixel)
     with (
-        pytest.warns(AiapyUserWarning, match="is significantly different from the expected level 1 plate scale"),
+        pytest.warns(AIApyUserWarning, match="is significantly different from the expected level 1 plate scale"),
         pytest.warns(ResourceWarning),
     ):
         respike(despiked_map_resample)
@@ -95,7 +95,7 @@ def test_resample_warning(despiked_map):
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize(("as_coords", "kind"), [(True, SkyCoord), (False, PixelPair)])
-def test_fetch_spikes(despiked_map, as_coords, kind):
+def test_fetch_spikes(despiked_map, as_coords, kind) -> None:
     n_spikes = despiked_map.meta["nspikes"]
     coords, values = fetch_spikes(despiked_map, as_coords=as_coords)
     assert isinstance(coords, kind)

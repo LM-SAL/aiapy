@@ -65,7 +65,7 @@ def _retry_sample_data(results, new_url_base):
     return new_results
 
 
-def _handle_final_errors(results):
+def _handle_final_errors(results) -> None:
     for err in results.errors:
         file_name = err.url.split("/")[-1]
         log.debug(

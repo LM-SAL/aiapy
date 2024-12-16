@@ -17,7 +17,7 @@ __all__ = ["manager"]
 
 
 class AIAParfiveDownloader(DownloaderBase):
-    def download(self, url, path):
+    def download(self, url, path) -> None:
         downloader = Downloader()
         path = Path(path)
         filename = path.name
@@ -37,5 +37,5 @@ manager = DataManager(
         AIAParfiveDownloader(),
         SqliteStorage(f"{_download_dir}/data_manager.db"),
         _download_dir,
-    )
+    ),
 )

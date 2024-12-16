@@ -7,8 +7,9 @@
 import datetime
 import os
 import warnings
-from packaging.version import Version
 from pathlib import Path
+
+from packaging.version import Version
 
 # -- Read the Docs Specific Configuration --------------------------------------
 
@@ -68,7 +69,6 @@ extensions = [
     "sphinx_automodapi.automodapi",
     "sphinx_automodapi.smart_resolver",
     "sphinx_changelog",
-    "sunpy.util.sphinx.doctest",
     "sunpy.util.sphinx.generate",
     "sphinxext.opengraph",
     "sphinx_design",

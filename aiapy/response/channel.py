@@ -123,7 +123,7 @@ class Channel:
     @property
     def name(
         self,
-    ):
+    ) -> str:
         return f"{self.channel.to(u.angstrom).value:.0f}"
 
     @property

@@ -14,7 +14,7 @@ from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AIApyUserWarning
 from aiapy.util.decorators import validate_channel
 
 __all__ = ["correct_degradation", "degradation", "register"]
@@ -80,7 +80,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
             "Image registration should only be applied to level 1 data",
-            AiapyUserWarning,
+            AIApyUserWarning,
             stacklevel=3,
         )
     # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
