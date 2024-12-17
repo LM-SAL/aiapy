@@ -4,6 +4,8 @@ from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.util
 
+pytestmark = [pytest.mark.xfail(reason="JSOC is down")]
+
 
 @pytest.mark.remote_data
 def test_sdo_location(aia_171_map) -> None:

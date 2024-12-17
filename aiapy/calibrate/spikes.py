@@ -148,10 +148,14 @@ def fetch_spikes(smap, *, as_coords=False):
     series = r"aia.lev1_euv_12s"
     if smap.wavelength in (1600, 1700, 4500) * u.angstrom:
         series = r"aia.lev1_uv_24s"
-    file = drms.Client().query(
-        f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]',
-        seg="spikes",
-    )
+    try:
+        file = drms.Client().query(
+            f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]',
+            seg="spikes",
+        )
+    except Exception as e:
+        msg = f"Could not retrieve spikes for {smap.date} at {smap.wavelength}.\n" f"Error message: {e}"
+        raise OSError(msg) from e
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     # Loaded as floats, but they are actually integers
     spikes = spikes.data.astype(np.int32)

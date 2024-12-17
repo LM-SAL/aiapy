@@ -12,6 +12,8 @@ from sunpy.map.mapbase import PixelPair
 from aiapy.calibrate import fetch_spikes, respike
 from aiapy.util import AIApyUserWarning
 
+pytestmark = [pytest.mark.xfail(reason="JSOC is down")]
+
 
 @pytest.fixture
 def despiked_map():
