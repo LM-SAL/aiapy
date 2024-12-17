@@ -6,10 +6,12 @@ Re-spiking level 1 images
 This example demonstrates how to "re-spike" AIA level 1 images
 """
 
-import astropy.units as u
 import matplotlib.pyplot as plt
-import sunpy.map
+
+import astropy.units as u
 from astropy.coordinates import SkyCoord
+
+import sunpy.map
 
 import aiapy.data.sample as sample_data
 from aiapy.calibrate import fetch_spikes, respike

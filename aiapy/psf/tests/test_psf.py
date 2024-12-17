@@ -15,13 +15,13 @@ MESH_PROPERTIES = [
 
 
 @pytest.mark.parametrize("use_preflightcore", [True, False])
-def test_filter_mesh_parameters(use_preflightcore, channels):
+def test_filter_mesh_parameters(use_preflightcore, channels) -> None:
     params = aiapy.psf.filter_mesh_parameters(use_preflightcore=use_preflightcore)
     assert isinstance(params, dict)
     assert all(c in params for c in channels)
     assert all(all(p in params[c] for p in MESH_PROPERTIES) for c in channels)
 
 
-def test_psf(psf):
+def test_psf(psf) -> None:
     assert isinstance(psf, np.ndarray)
     assert psf.shape == (4096, 4096)

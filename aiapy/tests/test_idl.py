@@ -4,9 +4,10 @@ Contains all the the IDL specific tests for aiapy.
 
 from pathlib import Path
 
-import astropy.units as u
 import numpy as np
 import pytest
+
+import astropy.units as u
 
 from aiapy.calibrate import estimate_error
 from aiapy.conftest import CHANNELS
@@ -20,7 +21,7 @@ from aiapy.conftest import CHANNELS
         [171 * u.angstrom, 1000 * u.DN / u.pix, False, False, True],
     ],
 )
-def test_error_consistent(idl_environment, channel, counts, include_eve, include_preflight, include_chianti):
+def test_error_consistent(idl_environment, channel, counts, include_eve, include_preflight, include_chianti) -> None:
     idl = """
     common aia_bp_error_common,common_errtable
     common_errtable=aia_bp_read_error_table('{{ error_table }}')
@@ -72,7 +73,7 @@ def psf_idl(idl_environment, request):
     return r["psf"]
 
 
-def test_psf_consistent(psf_94, psf_idl):
+def test_psf_consistent(psf_94, psf_idl) -> None:
     """
     Check whether PSF is consistent with IDL calculation.
 

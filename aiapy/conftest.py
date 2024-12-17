@@ -1,7 +1,9 @@
 import contextlib
 
-import astropy.units as u
 import pytest
+
+import astropy.units as u
+
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
@@ -16,36 +18,36 @@ with contextlib.suppress(ImportError):
     mpl.use("Agg")
 
 
-@pytest.fixture()
+@pytest.fixture
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
     return m.resample((4096, 4096) * u.pixel)
 
 
-@pytest.fixture()
+@pytest.fixture
 def all_channels():
     return CHANNELS
 
 
-@pytest.fixture()
+@pytest.fixture
 def channels():
     return CHANNELS
 
 
-@pytest.fixture()
+@pytest.fixture
 def psf_94(channels):
     import aiapy.psf
 
     return aiapy.psf.psf(channels[0], use_preflightcore=True)
 
 
-def idl_available():
+def idl_available() -> bool | None:
     try:
         import hissw
 
         hissw.Environment().run("")
-        return True  # NOQA: TRY300
+        return True
     except Exception as e:  # NOQA: BLE001
         log.warning(e)
         return False

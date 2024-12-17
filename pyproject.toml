@@ -1,18 +1,24 @@
 [build-system]
 requires = [
-  "setuptools",
-  "setuptools_scm[toml]",
+  "setuptools>=62.1",
+  "setuptools_scm[toml]>=6.2",
   "wheel",
 ]
-build-backend = 'setuptools.build_meta'
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiapy"
-dynamic = ["version"]
 description = "Python library for AIA data analysis."
-readme = "README.rst"
 requires-python = ">=3.10"
-license = {file = "LICENSE.txt"}
+readme = { file = "README.rst", content-type = "text/x-rst" }
+license = { file = "licenses/LICENSE.rst" }
+authors = [
+  { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
+]
+dependencies = [
+  'sunpy[net,image,map]>=6.0',
+]
+dynamic = ["version"]
 keywords = [
   "solar physics",
   "solar",
@@ -22,10 +28,6 @@ keywords = [
   "AIA",
   "solar dynamics observatory",
   "atmospheric imaging assembly",
-]
-authors = [
-  {email = "freij@baeri.org"},
-  {name = "AIA Instrument Team @ LMSAL"}
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -38,57 +40,73 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Astronomy",
 ]
-dependencies = [
-  'sunpy[net,image,map]>=6.0',
-]
-
-[project.urls]
-homepage = "https://aia.lmsal.com/"
-documentation = "https://aiapy.readthedocs.io/en/stable/"
-repository = "https://github.com/LM-SAL/aiapy"
-changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
 
 [project.optional-dependencies]
 all = ["aiapy"]
-cupy = [
-  "cupy",
-]
 tests = [
-  "aiapy[all]",
-  "hissw",
   "pytest",
-  "pytest-astropy",
+  "pytest-doctestplus",
   "pytest-cov",
   "pytest-xdist",
+  "aiapy[all]",
+  "hissw",
+  "pytest-astropy",
 ]
 docs = [
-  "aiapy[all]",
   "sphinx",
   "sphinx-automodapi",
   "sphinx-changelog",
+  "packaging",
+  "aiapy[all]",
   "sphinx-copybutton",
   "sphinx-design",
   "sphinx-gallery",
   "sphinx-hoverxref",
   "sphinxext-opengraph",
   "sunpy-sphinx-theme",
+  "sunpy-sphinx-theme",
 ]
-dev = ["aiapy[tests,docs]"]
+
+[project.urls]
+Homepage = "https://aia.lmsal.com/"
+"Source Code" = "https://github.com/LM-SAL/aiapy"
+Download = "https://pypi.org/project/aiapy"
+Documentation = "https://aiapy.readthedocs.io/en/stable/"
+Changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
+"Issue Tracker" = "https://github.com/LM-SAL/aiapy/issues/"
 
 [tool.setuptools]
-packages = ["aiapy"]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["aiapy*"]
+exclude = ["aiapy._dev*"]
 
 [tool.setuptools_scm]
 write_to = "aiapy/_version.py"
 
-[tool.setuptools.exclude-package-data]
-aiapy = ["aiapy._dev"]
+[tool.gilesbot]
+  [tool.gilesbot.pull_requests]
+  enabled = true
 
-[tool.codespell]
-ignore-words-list = "emiss"
+  [tool.gilesbot.towncrier_changelog]
+  enabled = true
+  verify_pr_number = true
+  changelog_skip_label = "No Changelog Entry Needed"
+  help_url = "https://github.com/LM-SAL/aiapy/blob/main/changelog/README.rst"
 
+  changelog_missing_long = "There isn't a changelog file in this pull request. Please add a changelog file to the `changelog/` directory following the instructions in the changelog [README](https://github.com/LM-SAL/aiapy/blob/main/changelog/README.rst)."
+
+  type_incorrect_long = "The changelog file you added is not one of the allowed types. Please use one of the types described in the changelog [README](https://github.com/LM-SAL/aiapy/blob/main/changelog/README.rst)"
+
+  number_incorrect_long = "The number in the changelog file you added does not match the number of this pull request. Please rename the file."
+
+# TODO: This should be in towncrier.toml but Giles currently only works looks in
+# pyproject.toml we should move this back when it's fixed.
 [tool.towncrier]
   package = "aiapy"
   filename = "CHANGELOG.rst"
@@ -97,36 +115,36 @@ ignore-words-list = "emiss"
   title_format = "{version} ({project_date})"
 
   [[tool.towncrier.type]]
-    directory = "breaking"
-    name = "Breaking Changes"
-    showcontent = true
+  directory = "breaking"
+  name = "Breaking Changes"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "deprecation"
-    name = "Deprecations"
-    showcontent = true
+  directory = "deprecation"
+  name = "Deprecations"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "removal"
-    name = "Removals"
-    showcontent = true
+  directory = "removal"
+  name = "Removals"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "feature"
-    name = "New Features"
-    showcontent = true
+  directory = "feature"
+  name = "New Features"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "bugfix"
-    name = "Bug Fixes"
-    showcontent = true
+  directory = "bugfix"
+  name = "Bug Fixes"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "doc"
-    name = "Documentation"
-    showcontent = true
+  directory = "doc"
+  name = "Documentation"
+  showcontent = true
 
   [[tool.towncrier.type]]
-    directory = "trivial"
-    name = "Internal Changes"
-    showcontent = true
+  directory = "trivial"
+  name = "Internal Changes"
+  showcontent = true

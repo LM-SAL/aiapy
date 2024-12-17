@@ -2,12 +2,12 @@
 Estimate uncertainty on intensities.
 """
 
-import astropy.units as u
 import numpy as np
+
+import astropy.units as u
 
 from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
-
 from .util import get_error_table
 
 __all__ = ["estimate_error"]

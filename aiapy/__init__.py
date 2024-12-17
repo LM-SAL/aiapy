@@ -1,3 +1,13 @@
+"""
+``aiapy``
+=========
+
+Python library for AIA data analysis.
+
+* Homepage: https://aia.lmsal.com
+* Documentation: https://aiapy.readthedocs.io/en/stable/
+"""
+
 from itertools import compress
 from pathlib import Path
 
@@ -26,4 +36,4 @@ def _get_bibtex():
 
 
 __citation__ = __bibtex__ = _get_bibtex()
-__all__ = ["__version__", "__citation__", "_SSW_MIRRORS"]
+__all__ = ["_SSW_MIRRORS", "__citation__", "__version__"]

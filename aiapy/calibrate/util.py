@@ -7,21 +7,23 @@ import pathlib
 import warnings
 from urllib.parse import urljoin
 
+import numpy as np
+from erfa.core import ErfaWarning
+
 import astropy.io.ascii
 import astropy.units as u
-import drms
-import numpy as np
 from astropy.table import QTable
 from astropy.time import Time
-from erfa.core import ErfaWarning
+
+import drms
 from sunpy import log
-from sunpy.data import manager
 from sunpy.net import attrs, jsoc
 
 from aiapy import _SSW_MIRRORS
+from aiapy.data._manager import manager
 from aiapy.util.decorators import validate_channel
 
-__all__ = ["get_correction_table", "get_pointing_table", "get_error_table"]
+__all__ = ["get_correction_table", "get_error_table", "get_pointing_table"]
 
 # Default version of the degradation calibration curve to use.
 # This needs to be incremented as the calibration is updated in JSOC.

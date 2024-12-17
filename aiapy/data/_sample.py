@@ -3,6 +3,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 from parfive import SessionConfig
+
 from sunpy import log
 from sunpy.util.config import _is_writable_dir, get_and_create_sample_dir
 from sunpy.util.parfive_helpers import Downloader
@@ -60,11 +61,11 @@ def _retry_sample_data(results, new_url_base):
     # from the previous results object and this retry, and all the errors from
     # this retry.
     new_results = results + extra_results
-    new_results._errors = extra_results._errors  # NOQA: SLF001
+    new_results._errors = extra_results._errors
     return new_results
 
 
-def _handle_final_errors(results):
+def _handle_final_errors(results) -> None:
     for err in results.errors:
         file_name = err.url.split("/")[-1]
         log.debug(

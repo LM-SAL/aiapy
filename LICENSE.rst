@@ -1,4 +1,4 @@
-Copyright (c) 2020-2023, AIA Instrument Team
+Copyright (c) 2020-2025, AIA Instrument Team @ LMSAL
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,

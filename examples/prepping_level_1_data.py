@@ -11,6 +11,7 @@ This corresponds to the ``aia_prep.pro`` procedure as described in the `SDO Anal
 """
 
 import matplotlib.pyplot as plt
+
 import sunpy.map
 
 import aiapy.data.sample as sample_data

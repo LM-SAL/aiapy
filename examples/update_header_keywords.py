@@ -10,6 +10,7 @@ position.
 """
 
 import matplotlib.pyplot as plt
+
 import sunpy.map
 
 import aiapy.data.sample as sample_data

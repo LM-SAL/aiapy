@@ -1,17 +1,23 @@
+"""
+Functions for re-inserting "spikes" into level 1 AIA images.
+"""
+
 import copy
 import warnings
 
-import astropy.units as u
-import drms
 import numpy as np
+
+import astropy.units as u
 from astropy.io import fits
 from astropy.wcs.utils import pixel_to_pixel
+
+import drms
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
 
-from aiapy.util import AiapyUserWarning
+from aiapy.util import AIApyUserWarning
 
-__all__ = ["respike", "fetch_spikes"]
+__all__ = ["fetch_spikes", "respike"]
 
 
 def respike(smap, *, spikes=None):
@@ -83,7 +89,7 @@ def respike(smap, *, spikes=None):
                 "in any way from the level 1 image, the spike data will likely be "
                 "reinserted in the incorrect pixel positions."
             ),
-            AiapyUserWarning,
+            AIApyUserWarning,
             stacklevel=3,
         )
     # FIXME: Should raise an exception? Or just return with a warning?
@@ -105,7 +111,7 @@ def respike(smap, *, spikes=None):
     new_meta["lvl_num"] = 0.5
     new_meta["comments"] = f"Respike applied; {values.shape[0]} hot pixels reinserted."
     new_meta["nspikes"] = 0
-    return smap._new_instance(  # NOQA: SLF001
+    return smap._new_instance(
         new_data,
         new_meta,
         plot_settings=smap.plot_settings,

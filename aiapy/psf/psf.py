@@ -2,8 +2,10 @@
 Calculate the point spread function (PSF) for the AIA telescopes.
 """
 
-import astropy.units as u
 import numpy as np
+
+import astropy.units as u
+
 from sunpy import log
 
 from aiapy.util.decorators import validate_channel
@@ -15,7 +17,7 @@ try:
 except ImportError:
     HAS_CUPY = False
 
-__all__ = ["psf", "filter_mesh_parameters", "_psf"]
+__all__ = ["_psf", "filter_mesh_parameters", "psf"]
 
 
 def filter_mesh_parameters(*, use_preflightcore=False):
@@ -300,12 +302,12 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False, use_gpu=Tru
     # If cupy is available, cast to a cupy array
     if HAS_CUPY and use_gpu:
         psf = cupy.array(psf)
-    Nx, Ny = psf.shape
+    nx, ny = psf.shape
     width_x = meshinfo["width"].value
     width_y = meshinfo["width"].value
     # x and y position grids
-    x = np.outer(np.ones(Ny), np.arange(Nx) + 0.5)
-    y = np.outer(np.arange(Ny) + 0.5, np.ones(Nx))
+    x = np.outer(np.ones(ny), np.arange(nx) + 0.5)
+    y = np.outer(np.arange(ny) + 0.5, np.ones(nx))
     if HAS_CUPY and use_gpu:
         x = cupy.array(x)
         y = cupy.array(y)
@@ -319,10 +321,10 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False, use_gpu=Tru
             continue
         intensity = np.sinc(order / mesh_ratio) ** 2  # I_0
         for dx, dy in zip(spacing_x.value, spacing_y.value, strict=True):
-            x_centered = x - (0.5 * Nx + dx * order + 0.5)
-            y_centered = y - (0.5 * Ny + dy * order + 0.5)
+            x_centered = x - (0.5 * nx + dx * order + 0.5)
+            y_centered = y - (0.5 * ny + dy * order + 0.5)
             # NOTE: this step is the bottleneck and is VERY slow on a CPU
             psf += np.exp(-width_x * x_centered * x_centered - width_y * y_centered * y_centered) * intensity
     # Contribution from core
-    psf_core = np.exp(-width_x * (x - 0.5 * Nx - 0.5) ** 2 - width_y * (y - 0.5 * Ny - 0.5) ** 2)
+    psf_core = np.exp(-width_x * (x - 0.5 * nx - 0.5) ** 2 - width_y * (y - 0.5 * ny - 0.5) ** 2)
     return (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()
