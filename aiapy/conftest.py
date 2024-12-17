@@ -8,13 +8,10 @@ import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
-ALL_CHANNELS = (94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500) * u.angstrom
-CHANNELS = (94, 131, 171, 193, 211, 304, 335) * u.angstrom
-
-# Force MPL to use non-gui backends for testing.
 with contextlib.suppress(ImportError):
     import matplotlib as mpl
 
+    # Force MPL to use non-gui backends for testing.
     mpl.use("Agg")
 
 
@@ -23,16 +20,6 @@ def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
     return m.resample((4096, 4096) * u.pixel)
-
-
-@pytest.fixture
-def all_channels():
-    return CHANNELS
-
-
-@pytest.fixture
-def channels():
-    return CHANNELS
 
 
 @pytest.fixture
@@ -47,7 +34,7 @@ def idl_available() -> bool | None:
         import hissw
 
         hissw.Environment().run("")
-        return True
+        return True  # NOQA: TRY300
     except Exception as e:  # NOQA: BLE001
         log.warning(e)
         return False

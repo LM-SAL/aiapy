@@ -74,7 +74,12 @@ lint.extend-ignore = [
 ]
 "*conftest.py" = [
     "D100", # Missing docstring in public module
+    "D103", # Missing docstring in public function
     "D104", # Missing docstring in public package
+]
+# TODO: Fix
+"aiapy/response/channel.py" = [
+    "D102", # Missing docstring in public method
 ]
 
 [lint.pydocstyle]

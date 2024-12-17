@@ -13,7 +13,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.util import _select_epoch_from_correction_table
 from aiapy.util import AIApyUserWarning
 from aiapy.util.decorators import validate_channel
 
@@ -101,7 +101,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
         missing=missing,
         method=method,
     )
-    # extract center from padded smap.rotate output
+    # Extract center from padded smap.rotate output
     # crpix1 and crpix2 will be equal (recenter=True), as prep does not work with submaps
     center = np.floor(tempmap.meta["crpix1"])
     range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
@@ -115,7 +115,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, *, correction_table=None, calibration_version=None):
+def correct_degradation(smap, *, correction_table):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -128,22 +128,14 @@ def correct_degradation(smap, *, correction_table=None, calibration_version=None
     ----------
     smap : `~sunpy.map.sources.AIAMap`
         Map to be corrected.
-    correction_table : `~astropy.table.Table` or `str`, optional
-        Table of correction parameters or path to correction table file.
-        If not specified, it will be queried from JSOC. See
-        `aiapy.calibrate.util.get_correction_table` for more information.
-        If you are processing many images, it is recommended to
-        read the correction table once and pass it with this argument to avoid
-        multiple redundant network calls.
-    calibration_version : `int`, optional
-        The version of the calibration to use when calculating the degradation.
-        By default, this is the most recent version available from JSOC. If you
-        are using a specific calibration response file, you may need to specify
-        this according to the version in that file.
+    correction_table : `~astropy.table.Table`
+        Table of correction parameters.
+        You can get this table by calling `aiapy.calibrate.util.get_correction_table`.
 
     Returns
     -------
     `~sunpy.map.sources.AIAMap`
+        Degradation-corrected map.
 
     See Also
     --------
@@ -153,7 +145,6 @@ def correct_degradation(smap, *, correction_table=None, calibration_version=None
         smap.wavelength,
         smap.date,
         correction_table=correction_table,
-        calibration_version=calibration_version,
     )
     return smap / d
 
@@ -164,8 +155,7 @@ def degradation(
     channel: u.angstrom,
     obstime,
     *,
-    correction_table=None,
-    calibration_version=None,
+    correction_table,
 ) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -195,19 +185,17 @@ def degradation(
     Parameters
     ----------
     channel : `~astropy.units.Quantity`
+        Wavelength of the channel.
     obstime : `~astropy.time.Time`
-    correction_table : `~astropy.table.Table` or `str`, optional
-        Table of correction parameters or path to correction table file.
-        If not specified, it will be queried from JSOC. See
-        `aiapy.calibrate.util.get_correction_table` for more information.
-        If you are processing many images, it is recommended to
-        read the correction table once and pass it with this argument to avoid
-        multiple redundant network calls.
-    calibration_version : `int`, optional
-        The version of the calibration to use when calculating the degradation.
-        By default, this is the most recent version available from JSOC. If you
-        are using a specific calibration response file, you may need to specify
-        this according to the version in that file.
+        Observation time.
+    correction_table : `~astropy.table.Table`
+        Table of correction parameters.
+        You can get this table by calling `aiapy.calibrate.util.get_correction_table`.
+
+    Returns
+    -------
+    `~astropy.units.Quantity`
+        Degradation correction factor.
 
     See Also
     --------
@@ -219,15 +207,12 @@ def degradation(
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
-    # Do this outside of the loop to avoid repeated queries
-    correction_table = get_correction_table(correction_table=correction_table)
-    for i, t in enumerate(obstime):
-        table = _select_epoch_from_correction_table(channel, t, correction_table, version=calibration_version)
-
+    for idx, t in enumerate(obstime):
+        table = _select_epoch_from_correction_table(channel, t, correction_table)
         # Time difference between obstime and start of epoch
         dt = (t - table["T_START"][-1]).to(u.day).value
         # Correction to most recent epoch
-        ratio[i] = table["EFF_AREA"][-1] / table["EFF_AREA"][0]
+        ratio[idx] = table["EFF_AREA"][-1] / table["EFF_AREA"][0]
         # Polynomial correction to interpolate within epoch
-        poly[i] = table["EFFA_P1"][-1] * dt + table["EFFA_P2"][-1] * dt**2 + table["EFFA_P3"][-1] * dt**3 + 1.0
+        poly[idx] = table["EFFA_P1"][-1] * dt + table["EFFA_P2"][-1] * dt**2 + table["EFFA_P3"][-1] * dt**3 + 1.0
     return u.Quantity(poly * ratio)

@@ -12,7 +12,6 @@ from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEclipti
 
 from sunpy.map import contains_full_disk
 
-from aiapy.calibrate.util import get_pointing_table
 from aiapy.util.exceptions import AIApyUserWarning
 
 __all__ = ["fix_observer_location", "update_pointing"]
@@ -42,7 +41,7 @@ def fix_observer_location(smap):
     -------
     `~sunpy.map.sources.AIAMap`
     """
-    # Create observer coordinate from HAE coordinates
+    # Create observer coordinate from HAE coordinates (reason?)
     coord = SkyCoord(
         x=smap.meta["haex_obs"] * u.m,
         y=smap.meta["haey_obs"] * u.m,
@@ -51,36 +50,25 @@ def fix_observer_location(smap):
         frame=HeliocentricMeanEcliptic,
         obstime=smap.reference_date,
     ).heliographic_stonyhurst
-    # Update header
     new_meta = copy.deepcopy(smap.meta)
     new_meta["hgln_obs"] = coord.lon.to(u.degree).value
     new_meta["hglt_obs"] = coord.lat.to(u.degree).value
     new_meta["dsun_obs"] = coord.radius.to(u.m).value
-
     return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
 
 
-def update_pointing(smap, *, pointing_table=None):
+def update_pointing(smap, *, pointing_table):
     """
     Update the pointing information in the input map header.
 
     This function updates the pointing information in ``smap`` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
     in the header using the information provided in ``pointing_table``.
-    If ``pointing_table`` is not specified, the 3-hour pointing
-    information is queried from the `JSOC <http://jsoc.stanford.edu/>`_.
 
     .. note::
 
         The method removes any ``PCi_j`` matrix keys in the header and
         updates the ``CROTA2`` keyword.
-
-    .. note::
-
-        If correcting pointing information for a large number of images,
-        it is strongly recommended to query the table once for the
-        appropriate interval and then pass this table in rather than
-        executing repeated queries.
 
     .. warning::
 
@@ -92,13 +80,14 @@ def update_pointing(smap, *, pointing_table=None):
     ----------
     smap : `~sunpy.map.sources.AIAMap`
         Input map.
-    pointing_table : `~astropy.table.QTable`, optional
-        Table of pointing information. If not specified, the table
-        will be retrieved from JSOC.
+    pointing_table : `~astropy.table.QTable`
+        Table of pointing information.
+        You can get this table by calling `aiapy.calibrate.util.get_pointing_table`.
 
     Returns
     -------
     `~sunpy.map.sources.AIAMap`
+        Updated map with pointing information.
 
     See Also
     --------
@@ -111,9 +100,6 @@ def update_pointing(smap, *, pointing_table=None):
     if not all(d == (s * u.pixel) for d, s in zip(smap.dimensions, shape_full_frame, strict=True)):
         msg = f"Input must be at the full resolution of {shape_full_frame}"
         raise ValueError(msg)
-    if pointing_table is None:
-        # Make range wide enough to get closest 3-hour pointing
-        pointing_table = get_pointing_table(smap.date - 12 * u.h, smap.date + 12 * u.h)
     # Find row in which T_START <= T_OBS < T_STOP
     # The following notes are from a private communication with J. Serafin (LMSAL)
     # and are preserved here to explain the reasoning for selecting the particular
@@ -176,9 +162,7 @@ def update_pointing(smap, *, pointing_table=None):
             )
         else:
             new_meta[key] = value
-
-    # sunpy map converts crota to a PCi_j matrix, so we remove it to force the
-    # re-conversion.
+    # sunpy.map.Map converts crota to a PCi_j matrix, so we remove it to force the re-conversion.
     new_meta.pop("PC1_1")
     new_meta.pop("PC1_2")
     new_meta.pop("PC2_1")

@@ -11,11 +11,11 @@ import astropy.units as u
 from astropy.io import fits
 from astropy.wcs.utils import pixel_to_pixel
 
-import drms
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
 
 from aiapy.util import AIApyUserWarning
+from aiapy.util.net import get_data_from_jsoc
 
 __all__ = ["fetch_spikes", "respike"]
 
@@ -145,13 +145,8 @@ def fetch_spikes(smap, *, as_coords=False):
     array-like
         Original intensity values of the spikes
     """
-    series = r"aia.lev1_euv_12s"
-    if smap.wavelength in (1600, 1700, 4500) * u.angstrom:
-        series = r"aia.lev1_uv_24s"
-    file = drms.Client().query(
-        f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]',
-        seg="spikes",
-    )
+    series = "aia.lev1_uv_24s" if smap.wavelength in (1600, 1700, 4500) * u.angstrom else "aia.lev1_euv_12s"
+    file = get_data_from_jsoc(f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]', seg="spikes")
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     # Loaded as floats, but they are actually integers
     spikes = spikes.data.astype(np.int32)
