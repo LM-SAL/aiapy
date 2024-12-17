@@ -92,6 +92,7 @@ def test_obstime_out_of_range() -> None:
 
 
 @pytest.mark.remote_data
+@pytest.mark.xfail(reason="JSOC is down")
 def test_pointing_table() -> None:
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:

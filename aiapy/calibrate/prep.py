@@ -13,7 +13,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.util import CALIBRATION_VERSION, _select_epoch_from_correction_table, get_correction_table
 from aiapy.util import AIApyUserWarning
 from aiapy.util.decorators import validate_channel
 
@@ -115,7 +115,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, *, correction_table=None, calibration_version=None):
+def correct_degradation(smap, *, correction_table=None, calibration_version=CALIBRATION_VERSION):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -149,6 +149,9 @@ def correct_degradation(smap, *, correction_table=None, calibration_version=None
     --------
     degradation
     """
+    # Fallback for back-compatibility
+    if calibration_version is None:
+        calibration_version = CALIBRATION_VERSION
     d = degradation(
         smap.wavelength,
         smap.date,
@@ -165,7 +168,7 @@ def degradation(
     obstime,
     *,
     correction_table=None,
-    calibration_version=None,
+    calibration_version=CALIBRATION_VERSION,
 ) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -215,12 +218,15 @@ def degradation(
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """
+    # Fallback for backwards compatibility
+    if calibration_version is None:
+        calibration_version = CALIBRATION_VERSION
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
     # Do this outside of the loop to avoid repeated queries
-    correction_table = get_correction_table(correction_table=correction_table)
+    correction_table = get_correction_table(correction_table=correction_table, calibration_version=calibration_version)
     for i, t in enumerate(obstime):
         table = _select_epoch_from_correction_table(channel, t, correction_table, version=calibration_version)
 
