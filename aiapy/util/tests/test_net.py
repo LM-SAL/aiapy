@@ -10,5 +10,5 @@ def test_get_data_from_jsoc():
 
 
 def test_get_data_from_jsoc_error():
-    with pytest.raises(OSError, match="Unable to query the JSOC."):
-        get_data_from_jsoc("aia.lev1[2001-01-01]", key="T_OBS")
+    with pytest.raises(OSError, match="Unable to query the JSOC"):
+        get_data_from_jsoc("abc", key="def")

@@ -282,7 +282,7 @@ class Channel:
         return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
     @u.quantity_input
-    def eve_correction(self, obstime, **kwargs) -> u.dimensionless_unscaled:
+    def eve_correction(self, obstime, source) -> u.dimensionless_unscaled:
         r"""
         Correct effective area to give good agreement with full-disk EVE data.
 
@@ -306,17 +306,8 @@ class Channel:
         ----------
         obstime : `~astropy.time.Time`
             The time of the observation.
-        correction_table : `~astropy.table.Table` or `str`, optional
-            Table of correction parameters or path to correction table file.
-            If not specified, it will be queried from JSOC.
-            If you are calling this function repeatedly, it is recommended to
-            read the correction table once and pass it with this argument to avoid
-            multiple redundant network calls.
-        calibration_version : `int`, optional
-            The version of the calibration to use when calculating the
-            degradation. By default, this is the most recent version available
-            from JSOC. If you are using a specific calibration response file,
-            you may need to specify this according to the version in that file.
+        source : `pathlib.Path` or `str` or `int`, optional
+            TODO: UPDATE
 
         Returns
         -------
@@ -329,8 +320,7 @@ class Channel:
         table = _select_epoch_from_correction_table(
             self.channel,
             obstime,
-            get_correction_table(correction_table=kwargs.get("correction_table")),
-            version=kwargs.get("calibration_version"),
+            get_correction_table(source=source),
         )
         effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
         return table["EFF_AREA"][0] / effective_area_interp

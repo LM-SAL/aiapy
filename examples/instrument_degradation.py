@@ -38,11 +38,11 @@ time_support(format="jyear")
 # the table of correction parameters is publicly available via the
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
 #
-# First, fetch this correction table. It is not strictly necessary to do this explicitly,
-# but will significantly speed up the calculation by only fetching the table
-# once.
+# First, fetch this correction table. We have to specify the source of the
+# correction table. This can be either a local file or a version number of a
+# file hosted in SSW or "jsoc" to fetch the latest version from JSOC.
 
-correction_table = get_correction_table()
+correction_table = get_correction_table(source=10)
 
 ###############################################################################
 # We want to compute the degradation for each EUV channel.

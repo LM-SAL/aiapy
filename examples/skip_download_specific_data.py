@@ -60,7 +60,7 @@ level_1_maps = sunpy.map.Map(files)
 # Otherwise you're making a call to the JSOC every single time.
 pointing_table = get_pointing_table(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
 # The same applies for the correction table.
-correction_table = get_correction_table()
+correction_table = get_correction_table(source=10)
 
 level_15_maps = []
 for a_map in level_1_maps:

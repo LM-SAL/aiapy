@@ -23,39 +23,29 @@ from aiapy.util.decorators import validate_channel
 from aiapy.util.net import get_data_from_jsoc
 
 __all__ = [
-    "CALIBRATION_VERSION",
-    "ERROR_VERSION",
-    "URL_HASH_ERROR_TABLE",
-    "URL_HASH_POINTING_TABLE",
-    "URL_HASH_RESPONSE_TABLE",
     "get_correction_table",
     "get_error_table",
     "get_pointing_table",
 ]
 
-# Default version of the degradation calibration curve to use.
-# This needs to be incremented as the calibration is updated in JSOC.
-CALIBRATION_VERSION = 10
 # Error table filename available from SSW
-AIA_ERROR_FILE = "sdo/aia/response/aia_V{}_error_table.txt"
-# Most recent version number for error tables; increment as new versions become available
-ERROR_VERSION = 3
+_AIA_ERROR_FILE = "sdo/aia/response/aia_V{}_error_table.txt"
 # URLs and SHA-256 hashes for each version of the error tables
-URL_HASH_ERROR_TABLE = {
+_URL_HASH_ERROR_TABLE = {
     2: (
-        [urljoin(mirror, AIA_ERROR_FILE.format(2)) for mirror in _SSW_MIRRORS],
+        [urljoin(mirror, _AIA_ERROR_FILE.format(2)) for mirror in _SSW_MIRRORS],
         "ac97ccc48057809723c27e3ef290c7d78ee35791d9054b2188baecfb5c290d0a",
     ),
     3: (
-        [urljoin(mirror, AIA_ERROR_FILE.format(3)) for mirror in _SSW_MIRRORS],
+        [urljoin(mirror, _AIA_ERROR_FILE.format(3)) for mirror in _SSW_MIRRORS],
         "66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894",
     ),
 }
-URL_HASH_POINTING_TABLE = (
+_URL_HASH_POINTING_TABLE = (
     "https://aia.lmsal.com/public/master_aia_pointing3h.csv",
     "a2c80fa0ea3453c62c91f51df045ae04b771d5cbb51c6495ed56de0da2a5482e",
 )
-URL_HASH_RESPONSE_TABLE = {
+_URL_HASH_RESPONSE_TABLE = {
     10: (
         [urljoin(mirror, "sdo/aia/response/aia_V10_20201119_190000_response_table.txt") for mirror in _SSW_MIRRORS],
         "0a3f2db39d05c44185f6fdeec928089fb55d1ce1e0a805145050c6356cbc6e98",
@@ -94,46 +84,46 @@ URL_HASH_RESPONSE_TABLE = {
 def _fetch_response_table(version: int):
     # Until the delayed feature from sunpy (v6.1) is out, this function
     # will need to be like this.
-    if version not in URL_HASH_RESPONSE_TABLE:
+    if version not in _URL_HASH_RESPONSE_TABLE:
         msg = f"Invalid response table version: {version}"
         raise ValueError(msg)
 
-    @manager.require("response_table_v10", *URL_HASH_RESPONSE_TABLE[10])
+    @manager.require("response_table_v10", *_URL_HASH_RESPONSE_TABLE[10])
     def fetch_response_table_v10():
         return manager.get("response_table_v10")
 
-    @manager.require("response_table_v9", *URL_HASH_RESPONSE_TABLE[9])
+    @manager.require("response_table_v9", *_URL_HASH_RESPONSE_TABLE[9])
     def fetch_response_table_v9():
         return manager.get("response_table_v9")
 
-    @manager.require("response_table_v8", *URL_HASH_RESPONSE_TABLE[8])
+    @manager.require("response_table_v8", *_URL_HASH_RESPONSE_TABLE[8])
     def fetch_response_table_v8():
         return manager.get("response_table_v8")
 
-    @manager.require("response_table_v7", *URL_HASH_RESPONSE_TABLE[7])
+    @manager.require("response_table_v7", *_URL_HASH_RESPONSE_TABLE[7])
     def fetch_response_table_v7():
         return manager.get("response_table_v7")
 
-    @manager.require("response_table_v6", *URL_HASH_RESPONSE_TABLE[6])
+    @manager.require("response_table_v6", *_URL_HASH_RESPONSE_TABLE[6])
     def fetch_response_table_v6():
         return manager.get("response_table_v6")
 
-    @manager.require("response_table_v4", *URL_HASH_RESPONSE_TABLE[4])
+    @manager.require("response_table_v4", *_URL_HASH_RESPONSE_TABLE[4])
     def fetch_response_table_v4():
         return manager.get("response_table_v4")
 
-    @manager.require("response_table_v3", *URL_HASH_RESPONSE_TABLE[3])
+    @manager.require("response_table_v3", *_URL_HASH_RESPONSE_TABLE[3])
     def fetch_response_table_v3():
         return manager.get("response_table_v3")
 
-    @manager.require("response_table_v2", *URL_HASH_RESPONSE_TABLE[2])
+    @manager.require("response_table_v2", *_URL_HASH_RESPONSE_TABLE[2])
     def fetch_response_table_v2():
         return manager.get("response_table_v2")
 
     return locals()[f"fetch_response_table_v{version}"]()
 
 
-def get_correction_table(*, source):
+def get_correction_table(source):
     """
     Return table of degradation correction factors.
 
@@ -164,9 +154,9 @@ def get_correction_table(*, source):
     """
     if isinstance(source, pathlib.Path):
         table = QTable(astropy.io.ascii.read(source))
-    elif source in URL_HASH_RESPONSE_TABLE:
+    elif source in _URL_HASH_RESPONSE_TABLE:
         table = QTable(astropy.io.ascii.read(_fetch_response_table(source)))
-    elif source.lower() == "jsoc":
+    elif isinstance(source, str) and source.lower() == "jsoc":
         # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
         # the query to find records that are ordinarily considered
         # identical because the PrimeKeys for this series are WAVE_STR
@@ -174,7 +164,9 @@ def get_correction_table(*, source):
         # latest record for each unique combination of those keywords.
         table = QTable.from_pandas(get_data_from_jsoc(query="aia.response[][!1=1!]", key="**ALL**"))
     else:
-        msg = "correction_table must be a file path (pathlib.Path), 'jsoc' or one of 3, 4, 6, 7, 8, 9, 10. Not {source}"
+        msg = (
+            f"correction_table must be a file path (pathlib.Path), 'jsoc' or one of 3, 4, 6, 7, 8, 9, 10. Not {source}"
+        )
         raise ValueError(msg)
     selected_cols = [
         "DATE",
@@ -245,7 +237,7 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table):
     return QTable(table[[0, i_epoch[-1]]])
 
 
-@manager.require("pointing_table", *URL_HASH_POINTING_TABLE)
+@manager.require("pointing_table", *_URL_HASH_POINTING_TABLE)
 def fetch_pointing_table():
     manager.get("pointing_table")
 
@@ -319,11 +311,11 @@ def get_pointing_table(start, end, *, source):
 def _fetch_error_table(version: int):
     # Until the delayed feature from sunpy (v6.1) is out, this function
     # will need to be like this.
-    @manager.require("error_table_v2", *URL_HASH_ERROR_TABLE[2])
+    @manager.require("error_table_v2", *_URL_HASH_ERROR_TABLE[2])
     def fetch_error_table_v2():
         return manager.get("error_table_v2")
 
-    @manager.require("error_table_v3", *URL_HASH_ERROR_TABLE[3])
+    @manager.require("error_table_v3", *_URL_HASH_ERROR_TABLE[3])
     def fetch_error_table_v3():
         return manager.get("error_table_v3")
 
@@ -362,7 +354,7 @@ def get_error_table(source) -> QTable:
     elif source in [2, 3]:
         error_table = QTable(astropy.io.ascii.read(_fetch_error_table(source)))
     else:
-        msg = f"``source`` must be a file path, or  2 or 3, not {source}"
+        msg = f"source must be a file path, or  2 or 3, not {source}"
         raise TypeError(msg)
     error_table["DATE"] = Time(error_table["DATE"], scale="utc")
     error_table["T_START"] = Time(error_table["T_START"], scale="utc")

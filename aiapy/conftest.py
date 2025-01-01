@@ -1,12 +1,17 @@
 import contextlib
 
 import pytest
+from numpy.random import default_rng
 
 import astropy.units as u
 
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
+
+RANDOM_GENERATOR = default_rng()
+CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
+ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 
 with contextlib.suppress(ImportError):
     import matplotlib as mpl
