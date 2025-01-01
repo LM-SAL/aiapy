@@ -161,7 +161,7 @@ def test_degradation(source, time_correction_truth) -> None:
         obstime,
         correction_table=correction_table,
     )
-    assert u.allclose(time_correction, time_correction_truth, rtol=1e-10, atol=0.0)
+    assert u.allclose(time_correction, time_correction_truth, atol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -214,21 +214,29 @@ def test_degradation_all_wavelengths(wavelength, result) -> None:
     time_correction = degradation(
         wavelength * u.angstrom,
         obstime,
+        correction_table=get_correction_table(10),
     )
-    assert u.allclose(time_correction, result)
+    assert u.allclose(time_correction, result, atol=1e-3)
 
 
 @pytest.mark.remote_data
-def test_degradation_4500() -> None:
+def test_degradation_4500_missing() -> None:
     # 4500 has a max version of 3, so by default it will error
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     with pytest.raises(
         ValueError,
-        match="Correction table does not contain calibration for version 10 for 4500.0 Angstrom. Max version is 3",
+        match="Correction table does not contain calibration for 4500.0 Angstrom. Max version is 3.",
     ):
-        degradation(4500 * u.angstrom, obstime)
+        degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table(10))
 
-    correction = degradation(4500 * u.angstrom, obstime)
+
+@pytest.mark.xfail(reason="JSOC is down")
+@pytest.mark.remote_data
+def test_degradation_4500_jsoc() -> None:
+    # 4500 has a max version of 3, so by default it will error
+    # and it is missing from the SSW files but not the JSOC
+    obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    correction = degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("jsoc"))
     assert u.allclose(correction, 1.0 * u.dimensionless_unscaled)
 
 

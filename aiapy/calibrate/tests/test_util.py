@@ -22,7 +22,15 @@ correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210
 @pytest.mark.parametrize(
     "source",
     [
-        pytest.param(None, marks=pytest.mark.remote_data),
+        pytest.param("jsoc", marks=pytest.mark.remote_data),
+        pytest.param(3, marks=pytest.mark.remote_data),
+        pytest.param(4, marks=pytest.mark.remote_data),
+        pytest.param(5, marks=pytest.mark.remote_data),
+        pytest.param(6, marks=pytest.mark.remote_data),
+        pytest.param(7, marks=pytest.mark.remote_data),
+        pytest.param(8, marks=pytest.mark.remote_data),
+        pytest.param(9, marks=pytest.mark.remote_data),
+        pytest.param(10, marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
     ],
 )
@@ -87,6 +95,7 @@ def test_obstime_out_of_range() -> None:
 
 
 @pytest.mark.remote_data
+@pytest.mark.xfail(reason="JSOC is down")
 def test_pointing_table() -> None:
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
@@ -97,28 +106,32 @@ def test_pointing_table() -> None:
             f"A_{c}_IMSCALE",
         ]
     t = astropy.time.Time("2011-01-01T00:00:00", scale="utc")
-    table = get_pointing_table(t - 3 * u.h, t + 3 * u.h)
-    assert isinstance(table, astropy.table.QTable)
-    assert all(cn in table.colnames for cn in expected_columns)
-    assert isinstance(table["T_START"], astropy.time.Time)
-    assert isinstance(table["T_STOP"], astropy.time.Time)
-    # Ensure that none of the pointing parameters are masked columns
-    for c in expected_columns[2:]:
-        assert not hasattr(table[c], "mask")
+    table_lmsal = get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="lmsal")
+    table_jsoc = get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="jsoc")
+    for table in [table_lmsal, table_jsoc]:
+        assert isinstance(table, astropy.table.QTable)
+        assert all(cn in table.colnames for cn in expected_columns)
+        assert isinstance(table["T_START"], astropy.time.Time)
+        assert isinstance(table["T_STOP"], astropy.time.Time)
+        # Ensure that none of the pointing parameters are masked columns
+        for c in expected_columns[2:]:
+            assert not hasattr(table[c], "mask")
 
 
 @pytest.mark.remote_data
+@pytest.mark.xfail(reason="JSOC is down")
 def test_pointing_table_unavailable() -> None:
     # Check that missing pointing data raises a nice error
     t = astropy.time.Time("1990-01-01")
     with pytest.raises(RuntimeError, match="Could not find any pointing information"):
-        get_pointing_table(t - 3 * u.h, t + 3 * u.h)
+        get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="jsoc")
 
 
 @pytest.mark.parametrize(
     "error_table",
     [
-        pytest.param(None, marks=pytest.mark.remote_data),
+        pytest.param(2, marks=pytest.mark.remote_data),
+        pytest.param(3, marks=pytest.mark.remote_data),
         get_test_filepath("aia_V3_error_table.txt"),
     ],
 )

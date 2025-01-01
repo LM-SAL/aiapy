@@ -239,7 +239,7 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table):
 
 @manager.require("pointing_table", *_URL_HASH_POINTING_TABLE)
 def fetch_pointing_table():
-    manager.get("pointing_table")
+    return manager.get("pointing_table")
 
 
 def get_pointing_table(start, end, *, source):

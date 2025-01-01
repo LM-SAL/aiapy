@@ -21,7 +21,7 @@ def test_fix_observer_location(aia_171_map) -> None:
 
 @pytest.fixture
 def pointing_table(aia_171_map):
-    return get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h)
+    return get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h, source="lmsal")
 
 
 @pytest.fixture
@@ -52,7 +52,10 @@ def test_fix_pointing(aia_171_map, pointing_table) -> None:
     # Remove keys to at least test that they get set
     for k in keys:
         aia_171_map.meta.pop(k)
-    aia_map_updated = update_pointing(aia_171_map)
+    aia_map_updated = update_pointing(
+        aia_171_map,
+        pointing_table=get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h, source="lmsal"),
+    )
     # FIXME: how do we check these values are accurate?
     assert all(k in aia_map_updated.meta for k in keys)
     # Check the case where we have specified the pointing
@@ -109,7 +112,7 @@ def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table) 
     # This tests that an exception is thrown when entry corresponding to
     # T_START <= T_OBS < T_END cannot be found in the pointing table.
     # We explicitly set the T_OBS key
-    aia_171_map.meta["T_OBS"] = (aia_171_map.date + 1 * u.day).isot
+    aia_171_map.meta["T_OBS"] = (aia_171_map.date - 1000 * u.day).isot
     with pytest.raises(IndexError, match="No valid entries for"):
         update_pointing(aia_171_map, pointing_table=pointing_table)
 

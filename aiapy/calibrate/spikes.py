@@ -146,7 +146,7 @@ def fetch_spikes(smap, *, as_coords=False):
         Original intensity values of the spikes
     """
     series = "aia.lev1_uv_24s" if smap.wavelength in (1600, 1700, 4500) * u.angstrom else "aia.lev1_euv_12s"
-    file = get_data_from_jsoc(f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]', seg="spikes")
+    file = get_data_from_jsoc(f'{series}[{smap.date}/12s][WAVELNTH={smap.meta["wavelnth"]}]', key=None, seg="spikes")
     _, spikes = fits.open(f'http://jsoc.stanford.edu{file["spikes"][0]}')
     # Loaded as floats, but they are actually integers
     spikes = spikes.data.astype(np.int32)
