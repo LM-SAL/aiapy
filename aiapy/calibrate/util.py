@@ -242,7 +242,7 @@ def fetch_pointing_table():
     return manager.get("pointing_table")
 
 
-def get_pointing_table(start, end, *, source):
+def get_pointing_table(source, *, start=None, end=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 
@@ -268,14 +268,14 @@ def get_pointing_table(start, end, *, source):
 
     Parameters
     ----------
-    start : `~astropy.time.Time`
-        Start time of the interval.
-    end : `~astropy.time.Time`
-        End time of the interval.
     source : str
         Name of the source from which to retrieve the pointing table.
         Must be one of ``"jsoc"`` or ``"lmsal"``.
         Note that the LMSAL pointing table is not updated frequently.
+    start : `~astropy.time.Time`, optional
+        Start time of the interval. Only required if ``source`` is ``"jsoc"``.
+    end : `~astropy.time.Time`, optional
+        End time of the interval. Only required if ``source`` is ``"jsoc"``.
 
     Returns
     -------
@@ -286,6 +286,9 @@ def get_pointing_table(start, end, *, source):
     aiapy.calibrate.update_pointing
     """
     if source.lower() == "jsoc":
+        if start is None or end is None:
+            msg = "start and end must be provided if source is 'jsoc'"
+            raise ValueError(msg)
         table = get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
     elif source.lower() == "lmsal":
         table = QTable(astropy_ascii.read(fetch_pointing_table()))
@@ -341,7 +344,7 @@ def get_error_table(source) -> QTable:
 
     Returns
     -------
-    QTable
+    `~astropy.table.QTable`
         Error table.
 
     Raises
