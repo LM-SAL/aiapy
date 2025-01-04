@@ -198,7 +198,7 @@ def get_correction_table(source):
 
 @u.quantity_input
 @validate_channel("channel")
-def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table):
+def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction_table):
     """
     Return correction table with only the first epoch and the epoch in which
     ``obstime`` falls and for only one given calibration version.
@@ -207,14 +207,14 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, table):
     ----------
     channel : `~astropy.units.Quantity`
     obstime : `~astropy.time.Time`
-    table : `~astropy.table.QTable`
+    correction_table : `~astropy.table.QTable`
     """
     # Select only this channel
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
     # non-EUV channels do not have a thick/thin designation
     thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
     wave = channel.to(u.angstrom).value
-    table = table[table["WAVE_STR"] == f"{wave:.0f}{thin}"]
+    table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
     table.sort("DATE")  # Newest entries will be last
     if len(table) == 0:
         extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
@@ -289,7 +289,9 @@ def get_pointing_table(source, *, start=None, end=None):
         if start is None or end is None:
             msg = "start and end must be provided if source is 'jsoc'"
             raise ValueError(msg)
-        table = get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
+        table = QTable.from_pandas(
+            get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
+        )
     elif source.lower() == "lmsal":
         table = QTable(astropy_ascii.read(fetch_pointing_table()))
     else:

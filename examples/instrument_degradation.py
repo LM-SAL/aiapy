@@ -42,7 +42,7 @@ time_support(format="jyear")
 # correction table. This can be either a local file or a version number of a
 # file hosted in SSW or "jsoc" to fetch the latest version from JSOC.
 
-correction_table = get_correction_table(source=10)
+correction_table = get_correction_table("JSOC")
 
 ###############################################################################
 # We want to compute the degradation for each EUV channel.

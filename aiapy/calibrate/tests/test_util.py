@@ -94,7 +94,6 @@ def test_obstime_out_of_range() -> None:
 
 
 @pytest.mark.remote_data
-@pytest.mark.xfail(reason="JSOC is down")
 def test_pointing_table() -> None:
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
@@ -118,11 +117,10 @@ def test_pointing_table() -> None:
 
 
 @pytest.mark.remote_data
-@pytest.mark.xfail(reason="JSOC is down")
 def test_pointing_table_unavailable() -> None:
     # Check that missing pointing data raises a nice error
     t = astropy.time.Time("1990-01-01")
-    with pytest.raises(RuntimeError, match="Could not find any pointing information"):
+    with pytest.raises(RuntimeError, match="No data found for this query"):
         get_pointing_table("jsoc", start=t - 3 * u.h, end=t + 3 * u.h)
 
 

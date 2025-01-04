@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import astropy.time
 import astropy.units as u
 
+from aiapy.calibrate.util import get_correction_table
 from aiapy.response import Channel
 
 ###############################################################################
@@ -94,7 +95,8 @@ plt.tight_layout()
 # Additionally, `aiapy.response.Channel` provides a method for calculating
 # the wavelength response function using the equation above,
 
-wavelength_response_335 = aia_335_channel.wavelength_response()
+correction_table = get_correction_table("jsoc")
+wavelength_response_335 = aia_335_channel.wavelength_response(correction_table=correction_table)
 print(wavelength_response_335)
 
 ###############################################################################
@@ -118,7 +120,9 @@ ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}
 # by default in the wavelength response calculation. To exclude this
 # effect,
 
-wavelength_response_335_no_cross = aia_335_channel.wavelength_response(include_crosstalk=False)
+wavelength_response_335_no_cross = aia_335_channel.wavelength_response(
+    include_crosstalk=False, correction_table=correction_table
+)
 
 ###############################################################################
 # If we look at the response around 131 Å (the channel with which 335 Å shares
@@ -145,8 +149,10 @@ ax.legend(loc=1, frameon=False)
 # of 1 January 2019,
 
 obstime = astropy.time.Time("2019-01-01T00:00:00")
-wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime)
-wavelength_response_335_eve = aia_335_channel.wavelength_response(obstime=obstime, include_eve_correction=True)
+wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime, correction_table=correction_table)
+wavelength_response_335_eve = aia_335_channel.wavelength_response(
+    obstime=obstime, include_eve_correction=True, correction_table=correction_table
+)
 
 ###############################################################################
 # We can then compare the two corrected response

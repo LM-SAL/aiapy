@@ -36,14 +36,11 @@ def get_data_from_jsoc(query, *, key, seg=None):
         If the query fails for any reason.
     """
     try:
-        return drms.Client().query(query, key=key, seg=seg)
-    except KeyError as e:
-        # This probably should not be here but yolo.
-        # If there's no pointing information available between these times,
-        # JSOC will raise a cryptic KeyError
-        # (see https://github.com/LM-SAL/aiapy/issues/71)
-        msg = "Could not find any pointing information"
-        raise RuntimeError(msg) from e
+        jsoc_result = drms.Client().query(query, key=key, seg=seg)
     except Exception as e:
         msg = f"Unable to query the JSOC.\n Error message: {e}"
         raise OSError(msg) from e
+    if len(jsoc_result) == 0:
+        msg = f"No data found for this query: {query}, key: {key}, seg: {seg}"
+        raise RuntimeError(msg)
+    return jsoc_result

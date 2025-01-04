@@ -230,7 +230,6 @@ def test_degradation_4500_missing() -> None:
         degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table(10))
 
 
-@pytest.mark.xfail(reason="JSOC is down")
 @pytest.mark.remote_data
 def test_degradation_4500_jsoc() -> None:
     # 4500 has a max version of 3, so by default it will error

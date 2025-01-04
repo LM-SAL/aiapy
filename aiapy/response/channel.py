@@ -15,7 +15,7 @@ from sunpy.util.metadata import MetaDict
 
 from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
-from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.util import _select_epoch_from_correction_table
 from aiapy.data._manager import manager
 from aiapy.util import telescope_number
 from aiapy.util.decorators import validate_channel
@@ -282,7 +282,7 @@ class Channel:
         return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
     @u.quantity_input
-    def eve_correction(self, obstime, source) -> u.dimensionless_unscaled:
+    def eve_correction(self, obstime, correction_table) -> u.dimensionless_unscaled:
         r"""
         Correct effective area to give good agreement with full-disk EVE data.
 
@@ -306,8 +306,9 @@ class Channel:
         ----------
         obstime : `~astropy.time.Time`
             The time of the observation.
-        source : `pathlib.Path` or `str` or `int`, optional
-            TODO: UPDATE
+        correction_table : `astropy.table.QTable`
+            Table of correction parameters.
+            See `aiapy.calibrate.util.get_correction_table` for more information.
 
         Returns
         -------
@@ -320,7 +321,7 @@ class Channel:
         table = _select_epoch_from_correction_table(
             self.channel,
             obstime,
-            get_correction_table(source=source),
+            correction_table=correction_table,
         )
         effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
         return table["EFF_AREA"][0] / effective_area_interp
@@ -360,7 +361,7 @@ class Channel:
         obstime=None,
         include_eve_correction=False,
         include_crosstalk=True,
-        **kwargs,
+        correction_table,
     ) -> u.DN / u.ph * u.cm**2:
         r"""
         The wavelength response function is the product of the gain and the
@@ -393,9 +394,8 @@ class Channel:
             The time-dependent correction is also included.
         include_crosstalk : `bool`, optional
             If true, include the effect of crosstalk between channels that share a telescope
-        correction_table : `~astropy.table.Table` or `str`, optional
-            Table of correction parameters or path to correction table file.
-            If not specified, it will be queried from JSOC.
+        correction_table : `~astropy.table.Table`
+            Table of correction parameters.
             See `aiapy.calibrate.util.get_correction_table` for more information.
 
         Returns
@@ -412,8 +412,8 @@ class Channel:
         """
         eve_correction, time_correction = 1, 1
         if obstime is not None:
-            time_correction = degradation(self.channel, obstime, **kwargs)
+            time_correction = degradation(self.channel, obstime, correction_table=correction_table)
             if include_eve_correction:
-                eve_correction = self.eve_correction(obstime, **kwargs)
+                eve_correction = self.eve_correction(obstime, correction_table=correction_table)
         crosstalk = self.crosstalk if include_crosstalk else 0 * u.cm**2
         return (self.effective_area + crosstalk) * self.gain * time_correction * eve_correction

@@ -11,10 +11,13 @@ position.
 
 import matplotlib.pyplot as plt
 
+import astropy.units as u
+
 import sunpy.map
 
 import aiapy.data.sample as sample_data
 from aiapy.calibrate import fix_observer_location, update_pointing
+from aiapy.calibrate.util import get_pointing_table
 
 ###############################################################################
 # An AIA FITS header contains various pieces of
@@ -39,12 +42,13 @@ aia_map = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 
 ###############################################################################
 # To update the pointing keywords, we can pass our `~sunpy.map.Map` to the
-# `aiapy.calibrate.update_pointing` function. This function will query the
-# JSOC, using `~sunpy`, for the most recent pointing information, update
-# the metadata, and then return a new `~sunpy.map.Map` with this updated
-# metadata.
+# `aiapy.calibrate.update_pointing` function.
+# One needs to get the pointing information from the JSOC using the
+# `aiapy.calibrate.util.get_pointing_table` function first.
 
-aia_map_updated_pointing = update_pointing(aia_map)
+# Make range wide enough to get closest 3-hour pointing
+pointing_table = get_pointing_table("JSOC", start=aia_map.date - 12 * u.h, end=aia_map.date + 12 * u.h)
+aia_map_updated_pointing = update_pointing(aia_map, pointing_table=pointing_table)
 
 ###############################################################################
 # If we inspect the reference pixel and rotation matrix of the original map:
