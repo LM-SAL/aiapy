@@ -20,8 +20,8 @@ def test_fix_observer_location(aia_171_map) -> None:
 
 
 @pytest.fixture
-def pointing_table(aia_171_map):
-    return get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h, source="lmsal")
+def pointing_table():
+    return get_pointing_table("lmsal")
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def test_fix_pointing(aia_171_map, pointing_table) -> None:
         aia_171_map.meta.pop(k)
     aia_map_updated = update_pointing(
         aia_171_map,
-        pointing_table=get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h, source="lmsal"),
+        pointing_table=get_pointing_table("lmsal"),
     )
     # FIXME: how do we check these values are accurate?
     assert all(k in aia_map_updated.meta for k in keys)

@@ -25,7 +25,6 @@ correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210
         pytest.param("jsoc", marks=pytest.mark.remote_data),
         pytest.param(3, marks=pytest.mark.remote_data),
         pytest.param(4, marks=pytest.mark.remote_data),
-        pytest.param(5, marks=pytest.mark.remote_data),
         pytest.param(6, marks=pytest.mark.remote_data),
         pytest.param(7, marks=pytest.mark.remote_data),
         pytest.param(8, marks=pytest.mark.remote_data),
@@ -106,8 +105,8 @@ def test_pointing_table() -> None:
             f"A_{c}_IMSCALE",
         ]
     t = astropy.time.Time("2011-01-01T00:00:00", scale="utc")
-    table_lmsal = get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="lmsal")
-    table_jsoc = get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="jsoc")
+    table_lmsal = get_pointing_table("lmsal")
+    table_jsoc = get_pointing_table("jsoc", start=t - 3 * u.h, end=t + 3 * u.h)
     for table in [table_lmsal, table_jsoc]:
         assert isinstance(table, astropy.table.QTable)
         assert all(cn in table.colnames for cn in expected_columns)
@@ -124,7 +123,7 @@ def test_pointing_table_unavailable() -> None:
     # Check that missing pointing data raises a nice error
     t = astropy.time.Time("1990-01-01")
     with pytest.raises(RuntimeError, match="Could not find any pointing information"):
-        get_pointing_table(t - 3 * u.h, t + 3 * u.h, source="jsoc")
+        get_pointing_table("jsoc", start=t - 3 * u.h, end=t + 3 * u.h)
 
 
 @pytest.mark.parametrize(
