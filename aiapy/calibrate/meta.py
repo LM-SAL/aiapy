@@ -8,53 +8,12 @@ import warnings
 import numpy as np
 
 import astropy.units as u
-from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
 
 from sunpy.map import contains_full_disk
 
 from aiapy.util.exceptions import AIApyUserWarning
 
-__all__ = ["fix_observer_location", "update_pointing"]
-
-
-def fix_observer_location(smap):
-    """
-    Fix inaccurate ``HGS_LON`` and ``HGS_LAT`` FITS keywords.
-
-    The heliographic Stonyhurst latitude and longitude locations in the
-    AIA FITS headers are incorrect. This function fixes the values of these
-    keywords using the heliocentric aries ecliptic keywords, ``HAEX_OBS,
-    HAEY_OBS, HAEZ_OBS``.
-
-    .. note::
-
-        `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
-        HGS keywords by using the HAE keywords to construct the
-        derived observer location.
-
-    Parameters
-    ----------
-    smap : `~sunpy.map.sources.AIAMap`
-        Input map.
-
-    Returns
-    -------
-    `~sunpy.map.sources.AIAMap`
-    """
-    # Create observer coordinate from HAE coordinates (reason?)
-    coord = SkyCoord(
-        x=smap.meta["haex_obs"] * u.m,
-        y=smap.meta["haey_obs"] * u.m,
-        z=smap.meta["haez_obs"] * u.m,
-        representation_type=CartesianRepresentation,
-        frame=HeliocentricMeanEcliptic,
-        obstime=smap.reference_date,
-    ).heliographic_stonyhurst
-    new_meta = copy.deepcopy(smap.meta)
-    new_meta["hgln_obs"] = coord.lon.to(u.degree).value
-    new_meta["hglt_obs"] = coord.lat.to(u.degree).value
-    new_meta["dsun_obs"] = coord.radius.to(u.m).value
-    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)
+__all__ = ["update_pointing"]
 
 
 def update_pointing(smap, *, pointing_table):

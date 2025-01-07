@@ -6,17 +6,9 @@ from astropy.coordinates.sky_coordinate import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time, TimeDelta
 
-from aiapy.calibrate import fix_observer_location, update_pointing
+from aiapy.calibrate import update_pointing
 from aiapy.calibrate.util import get_pointing_table
 from aiapy.util.exceptions import AIApyUserWarning
-
-
-def test_fix_observer_location(aia_171_map) -> None:
-    smap_fixed = fix_observer_location(aia_171_map)
-    # NOTE: AIAMap already fixes the .observer_coordinate property with HAE
-    assert smap_fixed.meta["hgln_obs"] == smap_fixed.observer_coordinate.lon.value
-    assert smap_fixed.meta["hglt_obs"] == smap_fixed.observer_coordinate.lat.value
-    assert smap_fixed.meta["dsun_obs"] == smap_fixed.observer_coordinate.radius.value
 
 
 @pytest.fixture

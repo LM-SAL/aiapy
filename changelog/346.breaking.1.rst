@@ -1,0 +1,1 @@
+Removed ``fix_observer_location`` as it is no longer needed.
