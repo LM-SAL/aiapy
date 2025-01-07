@@ -103,7 +103,7 @@ def test_register_level_15(lvl_15_map) -> None:
     ("source"),
     [
         pytest.param("jsoc", marks=pytest.mark.remote_data),
-        pytest.param(8, marks=pytest.mark.remote_data),
+        pytest.param("SsW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
     ],
 )
@@ -129,18 +129,13 @@ def test_correct_degradation(aia_171_map, source) -> None:
     ("source", "time_correction_truth"),
     [
         pytest.param(
-            10,
+            "SSW",
             0.9031773242843387 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         pytest.param(
-            9,
-            0.8658650561969473 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            8,
-            0.7667012041798814 * u.dimensionless_unscaled,
+            "JSOC",
+            0.86288462 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         (
@@ -214,7 +209,7 @@ def test_degradation_all_wavelengths(wavelength, result) -> None:
     time_correction = degradation(
         wavelength * u.angstrom,
         obstime,
-        correction_table=get_correction_table(10),
+        correction_table=get_correction_table("SSW"),
     )
     assert u.allclose(time_correction, result, atol=1e-3)
 
@@ -227,7 +222,7 @@ def test_degradation_4500_missing() -> None:
         ValueError,
         match="Correction table does not contain calibration for 4500.0 Angstrom. Max version is 3.",
     ):
-        degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table(10))
+        degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("SSW"))
 
 
 @pytest.mark.remote_data

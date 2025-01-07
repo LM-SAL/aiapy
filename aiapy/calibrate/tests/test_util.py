@@ -22,14 +22,8 @@ correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210
 @pytest.mark.parametrize(
     "source",
     [
-        pytest.param("jsoc", marks=pytest.mark.remote_data),
-        pytest.param(3, marks=pytest.mark.remote_data),
-        pytest.param(4, marks=pytest.mark.remote_data),
-        pytest.param(6, marks=pytest.mark.remote_data),
-        pytest.param(7, marks=pytest.mark.remote_data),
-        pytest.param(8, marks=pytest.mark.remote_data),
-        pytest.param(9, marks=pytest.mark.remote_data),
-        pytest.param(10, marks=pytest.mark.remote_data),
+        pytest.param("JSoC", marks=pytest.mark.remote_data),  # To check the lower case comparison is working
+        pytest.param("SsW", marks=pytest.mark.remote_data),  # To check the lower case comparison is workings
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
     ],
 )
@@ -75,9 +69,7 @@ def test_correction_table_selection(wavelength) -> None:
 def test_invalid_correction_table_input() -> None:
     with pytest.raises(
         ValueError,
-        match=re.escape(
-            "correction_table must be a file path (pathlib.Path), 'jsoc' or one of 3, 4, 6, 7, 8, 9, 10. Not -1"
-        ),
+        match=re.escape("correction_table must be a file path (pathlib.Path), 'JSOC' or 'SSW'. Not -1"),
     ):
         get_correction_table(source=-1)
 
@@ -127,8 +119,7 @@ def test_pointing_table_unavailable() -> None:
 @pytest.mark.parametrize(
     "error_table",
     [
-        pytest.param(2, marks=pytest.mark.remote_data),
-        pytest.param(3, marks=pytest.mark.remote_data),
+        pytest.param("SSW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V3_error_table.txt"),
     ],
 )
@@ -139,5 +130,5 @@ def test_error_table(error_table) -> None:
 
 
 def test_invalid_error_table_input() -> None:
-    with pytest.raises(TypeError, match="source must be a file path, or  2 or 3, not -1"):
+    with pytest.raises(TypeError, match="source must be a pathlib.Path, or 'SSW', not -1"):
         get_error_table(-1)

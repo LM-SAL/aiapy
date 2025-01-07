@@ -4,10 +4,10 @@ Provides basic functionality for querying the JSOC for internal use.
 
 import drms
 
-__all__ = ["get_data_from_jsoc"]
+__all__ = ["_get_data_from_jsoc"]
 
 
-def get_data_from_jsoc(query, *, key, seg=None):
+def _get_data_from_jsoc(query, *, key, seg=None):
     """
     A simple wrapper around `~drms.Client.query` that raises a more informative
     error message.
