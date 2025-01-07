@@ -2,21 +2,21 @@ Due to the temporary shutdown of the JSOC, many of the functions within ``aiapy`
 
 In an effort to enable other sources of data to be provided to the broken functions, the following breaking changes have been made:
 
-1. `aiapy.calibrate.correct_degradation` has removed "calibration_version" keyword and now the "correction_table" is now a required argument.
+1. `aiapy.calibrate.correct_degradation`: The "calibration_version" keyword has been removed and  "correction_table" is now a required argument.
    To get a correction table, one can use the `aiapy.calibrate.util.get_correction_table`.
    This allows one to select between, JSOC, SSW, or a custom correction table.
    For SSW, the correction table is just a version of the SSW correction table which goes from 3 to 10.
    If you want to use the JSOC, you can pass in "jsoc" as a string argument.
 
-2. `aiapy.calibrate.estimate_error`, the "error_table" keyword is now a required argument.
+2. `aiapy.calibrate.estimate_error`: "error_table" is now a required argument.
    To get the error table, one can use the `aiapy.calibrate.util.get_error_table`.
    There are only two options for the error table, 2 or 3.
 
-3. `aiapy.response.channel.Channel.eve_correction`, the correction_table keyword is now a required argument.
-    As for `aiapy.calibrate.correct_degradation`, one can use the `aiapy.calibrate.util.get_correction_table` to get the correction table.
+3. `aiapy.response.channel.Channel.eve_correction`: "correction_table" is now a required argument.
+    As in `aiapy.calibrate.correct_degradation`, one can use the `aiapy.calibrate.util.get_correction_table` to get the correction table.
 
-4. `aiapy.calibrate.update_pointing`, the "pointing_table" keyword is now a required argument.
+4. `aiapy.calibrate.update_pointing`: "pointing_table" is now a required argument.
    To get the pointing table, one can use `aiapy.calibrate.util.get_pointing_table`.
    This function now has a "source" keyword which can be used to select between JSOC and a copy of the pointing information dated from 11/20/2024 stored on LMSAL servers.
 
-Not that many of the files from SSW are not updated with any frequency and provide worse results than using the data from the JSOC.
+Note that many of the files from SSW are not updated with any frequency and provide worse results than using the data from the JSOC.
