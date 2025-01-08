@@ -49,7 +49,7 @@ aia_map = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 # `aiapy.calibrate.util.get_pointing_table` function.
 
 # Make range wide enough to get closest 3-hour pointing
-pointing_table = get_pointing_table("JSOC", start=aia_map.date - 12 * u.h, end=aia_map.date + 12 * u.h)
+pointing_table = get_pointing_table("JSOC", time_range=(aia_map.date - 12 * u.h, aia_map.date + 12 * u.h))
 aia_map_updated_pointing = update_pointing(aia_map, pointing_table=pointing_table)
 
 ###############################################################################

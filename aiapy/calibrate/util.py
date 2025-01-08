@@ -170,7 +170,7 @@ def _fetch_pointing_table():
     return manager.get("pointing_table")
 
 
-def get_pointing_table(source, *, start=None, end=None):
+def get_pointing_table(source, *, time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 
@@ -209,10 +209,9 @@ def get_pointing_table(source, *, start=None, end=None):
     source : str
         Name of the source from which to retrieve the pointing table.
         Must be one of ``"jsoc"`` or ``"lmsal"``.
-    start : `~astropy.time.Time`, optional
-        Start time of the interval. Only required if ``source`` is ``"jsoc"``.
-    end : `~astropy.time.Time`, optional
-        End time of the interval. Only required if ``source`` is ``"jsoc"``.
+    time_range : `~astropy.time.Time`, optional
+        Time range for which to retrieve the pointing table.
+        You can pass in a `~astropy.time.Time` object or a tuple of start and end times.
 
     Returns
     -------
@@ -223,9 +222,10 @@ def get_pointing_table(source, *, start=None, end=None):
     aiapy.calibrate.update_pointing
     """
     if source.lower() == "jsoc":
-        if start is None or end is None:
-            msg = "start and end must be provided if source is 'jsoc'"
+        if time_range is None:
+            msg = "time_range must be provided if the source is 'jsoc'"
             raise ValueError(msg)
+        start, end = time_range
         table = QTable.from_pandas(
             _get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
         )
