@@ -47,11 +47,18 @@ _URL_HASH_CORRECTION_TABLE = {
         "0a3f2db39d05c44185f6fdeec928089fb55d1ce1e0a805145050c6356cbc6e98",
     )
 }
+_URL_HASH_CORRECTION_TABLE["latest"] = _URL_HASH_CORRECTION_TABLE[10]
+_URL_HASH_ERROR_TABLE["latest"] = _URL_HASH_ERROR_TABLE[3]
 
 
-@manager.require("correction_table_v10", *_URL_HASH_CORRECTION_TABLE[10])
-def _fetch_correction_table_v10():
-    return manager.get("correction_table_v10")
+@manager.require("correction_table_latest", *_URL_HASH_CORRECTION_TABLE["latest"])
+def _fetch_correction_table_latest():
+    return manager.get("correction_table_latest")
+
+
+@manager.require("error_table_latest", *_URL_HASH_ERROR_TABLE["latest"])
+def _fetch_error_table_latest():
+    return manager.get("error_table_latest")
 
 
 def get_correction_table(source):
@@ -69,9 +76,9 @@ def get_correction_table(source):
     Parameters
     ----------
     source: pathlib.Path, str
-        The source of the correction table. If it is a `pathlib.Path`, it must be a file.
-        A string file path will error as an invalid source.
-        If source is a string, it must either be "JSOC" which will fetch the most recent version from the JSOC or "SSW" which will fetch the most recent version (V10) from SSW.
+        The source of the correction table.
+        It can be a string or `pathlib.Path` for a file .
+        Otherwise, it must either be "JSOC" which will fetch the most recent version from the JSOC or "SSW" which will fetch the most recent version from SSW.
 
     Returns
     -------
@@ -82,10 +89,8 @@ def get_correction_table(source):
     --------
     aiapy.calibrate.degradation
     """
-    if isinstance(source, pathlib.Path):
-        table = QTable(astropy.io.ascii.read(source))
-    elif isinstance(source, str) and source.lower() == "ssw":
-        table = QTable(astropy.io.ascii.read(_fetch_correction_table_v10()))
+    if isinstance(source, str) and source.lower() == "ssw":
+        table = QTable(astropy.io.ascii.read(_fetch_correction_table_latest()))
     elif isinstance(source, str) and source.lower() == "jsoc":
         # NOTE: the [!1=1!] disables the drms PrimeKey logic and enables
         # the query to find records that are ordinarily considered
@@ -93,6 +98,8 @@ def get_correction_table(source):
         # and T_START. Without the !1=1! the query only returns the
         # latest record for each unique combination of those keywords.
         table = QTable.from_pandas(_get_data_from_jsoc(query="aia.response[][!1=1!]", key="**ALL**"))
+    elif isinstance(source, pathlib.Path | str):
+        table = QTable(astropy.io.ascii.read(source))
     else:
         msg = f"correction_table must be a file path (pathlib.Path), 'JSOC' or 'SSW'. Not {source}"
         raise ValueError(msg)
@@ -146,8 +153,9 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     table.sort("DATE")  # Newest entries will be last
     if len(table) == 0:
         extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
+        msg = f"Correction table does not contain calibration for {channel}.{extra_msg}"
         raise ValueError(
-            f"Correction table does not contain calibration for {channel}." + extra_msg,
+            msg,
         )
     # Select the epoch for the given observation time
     obstime_in_epoch = np.logical_and(obstime >= table["T_START"], obstime < table["T_STOP"])
@@ -250,11 +258,6 @@ def get_pointing_table(source, *, time_range=None):
     return table
 
 
-@manager.require("error_table_v3", *_URL_HASH_ERROR_TABLE[3])
-def _fetch_error_table_v3():
-    return manager.get("error_table_v3")
-
-
 def get_error_table(source="SSW") -> QTable:
     """
     Fetches the error table from a SSW mirror or uses a local file if one is
@@ -263,10 +266,9 @@ def get_error_table(source="SSW") -> QTable:
     Parameters
     ----------
     source : pathlib.Path, str, optional
-        If input is a pathlib.Path, it is assumed to be a file path to a local error table.
-        If a path is provided as a string, it will error as an invalid source.
-        Otherwise, the input is allowed to be "SSW" (the default) which will
-        fetch the most recent version (V3) from SSW.
+        The input is allowed to be "SSW" (the default) which will
+        fetch the most recent version from SSW.
+        Otherwise, it must be a file path.
 
     Returns
     -------
@@ -278,12 +280,12 @@ def get_error_table(source="SSW") -> QTable:
     TypeError
         If ``error_table`` is not a file path.
     """
-    if isinstance(source, pathlib.Path):
+    if isinstance(source, str) and source.lower() == "ssw":
+        error_table = QTable(astropy.io.ascii.read(_fetch_error_table_latest()))
+    elif isinstance(source, pathlib.Path | str):
         error_table = QTable(astropy.io.ascii.read(source))
-    elif isinstance(source, str) and source.lower() == "ssw":
-        error_table = QTable(astropy.io.ascii.read(_fetch_error_table_v3()))
     else:
-        msg = f"source must be a pathlib.Path, or 'SSW', not {source}"
+        msg = f"source must be a filepath, or 'SSW', not {source}"
         raise TypeError(msg)
     error_table["DATE"] = Time(error_table["DATE"], scale="utc")
     error_table["T_START"] = Time(error_table["T_START"], scale="utc")

@@ -121,6 +121,7 @@ def test_pointing_table_unavailable() -> None:
     [
         pytest.param("SSW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V3_error_table.txt"),
+        str(get_test_filepath("aia_V3_error_table.txt")),
     ],
 )
 def test_error_table(error_table) -> None:
@@ -130,5 +131,5 @@ def test_error_table(error_table) -> None:
 
 
 def test_invalid_error_table_input() -> None:
-    with pytest.raises(TypeError, match="source must be a pathlib.Path, or 'SSW', not -1"):
+    with pytest.raises(TypeError, match="source must be a filepath, or 'SSW', not -1"):
         get_error_table(-1)

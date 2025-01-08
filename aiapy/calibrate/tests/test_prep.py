@@ -105,6 +105,7 @@ def test_register_level_15(lvl_15_map) -> None:
         pytest.param("jsoc", marks=pytest.mark.remote_data),
         pytest.param("SsW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
+        str(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
     ],
 )
 def test_correct_degradation(aia_171_map, source) -> None:
