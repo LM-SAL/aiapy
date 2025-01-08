@@ -2,17 +2,14 @@ from contextlib import nullcontext
 
 import numpy as np
 import pytest
-from numpy.random import default_rng
 
 import astropy.units as u
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.util import get_error_table
+from aiapy.conftest import CHANNELS, RANDOM_GENERATOR
 from aiapy.tests.data import get_test_filepath
 
-# These are not fixtures so that they can be easily used in the parametrize mark
-RANDOM_GENERATOR = default_rng()
-CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 table_local = get_error_table(get_test_filepath("aia_V3_error_table.txt"))
 
 

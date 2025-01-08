@@ -16,5 +16,5 @@ def test_sdo_location(aia_171_map) -> None:
 @pytest.mark.remote_data
 def test_sdo_location_raises_error() -> None:
     # Confirm that an error is raised for a time without records
-    with pytest.raises(ValueError, match="No DRMS records near this time"):
+    with pytest.raises(RuntimeError, match="No data found for this query"):
         aiapy.util.sdo_location("2001-01-01")

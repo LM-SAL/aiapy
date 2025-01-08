@@ -28,8 +28,9 @@ def validate_channel(argument, *, valid_channels="all"):
     ----------
     argument : str
         Argument name to validate.
-    valid_channels : {'all'}, list
-        List of valid channels. If ``'all'``, validate against the list of all AIA channels.
+    valid_channels : list or str, optional
+        List of valid channels.
+        Defaults to "all", which will validate against the list of all AIA channels.
     """
     if valid_channels == "all":
         valid_channels = _all_channels

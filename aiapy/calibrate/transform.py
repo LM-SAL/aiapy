@@ -1,3 +1,7 @@
+"""
+AIA specific image transformations.
+"""
+
 from sunpy.image.transform import _rotation_registry, add_rotation_function
 
 __all__ = ["_rotation_cupy", "_rotation_function_names"]

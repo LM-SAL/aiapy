@@ -8,10 +8,10 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 
-import drms
 from sunpy.time import parse_time
 
 from aiapy.util.decorators import validate_channel
+from aiapy.util.net import _get_data_from_jsoc
 
 __all__ = ["sdo_location", "telescope_number"]
 
@@ -36,12 +36,9 @@ def sdo_location(time):
     """
     t = parse_time(time)
     # Query for +/- 3 seconds around the given time
-    keys = drms.Client().query(
-        f"aia.lev1[{(t - 3*u.s).utc.isot}/6s]",
-        key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS",
-    )
+    keys = _get_data_from_jsoc(query=f"aia.lev1[{(t - 3*u.s).utc.isot}/6s]", key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS")
     if keys is None or len(keys) == 0:
-        msg = "No DRMS records near this time"
+        msg = f"No JSOC records near this time: {t}"
         raise ValueError(msg)
     # Linear interpolation between the nearest records within the returned set
     times = Time(list(keys["T_OBS"]), scale="utc")

@@ -69,6 +69,7 @@ docs = [
   "sunpy-sphinx-theme",
   "sunpy-sphinx-theme",
 ]
+dev = ["aiapy[all,tests,docs]"]
 
 [project.urls]
 Homepage = "https://aia.lmsal.com/"

@@ -6,22 +6,14 @@ from astropy.coordinates.sky_coordinate import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time, TimeDelta
 
-from aiapy.calibrate import fix_observer_location, update_pointing
+from aiapy.calibrate import update_pointing
 from aiapy.calibrate.util import get_pointing_table
 from aiapy.util.exceptions import AIApyUserWarning
 
 
-def test_fix_observer_location(aia_171_map) -> None:
-    smap_fixed = fix_observer_location(aia_171_map)
-    # NOTE: AIAMap already fixes the .observer_coordinate property with HAE
-    assert smap_fixed.meta["hgln_obs"] == smap_fixed.observer_coordinate.lon.value
-    assert smap_fixed.meta["hglt_obs"] == smap_fixed.observer_coordinate.lat.value
-    assert smap_fixed.meta["dsun_obs"] == smap_fixed.observer_coordinate.radius.value
-
-
 @pytest.fixture
-def pointing_table(aia_171_map):
-    return get_pointing_table(aia_171_map.date - 6 * u.h, aia_171_map.date + 6 * u.h)
+def pointing_table():
+    return get_pointing_table("lmsal")
 
 
 @pytest.fixture
@@ -52,7 +44,10 @@ def test_fix_pointing(aia_171_map, pointing_table) -> None:
     # Remove keys to at least test that they get set
     for k in keys:
         aia_171_map.meta.pop(k)
-    aia_map_updated = update_pointing(aia_171_map)
+    aia_map_updated = update_pointing(
+        aia_171_map,
+        pointing_table=pointing_table,
+    )
     # FIXME: how do we check these values are accurate?
     assert all(k in aia_map_updated.meta for k in keys)
     # Check the case where we have specified the pointing
@@ -109,7 +104,7 @@ def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table) 
     # This tests that an exception is thrown when entry corresponding to
     # T_START <= T_OBS < T_END cannot be found in the pointing table.
     # We explicitly set the T_OBS key
-    aia_171_map.meta["T_OBS"] = (aia_171_map.date + 1 * u.day).isot
+    aia_171_map.meta["T_OBS"] = (aia_171_map.date - 1000 * u.day).isot
     with pytest.raises(IndexError, match="No valid entries for"):
         update_pointing(aia_171_map, pointing_table=pointing_table)
 

@@ -111,33 +111,25 @@ def test_effective_area(channel) -> None:
 
 
 @pytest.mark.parametrize(
-    ("correction_table", "version", "eve_correction_truth"),
+    ("source", "eve_correction_truth"),
     [
         pytest.param(
-            None,
             9,
             0.9494731307817633 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         pytest.param(
-            None,
             8,
             1.0140518082508945 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         (
             get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
-            8,
-            1.0140386988603103 * u.dimensionless_unscaled,
-        ),
-        (
-            get_correction_table(correction_table=get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
-            8,
             1.0140386988603103 * u.dimensionless_unscaled,
         ),
     ],
 )
-def test_eve_correction(channel, correction_table, version, eve_correction_truth) -> None:
+def test_eve_correction(channel, source, eve_correction_truth) -> None:
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the correction parameters in JSOC at the time this code was committed/
@@ -150,7 +142,8 @@ def test_eve_correction(channel, correction_table, version, eve_correction_truth
     # JSOC are not necessarily the same as those in the correction table files
     # in SSW though they should be close.
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
-    eve_correction = channel.eve_correction(obstime, correction_table=correction_table, calibration_version=version)
+    correction_table = get_correction_table(source=source)
+    eve_correction = channel.eve_correction(obstime, correction_table=correction_table)
     assert u.allclose(eve_correction, eve_correction_truth, rtol=1e-10, atol=0.0)
 
 
@@ -166,13 +159,11 @@ def test_wavelength_response_no_idl(channel) -> None:
     channel.wavelength_response(
         obstime=astropy.time.Time.now(),
         correction_table=correction_table,
-        calibration_version=8,
     )
     channel.wavelength_response(
         obstime=astropy.time.Time.now(),
         include_eve_correction=True,
         correction_table=correction_table,
-        calibration_version=8,
     )
 
 
@@ -198,12 +189,10 @@ def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
 def test_wavelength_response_time(channel, idl_environment, include_eve_correction) -> None:
     now = astropy.time.Time.now()
     correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
-    calibration_version = 8
     r = channel.wavelength_response(
         obstime=now,
         include_eve_correction=include_eve_correction,
         correction_table=correction_table,
-        calibration_version=calibration_version,
     )
     ssw = idl_environment.run(
         """
@@ -213,7 +202,6 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         save_vars=["r"],
         args={
             "obstime": now.tai.isot,
-            "version": calibration_version,
             "evenorm": int(include_eve_correction),
             "respversion": "20171210_050627",
         },
