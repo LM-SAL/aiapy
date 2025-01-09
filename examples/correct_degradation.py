@@ -16,6 +16,7 @@ from sunpy.net import Fido
 from sunpy.net import attrs as a
 
 from aiapy.calibrate import degradation
+from aiapy.calibrate.util import get_correction_table
 
 # This lets you pass `astropy.time.Time` objects directly to matplotlib
 time_support(format="jyear")
@@ -51,7 +52,7 @@ print(table)
 # For more details on how the correction factor is calculated, see the documentation for the
 # `aiapy.calibrate.degradation` function.
 
-correction_factor = degradation(335 * u.angstrom, table["DATE_OBS"])
+correction_factor = degradation(335 * u.angstrom, table["DATE_OBS"], correction_table=get_correction_table("jsoc"))
 table["DATAMEAN_DEG"] = table["DATAMEAN"] / correction_factor
 
 ###############################################################################

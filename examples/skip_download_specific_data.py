@@ -58,9 +58,11 @@ files = Fido.fetch(query)
 level_1_maps = sunpy.map.Map(files)
 # We get the pointing table outside of the loop for the relevant time range.
 # Otherwise you're making a call to the JSOC every single time.
-pointing_table = get_pointing_table(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
+pointing_table = get_pointing_table(
+    "jsoc", time_range=(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
+)
 # The same applies for the correction table.
-correction_table = get_correction_table()
+correction_table = get_correction_table(source="jsoc")
 
 level_15_maps = []
 for a_map in level_1_maps:
