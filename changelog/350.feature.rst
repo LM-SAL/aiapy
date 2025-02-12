@@ -1,0 +1,1 @@
+Added a function `~aiapy.util.check_quality_flag` to interpret quality flags from ``QUALITY`` keyword.
