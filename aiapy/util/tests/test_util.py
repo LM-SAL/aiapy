@@ -23,9 +23,10 @@ def test_sdo_location_raises_error() -> None:
 @pytest.mark.parametrize(
     "bits",
     [
-        [],
-        [16],
-        [12, 13, 14, 17, 21],
+        [],  # nominal
+        [16],  # single message
+        [12, 13, 14, 17, 21],  # multiple messages
+        [4, 5],  # empty bits
     ],
 )
 def test_check_quality_flag(bits):
@@ -36,5 +37,5 @@ def test_check_quality_flag(bits):
     if bits:
         from aiapy.util.util import _QUALITY_FLAG_MESSAGES
 
-        messages = [_QUALITY_FLAG_MESSAGES[b] for b in bits]
+        messages = [_QUALITY_FLAG_MESSAGES.get(b, "(empty)") for b in bits]
     assert messages == aiapy.util.check_quality_flag(quality)

@@ -69,7 +69,7 @@ def check_quality_flag(quality):
     """
     flags = [i for i in range(32) if (quality & (1 << i))]
     if flags:
-        return [_QUALITY_FLAG_MESSAGES[f] for f in flags]
+        return [_QUALITY_FLAG_MESSAGES.get(f, "(empty)") for f in flags]
     return ["nominal"]
 
 
