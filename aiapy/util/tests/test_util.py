@@ -18,3 +18,24 @@ def test_sdo_location_raises_error() -> None:
     # Confirm that an error is raised for a time without records
     with pytest.raises(RuntimeError, match="No data found for this query"):
         aiapy.util.sdo_location("2001-01-01")
+
+
+@pytest.mark.parametrize(
+    "bits",
+    [
+        [],  # nominal
+        [16],  # single message
+        [12, 13, 14, 17, 21],  # multiple messages
+        [4, 5],  # empty bits
+    ],
+)
+def test_check_quality_flag(bits):
+    quality = 0
+    for b in bits:
+        quality = quality | (1 << b)
+    messages = ["nominal"]
+    if bits:
+        from aiapy.util.util import _QUALITY_FLAG_MESSAGES
+
+        messages = [_QUALITY_FLAG_MESSAGES.get(b, "(empty)") for b in bits]
+    assert messages == aiapy.util.check_quality_flag(quality)
