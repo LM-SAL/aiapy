@@ -1,3 +1,12 @@
+0.10.1 (2025-02-12)
+===================
+
+New Features
+------------
+
+- Added a function `~aiapy.util.check_quality_flag` to interpret quality flags from ``QUALITY`` keyword. (`#350 <https://github.com/LM-SAL/aiapy/pull/350>`__)
+
+
 0.10.0 (2025-01-08)
 ===================
 
