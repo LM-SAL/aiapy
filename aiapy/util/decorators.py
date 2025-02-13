@@ -46,7 +46,7 @@ def validate_channel(argument, *, valid_channels="all"):
             all_args = sig.bind(*args, **kwargs)
             channel = all_args.arguments[argument]
             if channel not in valid_channels:
-                msg = f'channel "{channel}" not in ' f"list of valid channels: {valid_channels}."
+                msg = f'channel "{channel}" not in list of valid channels: {valid_channels}.'
                 raise ValueError(msg)
             return function(*args, **kwargs)
 

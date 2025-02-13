@@ -78,8 +78,8 @@ def update_pointing(smap, *, pointing_table):
     if not t_obs_in_interval.any():
         msg = (
             f"No valid entries for {smap.reference_date} in pointing table "
-            f'with first T_START date of {pointing_table[0]["T_START"]} '
-            f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.'
+            f"with first T_START date of {pointing_table[0]['T_START']} "
+            f"and a last T_STOP date of {pointing_table[-1]['T_STOP']}."
         )
         raise IndexError(msg)
     i_nearest = np.where(t_obs_in_interval)[0][0]
