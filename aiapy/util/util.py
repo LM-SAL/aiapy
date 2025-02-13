@@ -93,7 +93,9 @@ def sdo_location(time):
     """
     t = parse_time(time)
     # Query for +/- 3 seconds around the given time
-    keys = _get_data_from_jsoc(query=f"aia.lev1[{(t - 3*u.s).utc.isot}/6s]", key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS")
+    keys = _get_data_from_jsoc(
+        query=f"aia.lev1[{(t - 3 * u.s).utc.isot}/6s]", key="T_OBS, HAEX_OBS, HAEY_OBS, HAEZ_OBS"
+    )
     if keys is None or len(keys) == 0:
         msg = f"No JSOC records near this time: {t}"
         raise ValueError(msg)

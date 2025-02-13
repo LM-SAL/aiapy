@@ -65,7 +65,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(table["DATE_OBS"], table["DATAMEAN"], label="mean", marker="o")
 ax.plot(table["DATE_OBS"], table["DATAMEAN_DEG"], label="corrected mean", marker="+")
-ax.set_title(f'{(335*u.angstrom).to_string(format="latex")} Channel Degradation')
+ax.set_title(f"{(335 * u.angstrom).to_string(format='latex')} Channel Degradation")
 ax.legend(frameon=False)
 
 plt.show()

@@ -110,7 +110,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335)
 ax.set_xlim((aia_335_channel.channel + [-10, 10] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 
 ###############################################################################
 # On telescopes 1, 3, and 4, both channels are always illuminated.
@@ -136,7 +136,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335, label="crosstalk")
 ax.plot(aia_335_channel.wavelength, wavelength_response_335_no_cross, label="no crosstalk")
 ax.set_xlim(50, 350)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 ax.legend(loc=1, frameon=False)
 
 ###############################################################################
@@ -166,7 +166,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335_eve, label="EVE corr
 ax.set_xlim((aia_335_channel.channel + [-20, 20] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 ax.legend(loc=2, frameon=False)
 
 plt.show()

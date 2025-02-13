@@ -30,7 +30,6 @@
     :target: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04
     :alt: JOSS
 
-
 ``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
 For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
 For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
@@ -47,3 +46,10 @@ Contributing
 ``aiapy`` is open source software, built on top of other open source software, and we'd love to have you contribute
 
 Please checkout the `contributing guide <https://aiapy.readthedocs.io/en/latest/develop.html>`__ for more information on how to contribute to aiapy.
+
+Usage of Generative AI
+----------------------
+
+We expect authentic engagement in our community.
+Be wary of posting output from large language models or similar generative AI as comments on GitHub or any other platforms, as such comments tend to be formulaic and low‑quality content.
+If you use generative AI tools as an aid in developing code or documentation changes, ensure that you fully understand the proposed changes and can explain why they are the correct approach and an improvement to the current state.
