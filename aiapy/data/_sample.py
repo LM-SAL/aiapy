@@ -72,7 +72,7 @@ def _handle_final_errors(results) -> None:
             f"Failed to download {_SAMPLE_FILES[file_name]} from {err.url}: {err.exception}",
         )
         log.error(
-            f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors,the file will not be available.",
+            f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors, the file will not be available.",
         )
 
 
