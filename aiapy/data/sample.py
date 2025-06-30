@@ -29,7 +29,7 @@ from ._sample import _SAMPLE_DATA, _get_sample_files
 
 # Add a table row to the module docstring for each sample file
 for _keyname, _filename in sorted(_SAMPLE_DATA.items()):
-    __doc__ += f"   * - ``{_keyname}``\n     - {_filename}\n"  # NOQA: A001
+    __doc__ += f"   * - ``{_keyname}``\n     - {_filename}\n"
 
 
 # file_dict and file_list are not normal variables; see __getattr__() below
