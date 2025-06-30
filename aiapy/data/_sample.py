@@ -78,7 +78,7 @@ def _handle_final_errors(results) -> None:
 
 def _get_sampledata_dir():
     # Workaround for tox only. This is not supported as a user option
-    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR", False)
+    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR")
     if sampledata_dir:
         sampledata_dir = Path(sampledata_dir).expanduser().resolve()
         _is_writable_dir(sampledata_dir)
