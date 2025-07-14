@@ -29,14 +29,14 @@ def aia_171_map():
 
 @pytest.fixture
 def psf_94(channels):
-    import aiapy.psf
+    import aiapy.psf  # NOQA: PLC0415
 
     return aiapy.psf.psf(channels[0], use_preflightcore=True)
 
 
 def idl_available() -> bool | None:
     try:
-        import hissw
+        import hissw  # NOQA: PLC0415
 
         hissw.Environment().run("")
         return True  # NOQA: TRY300
@@ -48,7 +48,7 @@ def idl_available() -> bool | None:
 @pytest.fixture(scope="session")
 def idl_environment():
     if idl_available():
-        import hissw
+        import hissw  # NOQA: PLC0415
 
         return hissw.Environment(
             ssw_packages=["sdo/aia"],

@@ -24,8 +24,8 @@ def _rotation_cupy(image, matrix, shift, order, missing, clip):  # NOQA: ARG001
       be ``'constant'``.
     """
     try:
-        import cupy
-        import cupyx.scipy.ndimage
+        import cupy  # NOQA: PLC0415
+        import cupyx.scipy.ndimage  # NOQA: PLC0415
     except ImportError as e:
         msg = "cupy or cupy-cuda* (pre-compiled for each cuda version) is required to use this rotation method."
         raise ImportError(
