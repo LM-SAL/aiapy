@@ -3,6 +3,7 @@ import pytest
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.util
+from aiapy.util.util import _QUALITY_FLAG_MESSAGES
 
 
 @pytest.mark.remote_data
@@ -35,7 +36,5 @@ def test_check_quality_flag(bits):
         quality = quality | (1 << b)
     messages = ["nominal"]
     if bits:
-        from aiapy.util.util import _QUALITY_FLAG_MESSAGES
-
         messages = [_QUALITY_FLAG_MESSAGES.get(b, "(empty)") for b in bits]
     assert messages == aiapy.util.check_quality_flag(quality)
