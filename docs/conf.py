@@ -76,7 +76,6 @@ extensions = [
     "sphinxext.opengraph",
     "sphinx_design",
     "sphinx_copybutton",
-    "hoverxref.extension",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_automodapi.automodapi",
     "sphinx_automodapi.smart_resolver",
@@ -97,7 +96,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-source_suffix = ".rst"
+source_suffix = {".rst": "restructuredtext"}
 
 # The master toctree document.
 master_doc = "index"
@@ -121,45 +120,13 @@ with Path("nitpick-exceptions").open() as nitpick_exceptions:
 ogp_image = "https://raw.githubusercontent.com/sunpy/sunpy-logo/master/generated/sunpy_logo_word.png"
 ogp_use_first_image = True
 ogp_description_length = 160
-ogp_custom_meta_tags = [
-    '<meta property="og:ignore_canonical" content="true" />',
-]
+ogp_custom_meta_tags = ('<meta property="og:ignore_canonical" content="true" />',)
 
 # -- Options for sphinx-copybutton ---------------------------------------------
 # Python Repl + continuation, Bash, ipython and qtconsole + continuation, jupyter-console + continuation
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
 
-# -- Options for hoverxref -----------------------------------------------------
-if os.environ.get("READTHEDOCS"):
-    hoverxref_api_host = "https://readthedocs.org"
-    if os.environ.get("PROXIED_API_ENDPOINT"):
-        # Use the proxied API endpoint
-        # - A RTD thing to avoid a CSRF block when docs are using a
-        #   custom domain
-        hoverxref_api_host = "/_"
-hoverxref_tooltip_maxwidth = 600  # RTD main window is 696px
-hoverxref_auto_ref = True
-hoverxref_mathjax = True
-# hoverxref has to be applied to these
-hoverxref_domains = ["py"]
-hoverxref_role_types = {
-    # roles with py domain
-    "attr": "tooltip",
-    "class": "tooltip",
-    "const": "tooltip",
-    "data": "tooltip",
-    "exc": "tooltip",
-    "func": "tooltip",
-    "meth": "tooltip",
-    "mod": "tooltip",
-    "obj": "tooltip",
-    # roles with std domain
-    "confval": "tooltip",
-    "hoverxref": "tooltip",
-    "ref": "tooltip",
-    "term": "tooltip",
-}
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
