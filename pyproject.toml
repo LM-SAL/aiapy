@@ -64,7 +64,6 @@ docs = [
   "sphinx-copybutton",
   "sphinx-design",
   "sphinx-gallery",
-  "sphinx-hoverxref",
   "sphinxext-opengraph",
   "sunpy-sphinx-theme",
   "sunpy-sphinx-theme",

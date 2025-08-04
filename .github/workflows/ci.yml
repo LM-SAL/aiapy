@@ -83,7 +83,7 @@ jobs:
         .tox/sample_data/
       cache-key: docs-${{ github.run_id }}
       envs: |
-        - linux: build-docs
+        - linux: build_docs
 
   online:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
@@ -95,7 +95,7 @@ jobs:
       coverage: codecov
       toxdeps: tox-pypi-filter
       envs: |
-        - linux: build-docs-gallery
+        - linux: build_docs-gallery
           pytest: false
           cache-path: |
             docs/_build/
