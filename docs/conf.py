@@ -95,7 +95,6 @@ html_extra_path = ["robots.txt"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
 source_suffix = {".rst": "restructuredtext"}
 
 # The master toctree document.
