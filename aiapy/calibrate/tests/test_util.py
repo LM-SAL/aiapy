@@ -6,6 +6,8 @@ import astropy.units as u
 from astropy.table import QTable
 from astropy.time import Time
 
+from sunpy.time import TimeRange
+
 from aiapy.calibrate.util import (
     _select_epoch_from_correction_table,
     get_correction_table,
@@ -114,6 +116,28 @@ def test_pointing_table_unavailable() -> None:
     t = Time("1990-01-01")
     with pytest.raises(RuntimeError, match="No data found for this query"):
         get_pointing_table("jsoc", time_range=Time([t - 3 * u.h, t + 3 * u.h]))
+
+
+@pytest.mark.remote_data
+def test_get_pointing_table_timerange() -> None:
+    t = Time("2021-01-01T00:00:00", scale="utc")
+    table = get_pointing_table("jsoc", time_range=TimeRange(t - 3 * u.h, t + 3 * u.h))
+    assert isinstance(table, QTable)
+    assert table["T_START"].min() == Time("2020-12-31T21:00:00", scale="utc")
+    assert table["T_STOP"].max() == Time("2021-01-01T09:00:00", scale="utc")
+
+
+def test_get_pointing_table_invalid_timerange() -> None:
+    with pytest.raises(ValueError, match="time_range must be provided if the source is 'jsoc'"):
+        get_pointing_table("jsoc", time_range=None)
+    with pytest.raises(TypeError, match="time_range must be a Time or TimeRange object"):
+        get_pointing_table("jsoc", time_range="invalid")
+    with pytest.raises(ValueError, match="Time object must contain at least two elements"):
+        get_pointing_table("jsoc", time_range=Time("2021-01-01"))
+    with pytest.raises(
+        TypeError, match="time_range must be a Time or TimeRange object, or a tuple of two astropy Time objects"
+    ):
+        get_pointing_table("jsoc", time_range=(1, 2))
 
 
 @pytest.mark.parametrize(

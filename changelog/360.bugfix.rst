@@ -1,0 +1,1 @@
+Added support for `sunpy.time.TimeRange` for `aiapy.calibrate.util.get_pointing_table`.
