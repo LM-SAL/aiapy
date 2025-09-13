@@ -1,3 +1,12 @@
+0.10.2 (2025-09-13)
+===================
+
+Bug Fixes
+---------
+
+- Added support for `sunpy.time.TimeRange` for `aiapy.calibrate.util.get_pointing_table`. (`#360 <https://github.com/LM-SAL/aiapy/pull/360>`__)
+
+
 0.10.1 (2025-02-12)
 ===================
 
