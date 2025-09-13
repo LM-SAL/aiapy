@@ -16,6 +16,7 @@ from astropy.table import QTable
 from astropy.time import Time
 
 from sunpy import log
+from sunpy.time import TimeRange
 
 from aiapy import _SSW_MIRRORS
 from aiapy.data._manager import manager
@@ -178,6 +179,19 @@ def _fetch_pointing_table():
     return manager.get("pointing_table")
 
 
+def _get_time(time_range: Time | TimeRange | list | tuple):
+    if isinstance(time_range, (Time, list, tuple)):
+        start, end = time_range[0], time_range[-1]
+    elif isinstance(time_range, TimeRange):
+        start, end = time_range.start, time_range.end
+    else:
+        msg = (
+            "time_range must be a Time (with two elements) or TimeRange object, or a tuple of two astropy Time objects"
+        )
+        raise TypeError(msg)
+    return start, end
+
+
 def get_pointing_table(source, *, time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
@@ -217,9 +231,10 @@ def get_pointing_table(source, *, time_range=None):
     source : str
         Name of the source from which to retrieve the pointing table.
         Must be one of ``"jsoc"`` or ``"lmsal"``.
-    time_range : `~astropy.time.Time`, optional
+    time_range : `~astropy.time.Time`, `~sunpy.time.TimeRange`, optional
         Time range for which to retrieve the pointing table.
         You can pass in a `~astropy.time.Time` object or a tuple of start and end times.
+        Alternatively, you can pass in a `~sunpy.time.TimeRange` object.
 
     Returns
     -------
@@ -233,7 +248,7 @@ def get_pointing_table(source, *, time_range=None):
         if time_range is None:
             msg = "time_range must be provided if the source is 'jsoc'"
             raise ValueError(msg)
-        start, end = time_range
+        start, end = _get_time(time_range)
         table = QTable.from_pandas(
             _get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
         )
