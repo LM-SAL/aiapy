@@ -179,24 +179,15 @@ def _fetch_pointing_table():
     return manager.get("pointing_table")
 
 
-def _get_time(time_range: Time | TimeRange | None = None):
-    if time_range is None:
-        msg = "time_range must be provided if the source is 'jsoc'"
-        raise ValueError(msg)
-    if isinstance(time_range, Time):
-        if time_range.size < 2:
-            msg = "Time object must contain at least two elements"
-            raise ValueError(msg)
+def _get_time(time_range: Time | TimeRange | list | tuple):
+    if isinstance(time_range, (Time, list, tuple)):
         start, end = time_range[0], time_range[-1]
     elif isinstance(time_range, TimeRange):
         start, end = time_range.start, time_range.end
-    elif isinstance(time_range, (tuple, list)) and all(isinstance(t, Time) for t in time_range):
-        if len(time_range) < 2:
-            msg = "time_range must contain at least two elements"
-            raise ValueError(msg)
-        start, end = time_range[0], time_range[-1]
     else:
-        msg = "time_range must be a Time or TimeRange object, or a tuple of two astropy Time objects"
+        msg = (
+            "time_range must be a Time (with two elements) or TimeRange object, or a tuple of two astropy Time objects"
+        )
         raise TypeError(msg)
     return start, end
 
@@ -254,6 +245,9 @@ def get_pointing_table(source, *, time_range=None):
     aiapy.calibrate.update_pointing
     """
     if source.lower() == "jsoc":
+        if time_range is None:
+            msg = "time_range must be provided if the source is 'jsoc'"
+            raise ValueError(msg)
         start, end = _get_time(time_range)
         table = QTable.from_pandas(
             _get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")

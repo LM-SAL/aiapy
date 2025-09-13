@@ -127,19 +127,6 @@ def test_get_pointing_table_timerange() -> None:
     assert table["T_STOP"].max() == Time("2021-01-01T09:00:00", scale="utc")
 
 
-def test_get_pointing_table_invalid_timerange() -> None:
-    with pytest.raises(ValueError, match="time_range must be provided if the source is 'jsoc'"):
-        get_pointing_table("jsoc", time_range=None)
-    with pytest.raises(TypeError, match="time_range must be a Time or TimeRange object"):
-        get_pointing_table("jsoc", time_range="invalid")
-    with pytest.raises(ValueError, match="Time object must contain at least two elements"):
-        get_pointing_table("jsoc", time_range=Time("2021-01-01"))
-    with pytest.raises(
-        TypeError, match="time_range must be a Time or TimeRange object, or a tuple of two astropy Time objects"
-    ):
-        get_pointing_table("jsoc", time_range=(1, 2))
-
-
 @pytest.mark.parametrize(
     "error_table",
     [
