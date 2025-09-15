@@ -6,16 +6,17 @@ import numpy as np
 
 import astropy.units as u
 
-from sunpy import log
-
 from aiapy.util.decorators import validate_channel
 
 try:
-    from jax import jit as jax_jit
     import jax.numpy as jnp
+    from jax import jit as jax_jit
 except ImportError:
     jnp = np
-    def jax_jit(func): return func
+
+    def jax_jit(func):
+        return func
+
 
 __all__ = ["_psf", "filter_mesh_parameters", "psf"]
 
