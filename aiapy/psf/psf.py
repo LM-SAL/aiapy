@@ -180,11 +180,15 @@ def psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
 
-    .. note:: This function has been adapted from
-              `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
+    .. note::
 
-    .. note:: If the `~jax` package is installed it will be used to accelerate the computation.
-              `~jax` can use CPUs or GPUs, see their documentation for instructions.
+        This function has been adapted from
+        `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`__.
+
+    .. note::
+
+        If the `~jax` package is installed it will be used to accelerate the computation.
+        `~jax` can use CPUs or GPUs, see their documentation for instructions.
 
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,

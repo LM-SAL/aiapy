@@ -31,21 +31,27 @@ def respike(smap, *, spikes=None):
     by the user or obtained automatically from
     `JSOC <http://jsoc.stanford.edu/>`_.
 
-    .. note:: This function should only be applied to level 1 images (i.e.
-              before calling `aiapy.calibrate.register`). If the input
-              image has been interpolated in any way from the original
-              level 1 data, the spikes will be reinserted at the wrong
-              locations.
+    .. note::
 
-    .. note:: This function modifies the ``LVL_NUM``, ``NSPIKES``, and ``COMMENTS``
-              header keywords such that the resulting FITS header will differ
-              from the original file.
+        This function should only be applied to level 1 images (i.e.
+        before calling `aiapy.calibrate.register`). If the input
+        image has been interpolated in any way from the original
+        level 1 data, the spikes will be reinserted at the wrong
+        locations.
 
-    .. note:: If the image series of interest is large, it is advised to
-              obtain the spike data via JSOC externally and specify them
-              via the ``spikes`` keyword argument. To retrieve the coordinates
-              of the positions of the spikes use the function
-              `aiapy.calibrate.fetch_spikes`.
+    .. note::
+
+        This function modifies the ``LVL_NUM``, ``NSPIKES``, and ``COMMENTS``
+        header keywords such that the resulting FITS header will differ
+        from the original file.
+
+    .. note::
+
+        If the image series of interest is large, it is advised to
+        obtain the spike data via JSOC externally and specify them
+        via the ``spikes`` keyword argument. To retrieve the coordinates
+        of the positions of the spikes use the function
+        `aiapy.calibrate.fetch_spikes`.
 
     Parameters
     ----------

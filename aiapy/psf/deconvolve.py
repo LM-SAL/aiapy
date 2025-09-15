@@ -7,14 +7,15 @@ import warnings
 
 import numpy as np
 
-from sunpy import log
-
 try:
-    import cupy
-
-    HAS_CUPY = True
+    import jax.numpy as jnp
+    from jax import jit as jax_jit
 except ImportError:
-    HAS_CUPY = False
+    jnp = np
+
+    def jax_jit(func):
+        return func
+
 
 from aiapy.util import AIApyUserWarning
 from .psf import psf as calculate_psf
@@ -22,7 +23,16 @@ from .psf import psf as calculate_psf
 __all__ = ["deconvolve"]
 
 
-def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=True):
+@jax_jit
+def _deconvolve_inner(img, psf, psf_conj, iterations):
+    img_decon = img.copy()
+    for _ in range(iterations):
+        ratio = img / jnp.fft.irfft2(jnp.fft.rfft2(img_decon) * psf)
+        img_decon = img_decon * jnp.fft.irfft2(jnp.fft.rfft2(ratio) * psf_conj)
+    return img_decon
+
+
+def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True):
     """
     Deconvolve an AIA image with the point spread function.
 
@@ -30,11 +40,11 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     point spread function using the Richardson-Lucy deconvolution
     algorithm [1]_.
 
-    .. note:: If the `~cupy` package is installed and your machine has an
-              NVIDIA GPU, the deconvolution will automatically be accelerated
-              with CUDA. This can lead to more than an order of magnitude in
-              performance increase compared to pure `numpy` on a CPU.
-              For more information on PSF deconvolution on a GPU, see [2]_.
+    .. note::
+
+        If the `~jax` package is installed it will be used to accelerate the computation.
+        `~jax` can use CPUs or GPUs, see their documentation for instructions.
+        For more information on PSF deconvolution on a GPU, see [2]_.
 
     Parameters
     ----------
@@ -46,9 +56,6 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
         Number of iterations in the Richardson-Lucy algorithm
     clip_negative : `bool`, optional
         If the image has negative intensity values, set them to zero.
-    use_gpu : `bool`, optional
-        If True and `~cupy` is installed, do PSF deconvolution on the GPU
-        with `~cupy`.
 
     Returns
     -------
@@ -67,8 +74,8 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     # TODO: do we need a check to make sure this is a full-frame image?
     img = smap.data
     if clip_negative:
-        img = np.where(img < 0, 0, img)
-    if np.any(img < 0):
+        img = jnp.where(img < 0, 0, img)
+    if jnp.any(img < 0):
         warnings.warn(
             "Image contains negative intensity values. Consider setting clip_negative to True",
             AIApyUserWarning,
@@ -76,25 +83,14 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
         )
     if psf is None:
         psf = calculate_psf(smap.wavelength)
-    if use_gpu and not HAS_CUPY:
-        log.info("cupy not installed or working, falling back to CPU")
-    if HAS_CUPY and use_gpu:
-        log.info("Using a GPU via cupy")
-        img = cupy.array(img)
-        psf = cupy.array(psf)
     # Center PSF at pixel (0,0)
-    psf = np.roll(np.roll(psf, psf.shape[0] // 2, axis=0), psf.shape[1] // 2, axis=1)
+    psf = jnp.roll(jnp.roll(psf, psf.shape[0] // 2, axis=0), psf.shape[1] // 2, axis=1)
     # Convolution requires FFT of the PSF
-    psf = np.fft.rfft2(psf)
+    psf = jnp.fft.rfft2(psf)
     psf_conj = psf.conj()
-
-    img_decon = np.copy(img)
-    for _ in range(iterations):
-        ratio = img / np.fft.irfft2(np.fft.rfft2(img_decon) * psf)
-        img_decon = img_decon * np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
-
+    img_decon = _deconvolve_inner(img, psf, psf_conj, iterations)
     return smap._new_instance(
-        cupy.asnumpy(img_decon) if (HAS_CUPY and use_gpu) else img_decon,
+        img_decon,
         copy.deepcopy(smap.meta),
         plot_settings=copy.deepcopy(smap.plot_settings),
         mask=smap.mask,
