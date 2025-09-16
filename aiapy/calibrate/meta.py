@@ -29,9 +29,10 @@ def update_pointing(smap, *, pointing_table):
 
     .. warning::
 
-        This function is only intended to be used for full-disk images
-        at the full resolution of 4096x4096 pixels. It will raise a
-        ``ValueError`` if the input map does not meet these criteria.
+        This function is only intended to be used on level 1 images,
+        including cutouts/submaps. This function should be applied before
+        rotating, resampling, rebinning, or interpolating the map in any
+        way.
 
     Parameters
     ----------
