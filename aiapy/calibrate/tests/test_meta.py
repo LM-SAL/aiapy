@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 import astropy.units as u
-from astropy.coordinates.sky_coordinate import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time, TimeDelta
 
@@ -44,11 +43,12 @@ def mock_pointing_table():
 def test_fix_pointing(aia_171_map, pointing_table) -> None:
     # Smoke test to make sure expected keys are being updated
     keys = ["crpix1", "crpix2", "cdelt1", "cdelt2", "crota2", "x0_mp", "y0_mp"]
-    # NOTE: This modification forces CROTA2 to be updated. Otherwise, the key is not
-    # modified since the existing metadata and the pointing table for this time are
-    # the same.
+    # NOTE: This modification forces CROTA2 and CDELT{1,2} to be updated. Otherwise,
+    # these keys are not modified since the existing metadata and the pointing table
+    # for this time are the same.
     new_pointing_table = pointing_table.copy()
     new_pointing_table["A_171_INSTROT"] = 0 * u.deg
+    new_pointing_table["A_171_IMSCALE"] = 1.2 * u.arcsec / u.pixel
     aia_map_updated = update_pointing(aia_171_map, pointing_table=new_pointing_table)
     for k in keys:
         assert k in aia_map_updated.meta.modified_items
@@ -82,8 +82,11 @@ def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, ex
 @pytest.mark.remote_data
 def test_update_pointing_submap(aia_171_map, pointing_table) -> None:
     # Tests that submapping and update pointing are commutative
-    blc = SkyCoord(0, 0, unit="arcsec", frame=aia_171_map.coordinate_frame)
-    trc = aia_171_map.top_right_coord
+    # NOTE: Purposefully cropping in pixel space as cropping in world space
+    # can lead to differences of 1 pixel due to the differing world-to-pixel
+    # conversions because of the change in reference pixel.
+    blc = (500, 1000) * u.pixel
+    trc = (1000, 1200) * u.pixel
     m_submap_pointing_update = update_pointing(aia_171_map.submap(blc, top_right=trc), pointing_table=pointing_table)
     m_pointing_update_submap = update_pointing(aia_171_map, pointing_table=pointing_table).submap(blc, top_right=trc)
     assert u.allclose(
@@ -114,7 +117,7 @@ def test_update_pointing_no_entry_raises_exception(aia_171_map, pointing_table) 
     # This tests that an exception is thrown when entry corresponding to
     # T_START <= T_OBS < T_END cannot be found in the pointing table.
     # We explicitly set the T_OBS key
-    aia_171_map.meta["T_OBS"] = (aia_171_map.date - 1000 * u.day).isot
+    aia_171_map.meta["T_OBS"] = (aia_171_map.date - 30 * u.year).isot
     with pytest.raises(IndexError, match="No valid entries for"):
         update_pointing(aia_171_map, pointing_table=pointing_table)
 
