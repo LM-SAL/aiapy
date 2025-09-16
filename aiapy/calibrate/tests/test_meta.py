@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pytest
 
@@ -40,21 +42,16 @@ def mock_pointing_table():
 
 @pytest.mark.remote_data
 def test_fix_pointing(aia_171_map, pointing_table) -> None:
-    keys = ["CRPIX1", "CRPIX2", "CDELT1", "CDELT2", "CROTA2"]
-    # Remove keys to at least test that they get set
+    # Smoke test to make sure expected keys are being updated
+    keys = ["crpix1", "crpix2", "cdelt1", "cdelt2", "crota2", "x0_mp", "y0_mp"]
+    # NOTE: This modification forces CROTA2 to be updated. Otherwise, the key is not
+    # modified since the existing metadata and the pointing table for this time are
+    # the same.
+    new_pointing_table = pointing_table.copy()
+    new_pointing_table["A_171_INSTROT"] = 0 * u.deg
+    aia_map_updated = update_pointing(aia_171_map, pointing_table=new_pointing_table)
     for k in keys:
-        aia_171_map.meta.pop(k)
-    aia_map_updated = update_pointing(
-        aia_171_map,
-        pointing_table=pointing_table,
-    )
-    # FIXME: how do we check these values are accurate?
-    assert all(k in aia_map_updated.meta for k in keys)
-    # Check the case where we have specified the pointing
-    # table ahead of time
-    aia_map_updated2 = update_pointing(aia_171_map, pointing_table=pointing_table)
-    for k in keys:
-        assert aia_map_updated.meta[k] == aia_map_updated2.meta[k]
+        assert k in aia_map_updated.meta.modified_items
 
 
 @pytest.mark.remote_data
@@ -83,19 +80,32 @@ def test_update_pointing_accuracy(aia_171_map, pointing_table, t_delt_factor, ex
 
 
 @pytest.mark.remote_data
-def test_update_pointing_submap_raises_exception(aia_171_map, pointing_table) -> None:
-    m = aia_171_map.submap(
-        SkyCoord(0, 0, unit="arcsec", frame=aia_171_map.coordinate_frame),
-        top_right=aia_171_map.top_right_coord,
+def test_update_pointing_submap(aia_171_map, pointing_table) -> None:
+    # Tests that submapping and update pointing are commutative
+    blc = SkyCoord(0, 0, unit="arcsec", frame=aia_171_map.coordinate_frame)
+    trc = aia_171_map.top_right_coord
+    m_submap_pointing_update = update_pointing(aia_171_map.submap(blc, top_right=trc), pointing_table=pointing_table)
+    m_pointing_update_submap = update_pointing(aia_171_map, pointing_table=pointing_table).submap(blc, top_right=trc)
+    assert u.allclose(
+        u.Quantity(m_submap_pointing_update.reference_pixel),
+        u.Quantity(m_pointing_update_submap.reference_pixel),
+        rtol=1e-10,
     )
-    with pytest.raises(ValueError, match="Input must be a full disk image."):
+
+
+@pytest.mark.remote_data
+def test_update_pointing_resampled_warning(aia_171_map, pointing_table) -> None:
+    m = aia_171_map.resample((512, 512) * u.pixel)
+    with pytest.warns(AIApyUserWarning, match="Input map has plate scale"):
         update_pointing(m, pointing_table=pointing_table)
 
 
 @pytest.mark.remote_data
-def test_update_pointing_resampled_raises_exception(aia_171_map, pointing_table) -> None:
-    m = aia_171_map.resample((512, 512) * u.pixel)
-    with pytest.raises(ValueError, match="Input must be at the full resolution"):
+def test_update_pointing_missing_mp_keys(aia_171_map, pointing_table) -> None:
+    new_meta = copy.deepcopy(aia_171_map.meta)
+    del new_meta["x0_mp"]
+    m = aia_171_map._new_instance(aia_171_map.data, new_meta)
+    with pytest.warns(AIApyUserWarning, match="x0_mp and/or y0_mp keywords are missing."):
         update_pointing(m, pointing_table=pointing_table)
 
 
