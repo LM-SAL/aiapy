@@ -101,7 +101,7 @@ def update_pointing(smap, *, pointing_table):
     # NOTE: Updating the reference pixel in this way only works if the map has not been
     # rotated or resampled from the original level 1 data. It is calculated in this way
     # to allow for updating the pointing in cropped maps.
-    if (x0_mp_old := smap.meta.get("x0_mp")) and (y0_mp_old := smap.meta.get("y0_mp")):
+    if ((x0_mp_old := smap.meta.get("x0_mp")) is not None) and ((y0_mp_old := smap.meta.get("y0_mp")) is not None):
         crpix1 += x0_mp_new - x0_mp_old
         crpix2 += y0_mp_new - y0_mp_old
     else:
