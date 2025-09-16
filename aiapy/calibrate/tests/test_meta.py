@@ -113,7 +113,9 @@ def test_update_pointing_missing_mp_keys(aia_193_level1_map, pointing_table) -> 
     del new_meta["x0_mp"]
     m = aia_193_level1_map._new_instance(aia_193_level1_map.data, new_meta)
     with pytest.warns(AIApyUserWarning, match="x0_mp and/or y0_mp keywords are missing."):
-        update_pointing(m, pointing_table=pointing_table)
+        m_updated = update_pointing(m, pointing_table=pointing_table)
+    assert m.reference_pixel.x == m_updated.reference_pixel.x
+    assert m.reference_pixel.y == m_updated.reference_pixel.y
 
 
 @pytest.mark.remote_data
