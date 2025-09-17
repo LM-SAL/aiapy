@@ -1,5 +1,0 @@
-Removed the need for CuPy in `aiapy.psf.psf`, it was replaced with Jax which enables faster CPU computations with optional GPU support.
-This means that the performance of the PSF calculations will be significantly improved on machines without a compatible NVIDIA GPU.
-In early testing, it is around 15 times faster on the CPU compared to NumPy.
-
-This means that the keyword, ``use_gpu``, in `aiapy.psf.psf` has been removed.
