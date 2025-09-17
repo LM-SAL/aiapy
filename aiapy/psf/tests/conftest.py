@@ -10,4 +10,4 @@ from aiapy.conftest import CHANNELS
 
 @pytest.fixture
 def psf():
-    return aiapy.psf.psf(CHANNELS[0], use_preflightcore=True, diffraction_orders=[-1, 0, 1])
+    return aiapy.psf.calculate_psf(CHANNELS[0], use_preflightcore=True, diffraction_orders=[-1, 0, 1])

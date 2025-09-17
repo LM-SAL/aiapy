@@ -16,8 +16,8 @@ try:
 except ImportError:
     HAS_CUPY = False
 
+from aiapy.psf.psf import calculate_psf
 from aiapy.util import AIApyUserWarning
-from .psf import psf as calculate_psf
 
 __all__ = ["deconvolve"]
 
@@ -57,7 +57,7 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
 
     See Also
     --------
-    psf
+    calculate_psf
 
     References
     ----------

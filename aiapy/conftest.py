@@ -39,7 +39,7 @@ def aia_193_level1_map():
 def psf_94(channels):
     import aiapy.psf  # NOQA: PLC0415
 
-    return aiapy.psf.psf(channels[0], use_preflightcore=True)
+    return aiapy.psf.calculate_psf(channels[0], use_preflightcore=True)
 
 
 def idl_available() -> bool | None:

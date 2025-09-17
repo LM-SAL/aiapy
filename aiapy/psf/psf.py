@@ -17,7 +17,7 @@ try:
 except ImportError:
     HAS_CUPY = False
 
-__all__ = ["_psf", "filter_mesh_parameters", "psf"]
+__all__ = ["_psf", "calculate_psf", "filter_mesh_parameters"]
 
 
 def filter_mesh_parameters(*, use_preflightcore=False):
@@ -56,7 +56,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
 
     See Also
     --------
-    psf : Calculate the composite point spread function
+    `calculate_psf` : Calculate the composite point spread function
 
     Notes
     -----
@@ -174,7 +174,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
 
 @u.quantity_input
 @validate_channel("channel", valid_channels=[94, 131, 171, 193, 211, 304, 335] * u.angstrom)
-def psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
+def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
     r"""
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
