@@ -6,7 +6,6 @@ import numpy as np
 
 import astropy.units as u
 
-from sunpy import log
 from sunpy.util.decorators import deprecated
 
 from aiapy.util.decorators import validate_channel
@@ -191,7 +190,7 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     .. note::
 
         If the `~jax` package is installed it will be used to accelerate the computation.
-        `~jax` can use CPUs or GPUs, see their documentation for instructions.
+        `~jax` can use CPUs or GPUs, `see their documentation for instructions <https://docs.jax.dev/en/latest/installation.html>`__.
 
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,

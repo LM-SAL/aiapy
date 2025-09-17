@@ -40,7 +40,7 @@ is_release = not (_version.is_prerelease or _version.is_devrelease)
 
 project = "aiapy"
 author = "AIA Instrument Team @ LMSAL"
-copyright = f"{datetime.datetime.now(datetime.timezone.utc).year}, {author}"  # NOQA: A001
+copyright = f"{datetime.datetime.now(datetime.UTC).year}, {author}"  # NOQA: A001
 
 # -- General configuration ---------------------------------------------------
 from astropy.utils.exceptions import AstropyDeprecationWarning
