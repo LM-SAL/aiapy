@@ -298,9 +298,11 @@ class Channel:
         area at the ```obstime``` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`).
 
-        .. note:: This function is adapted directly from the
-                  `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`__
-                  routine in SolarSoft.
+        .. note::
+
+            This function is adapted directly from the
+            `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`__
+            routine in SolarSoft.
 
         Parameters
         ----------

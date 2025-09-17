@@ -180,14 +180,18 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
 
-    .. note:: This function has been adapted from
-              `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
+    .. note::
 
-    .. note:: If the `~cupy` package is installed
-              and your machine has an NVIDIA GPU, the PSF calculation will
-              automatically be accelerated with CUDA. This can lead to
-              several orders of magnitude in performance increase compared to
-              pure `numpy` on a CPU.
+        This function has been adapted from
+        `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
+
+    .. note::
+
+        If the `~cupy` package is installed
+        and your machine has an NVIDIA GPU, the PSF calculation will
+        automatically be accelerated with CUDA. This can lead to
+        several orders of magnitude in performance increase compared to
+        pure `numpy` on a CPU.
 
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,

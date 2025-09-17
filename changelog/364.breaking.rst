@@ -1,0 +1,2 @@
+Dropped Python 3.10 support.
+The minimum required Python version is now 3.11.

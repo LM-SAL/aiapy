@@ -118,14 +118,20 @@ def get_correction_table(source):
         "EFF_WVLN",
     ]
     table = table[selected_cols]
-    table["T_START"] = Time(table["T_START"], scale="utc")
+    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
+    # TODO: Remove when astropy > 7.1.1 is out
+    new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
+    table["T_START"] = new_start_times
     # NOTE: The warning from erfa here is due to the fact that dates in
     # this table include at least one date from 2030 and converting this
     # date to UTC is ambiguous as the UTC conversion is not well defined
     # at this date.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=ErfaWarning)
-        table["T_STOP"] = Time(table["T_STOP"], scale="utc")
+        # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
+        # TODO: Remove when astropy > 7.1.1 is out
+        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
+        table["T_STOP"] = new_end_times
     table["WAVELNTH"].unit = "Angstrom"
     table["EFF_WVLN"].unit = "Angstrom"
     table["EFF_AREA"].unit = "cm2"
@@ -257,8 +263,12 @@ def get_pointing_table(source, *, time_range=None):
     else:
         msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
         raise ValueError(msg)
-    table["T_START"] = Time(table["T_START"], scale="utc")
-    table["T_STOP"] = Time(table["T_STOP"], scale="utc")
+    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
+    # TODO: Remove when astropy > 7.1.1 is out
+    new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
+    new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
+    table["T_START"] = new_start_times
+    table["T_STOP"] = new_end_times
     for c in table.colnames:
         if "X0" in c or "Y0" in c:
             table[c].unit = "pixel"

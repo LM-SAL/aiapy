@@ -30,11 +30,13 @@ def deconvolve(smap, *, psf=None, iterations=25, clip_negative=True, use_gpu=Tru
     point spread function using the Richardson-Lucy deconvolution
     algorithm [1]_.
 
-    .. note:: If the `~cupy` package is installed and your machine has an
-              NVIDIA GPU, the deconvolution will automatically be accelerated
-              with CUDA. This can lead to more than an order of magnitude in
-              performance increase compared to pure `numpy` on a CPU.
-              For more information on PSF deconvolution on a GPU, see [2]_.
+    .. note::
+
+        If the `~cupy` package is installed and your machine has an
+        NVIDIA GPU, the deconvolution will automatically be accelerated
+        with CUDA. This can lead to more than an order of magnitude in
+        performance increase compared to pure `numpy` on a CPU.
+        For more information on PSF deconvolution on a GPU, see [2]_.
 
     Parameters
     ----------

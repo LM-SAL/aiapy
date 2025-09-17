@@ -34,6 +34,7 @@ def estimate_error(
     contributions from the photometric calibration and errors in the atomic data.
 
     .. note::
+
         This function is adapted directly from the
         `aia_bp_estimate_error.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_estimate_error.pro>`__
         routine in SolarSoft.
