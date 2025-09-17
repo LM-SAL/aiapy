@@ -10,6 +10,7 @@ import pytest
 import astropy.units as u
 
 from aiapy.calibrate import estimate_error
+from aiapy.calibrate.util import get_error_table
 from aiapy.conftest import CHANNELS
 
 
@@ -29,14 +30,15 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     channel = {{ channel }}
     error=aia_bp_estimate_error(data,channel,n_sample=1{{ include_eve }}{{ include_preflight }}{{ include_chianti }})
     """
-    error_table = Path(idl_environment.ssw_home) / "sdo" / "aia" / "response" / "aia_V3_error_table.txt"
+    error_table_path = Path(idl_environment.ssw_home) / "sdo" / "aia" / "response" / "aia_V3_error_table.txt"
+    error_table = get_error_table(error_table_path)
     ssw = idl_environment.run(
         idl,
         save_vars=["error"],
         args={
             "channel": channel.to("angstrom").value,
-            "data": counts.to("ct pixel-1").value,
-            "error_table": error_table,
+            "data": counts.to("dn pixel-1").value,
+            "error_table": error_table_path.as_posix(),
             "include_eve": ",/evenorm" if include_eve else "",
             # NOTE: use of this keyword is actually broken in SSW so these
             # tests only set it to False until it works, but consistency with
@@ -59,14 +61,16 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     assert u.allclose(error, error_ssw, rtol=1e-4)
 
 
-@pytest.fixture(params=CHANNELS)
+# For now, we only need the 94 Angstrom PSF
+# In future, we will want to test all channels
+@pytest.fixture(params=[CHANNELS[0]])
 def psf_idl(idl_environment, request):
     """
     The point spread function as calculated by aia_calc_psf.pro.
     """
     r = idl_environment.run(
         "psf = aia_calc_psf({{channel}},/use_preflightcore)",
-        args={"channel": f"{request.value:.0f}"},
+        args={"channel": f"{request.param.value:.0f}"},
         save_vars=["psf"],
         verbose=False,
     )
