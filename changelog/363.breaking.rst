@@ -1,0 +1,1 @@
+Renamed ``aiapy.psf.psf`` to `aiapy.psf.calculate_psf` to better reflect its purpose.

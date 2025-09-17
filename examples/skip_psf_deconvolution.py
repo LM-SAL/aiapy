@@ -42,7 +42,7 @@ aia_map.plot(
 )
 
 ###############################################################################
-# Next, we'll calculate the PSF using `aiapy.psf.psf` for the 171 Å channel.
+# Next, we'll calculate the PSF using `aiapy.psf.calculate_psf` for the 171 Å channel.
 # The PSF model accounts for several different effects, including diffraction
 # from the mesh grating of the filters, charge spreading, and jitter. See
 # `Grigis et al (2012) <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
@@ -51,7 +51,7 @@ aia_map.plot(
 # Note that this will be significantly faster if you have a Nvidia GPU and the `cupy`
 # package installed.
 
-psf = aiapy.psf.psf(aia_map.wavelength)
+psf = aiapy.psf.calculate_psf(aia_map.wavelength)
 
 ###############################################################################
 # We'll plot just a 500-by-500 pixel section centered on the center pixel. The
@@ -79,7 +79,7 @@ ax.set_ylabel("Pixels")
 # calculated automatically. However, when deconvolving many images of the same
 # wavelength, it is most efficient to only calculate the PSF once.
 #
-# As with `aiapy.psf.psf`, this will be much faster if you have
+# As with `aiapy.psf.calculate_psf`, this will be much faster if you have
 # a Nvidia GPU and `cupy` installed.
 
 aia_map_deconvolved = aiapy.psf.deconvolve(aia_map, psf=psf)

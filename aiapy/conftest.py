@@ -28,10 +28,18 @@ def aia_171_map():
 
 
 @pytest.fixture
-def psf_94(channels):
+def aia_193_level1_map():
+    # Need an actual 4K-by-4K map to do the spike replacement
+    return sunpy.map.Map(
+        "https://github.com/sunpy/data/blob/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits?raw=true",
+    )
+
+
+@pytest.fixture
+def psf_94():
     import aiapy.psf  # NOQA: PLC0415
 
-    return aiapy.psf.psf(channels[0], use_preflightcore=True)
+    return aiapy.psf.calculate_psf(CHANNELS[0], use_preflightcore=True)
 
 
 def idl_available() -> bool | None:

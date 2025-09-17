@@ -1,0 +1,4 @@
+Modify :func:`~aiapy.calibrate.update_pointing` to allow for updating pointing information
+of maps that have been cropped. This function no longer raises an exception if the input map
+does not include the full Sun or is not at the expected resolution. A warning is now raised
+if the plate scale is significantly different (:math:`>1\%`) than the expected plate scale.

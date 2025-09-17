@@ -114,18 +114,18 @@ def test_effective_area(channel) -> None:
     ("source", "eve_correction_truth"),
     [
         pytest.param(
-            9,
-            0.9494731307817633 * u.dimensionless_unscaled,
+            "SSW",
+            0.95484152 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         pytest.param(
-            8,
-            1.0140518082508945 * u.dimensionless_unscaled,
+            "JSOC",
+            0.99943184 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         (
             get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
-            1.0140386988603103 * u.dimensionless_unscaled,
+            1.01403862 * u.dimensionless_unscaled,
         ),
     ],
 )
@@ -144,18 +144,17 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     correction_table = get_correction_table(source=source)
     eve_correction = channel.eve_correction(obstime, correction_table=correction_table)
-    assert u.allclose(eve_correction, eve_correction_truth, rtol=1e-10, atol=0.0)
+    assert u.allclose(eve_correction, eve_correction_truth)
 
 
-def test_wavelength_response_no_idl(channel) -> None:
+def test_wavelength_response_smoke_tests(channel) -> None:
     # NOTE: this does not test correctness, but just that the method can
     # be run with the various combinations of inputs. The tests below test the
     # correctness of the output as evaluated by their similarity to those
     # results from SSW.
-    r = channel.wavelength_response()
-    assert r.shape == channel.wavelength.shape
-    correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
-    channel.wavelength_response(include_crosstalk=False)
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+    channel.wavelength_response(correction_table=correction_table)
+    channel.wavelength_response(include_crosstalk=False, correction_table=correction_table)
     channel.wavelength_response(
         obstime=astropy.time.Time.now(),
         correction_table=correction_table,
@@ -168,14 +167,16 @@ def test_wavelength_response_no_idl(channel) -> None:
 
 
 def test_wavelength_response_uncorrected(channel, idl_environment) -> None:
-    r = channel.wavelength_response()
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+    r = channel.wavelength_response(correction_table=correction_table)
     ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
     assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
-    r = channel.wavelength_response(include_crosstalk=False)
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+    r = channel.wavelength_response(include_crosstalk=False, correction_table=correction_table)
     ssw = idl_environment.run(
         "r = aia_get_response(/area,/dn,/noblend,evenorm=0)",
         save_vars=["r"],
@@ -188,7 +189,7 @@ def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
 @pytest.mark.parametrize("include_eve_correction", [False, True])
 def test_wavelength_response_time(channel, idl_environment, include_eve_correction) -> None:
     now = astropy.time.Time.now()
-    correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
     r = channel.wavelength_response(
         obstime=now,
         include_eve_correction=include_eve_correction,
@@ -203,7 +204,8 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         args={
             "obstime": now.tai.isot,
             "evenorm": int(include_eve_correction),
-            "respversion": "20171210_050627",
+            "version": 8,
+            "respversion": "8",
         },
         verbose=False,
     )

@@ -14,21 +14,13 @@ from aiapy.util import AIApyUserWarning
 
 
 @pytest.fixture
-def despiked_map():
-    # Need an actual 4K-by-4K map to do the spike replacement
-    return sunpy.map.Map(
-        "https://github.com/sunpy/data/blob/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits?raw=true",
-    )
+def respiked_map(aia_193_level1_map):
+    return respike(aia_193_level1_map)
 
 
 @pytest.fixture
-def respiked_map(despiked_map):
-    return respike(despiked_map)
-
-
-@pytest.fixture
-def spikes(despiked_map):
-    return fetch_spikes(despiked_map)
+def spikes(aia_193_level1_map):
+    return fetch_spikes(aia_193_level1_map)
 
 
 @pytest.mark.remote_data
@@ -45,13 +37,13 @@ def test_respike_meta(respiked_map) -> None:
 
 
 @pytest.mark.remote_data
-def test_fetch_with_prefetched_spikes(despiked_map, respiked_map, spikes) -> None:
-    respiked_map_prefetched = respike(despiked_map, spikes=spikes)
+def test_fetch_with_prefetched_spikes(aia_193_level1_map, respiked_map, spikes) -> None:
+    respiked_map_prefetched = respike(aia_193_level1_map, spikes=spikes)
     assert np.allclose(respiked_map.data, respiked_map_prefetched.data)
 
 
 @pytest.mark.remote_data
-def test_cutout(respiked_map, despiked_map) -> None:
+def test_cutout(respiked_map, aia_193_level1_map) -> None:
     blc = (-500, -500) * u.arcsec
     trc = (500, 500) * u.arcsec
     respiked_map_cutout = respiked_map.submap(
@@ -59,9 +51,9 @@ def test_cutout(respiked_map, despiked_map) -> None:
         top_right=SkyCoord(*trc, frame=respiked_map.coordinate_frame),
     )
     cutout_map_respiked = respike(
-        despiked_map.submap(
-            SkyCoord(*blc, frame=despiked_map.coordinate_frame),
-            top_right=SkyCoord(*trc, frame=despiked_map.coordinate_frame),
+        aia_193_level1_map.submap(
+            SkyCoord(*blc, frame=aia_193_level1_map.coordinate_frame),
+            top_right=SkyCoord(*trc, frame=aia_193_level1_map.coordinate_frame),
         ),
     )
     assert np.allclose(respiked_map_cutout.data, cutout_map_respiked.data)
@@ -76,28 +68,26 @@ def test_cutout(respiked_map, despiked_map) -> None:
         ("instrume", "not AIA", TypeError, "Input must be an AIAMap."),
     ],
 )
-def test_exceptions(despiked_map, key, value, error, match) -> None:
-    new_meta = copy.deepcopy(despiked_map.meta)
+def test_exceptions(aia_193_level1_map, key, value, error, match) -> None:
+    new_meta = copy.deepcopy(aia_193_level1_map.meta)
     new_meta[key] = value
     with pytest.raises(error, match=match):
-        respike(sunpy.map.Map(despiked_map.data, new_meta))
+        respike(sunpy.map.Map(aia_193_level1_map.data, new_meta))
 
 
 @pytest.mark.remote_data
-def test_resample_warning(despiked_map) -> None:
-    despiked_map_resample = despiked_map.resample((512, 512) * u.pixel)
-    with (
-        pytest.warns(AIApyUserWarning, match="is significantly different from the expected level 1 plate scale"),
-        pytest.warns(ResourceWarning),
-    ):
+@pytest.mark.filterwarnings("ignore::ResourceWarning")
+def test_resample_warning(aia_193_level1_map) -> None:
+    despiked_map_resample = aia_193_level1_map.resample((512, 512) * u.pixel)
+    with pytest.warns(AIApyUserWarning, match="is significantly different from the expected level 1 plate scale"):
         respike(despiked_map_resample)
 
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize(("as_coords", "kind"), [(True, SkyCoord), (False, PixelPair)])
-def test_fetch_spikes(despiked_map, as_coords, kind) -> None:
-    n_spikes = despiked_map.meta["nspikes"]
-    coords, values = fetch_spikes(despiked_map, as_coords=as_coords)
+def test_fetch_spikes(aia_193_level1_map, as_coords, kind) -> None:
+    n_spikes = aia_193_level1_map.meta["nspikes"]
+    coords, values = fetch_spikes(aia_193_level1_map, as_coords=as_coords)
     assert isinstance(coords, kind)
     assert values.size == n_spikes
     if as_coords:
