@@ -45,6 +45,9 @@ classifiers = [
 
 [project.optional-dependencies]
 all = ["aiapy"]
+performance = ["jax"]
+performance_nvidia = ["jax[cuda13]"]
+performance_mac = ["jax-metal"]
 tests = [
   "pytest",
   "pytest-doctestplus",
