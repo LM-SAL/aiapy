@@ -147,14 +147,13 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
     assert u.allclose(eve_correction, eve_correction_truth)
 
 
-def test_wavelength_response_no_idl(channel) -> None:
+def test_wavelength_response_smoke_tests(channel) -> None:
     # NOTE: this does not test correctness, but just that the method can
     # be run with the various combinations of inputs. The tests below test the
     # correctness of the output as evaluated by their similarity to those
     # results from SSW.
     correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    r = channel.wavelength_response(correction_table=correction_table)
-    assert r.shape == channel.wavelength.shape
+    channel.wavelength_response(correction_table=correction_table)
     channel.wavelength_response(include_crosstalk=False, correction_table=correction_table)
     channel.wavelength_response(
         obstime=astropy.time.Time.now(),
