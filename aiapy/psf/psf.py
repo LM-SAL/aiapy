@@ -7,6 +7,7 @@ import numpy as np
 import astropy.units as u
 
 from sunpy import log
+from sunpy.util.decorators import deprecated
 
 from aiapy.util.decorators import validate_channel
 
@@ -17,7 +18,7 @@ try:
 except ImportError:
     HAS_CUPY = False
 
-__all__ = ["_psf", "filter_mesh_parameters", "psf"]
+__all__ = ["_psf", "calculate_psf", "filter_mesh_parameters", "psf"]
 
 
 def filter_mesh_parameters(*, use_preflightcore=False):
@@ -56,7 +57,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
 
     See Also
     --------
-    psf : Calculate the composite point spread function
+    `calculate_psf` : Calculate the composite point spread function
 
     Notes
     -----
@@ -174,7 +175,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
 
 @u.quantity_input
 @validate_channel("channel", valid_channels=[94, 131, 171, 193, 211, 304, 335] * u.angstrom)
-def psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
+def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
     r"""
     Calculate the composite PSF for a given channel, including diffraction and
     core effects.
@@ -328,3 +329,19 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False, use_gpu=Tru
     # Contribution from core
     psf_core = np.exp(-width_x * (x - 0.5 * nx - 0.5) ** 2 - width_y * (y - 0.5 * ny - 0.5) ** 2)
     return (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()
+
+
+@deprecated("1.0", alternative="calculate_psf")
+@u.quantity_input
+def psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_orders=None, use_gpu=True):
+    """
+    This function is deprecated.
+
+    Use `aiapy.psf.calculate_psf` instead.
+    """
+    return calculate_psf(
+        channel,
+        use_preflightcore=use_preflightcore,
+        diffraction_orders=diffraction_orders,
+        use_gpu=use_gpu,
+    )

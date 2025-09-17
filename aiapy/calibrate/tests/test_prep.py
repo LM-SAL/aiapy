@@ -83,6 +83,7 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map) -> None:
         register(non_sdo_map)
 
 
+@pytest.mark.filterwarnings("ignore::ResourceWarning")
 def test_register_level_15(lvl_15_map) -> None:
     with pytest.warns(
         AIApyUserWarning,
