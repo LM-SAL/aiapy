@@ -9,7 +9,7 @@ import astropy.units as u
 from sunpy import log
 from sunpy.util.decorators import deprecated
 
-from aiapy.util.decorators import validate_channel
+from aiapy.utils.decorators import validate_channel
 
 try:
     import cupy

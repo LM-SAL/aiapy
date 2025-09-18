@@ -13,9 +13,9 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.util import _select_epoch_from_correction_table
-from aiapy.util import AIApyUserWarning
-from aiapy.util.decorators import validate_channel
+from aiapy.calibrate.utils import _select_epoch_from_correction_table
+from aiapy.utils import AIApyUserWarning
+from aiapy.utils.decorators import validate_channel
 
 __all__ = ["correct_degradation", "degradation", "register"]
 
@@ -130,7 +130,7 @@ def correct_degradation(smap, *, correction_table):
         Map to be corrected.
     correction_table : `~astropy.table.Table`
         Table of correction parameters.
-        You can get this table by calling `aiapy.calibrate.util.get_correction_table`.
+        You can get this table by calling `aiapy.calibrate.utils.get_correction_table`.
 
     Returns
     -------
@@ -192,7 +192,7 @@ def degradation(
         Observation time.
     correction_table : `~astropy.table.Table`
         Table of correction parameters.
-        You can get this table by calling `aiapy.calibrate.util.get_correction_table`.
+        You can get this table by calling `aiapy.calibrate.utils.get_correction_table`.
 
     Returns
     -------
@@ -201,7 +201,7 @@ def degradation(
 
     See Also
     --------
-    aiapy.calibrate.util.get_correction_table
+    aiapy.calibrate.utils.get_correction_table
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """

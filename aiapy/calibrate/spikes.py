@@ -14,8 +14,8 @@ from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
 
-from aiapy.util import AIApyUserWarning
-from aiapy.util.net import _get_data_from_jsoc
+from aiapy.utils import AIApyUserWarning
+from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = ["fetch_spikes", "respike"]
 

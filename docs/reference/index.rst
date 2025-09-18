@@ -11,4 +11,4 @@ API reference
    calibrate
    psf
    response
-   util
+   utils

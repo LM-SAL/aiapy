@@ -5,7 +5,7 @@ import sunpy.data.test
 import sunpy.map
 
 import aiapy.psf
-from aiapy.util import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning
 
 
 def test_deconvolve(aia_171_map) -> None:

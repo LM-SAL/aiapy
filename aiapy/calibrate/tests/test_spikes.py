@@ -10,7 +10,7 @@ import sunpy.map
 from sunpy.map.mapbase import PixelPair
 
 from aiapy.calibrate import fetch_spikes, respike
-from aiapy.util import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning
 
 
 @pytest.fixture

@@ -6,4 +6,4 @@ Calibration (``aiapy.calibrate``)
     :no-inheritance-diagram:
     :no-heading:
 
-.. automodapi:: aiapy.calibrate.util
+.. automodapi:: aiapy.calibrate.utils

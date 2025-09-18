@@ -16,7 +16,7 @@ from sunpy.net import Fido
 from sunpy.net import attrs as a
 
 from aiapy.calibrate import degradation
-from aiapy.calibrate.util import get_correction_table
+from aiapy.calibrate.utils import get_correction_table
 
 # This lets you pass `astropy.time.Time` objects directly to matplotlib
 time_support(format="jyear")
