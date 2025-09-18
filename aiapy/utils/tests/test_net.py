@@ -1,6 +1,6 @@
 import pytest
 
-from aiapy.util.net import _get_data_from_jsoc
+from aiapy.utils.net import _get_data_from_jsoc
 
 
 @pytest.mark.remote_data

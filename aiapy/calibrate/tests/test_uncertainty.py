@@ -6,7 +6,7 @@ import pytest
 import astropy.units as u
 
 from aiapy.calibrate import estimate_error
-from aiapy.calibrate.util import get_error_table
+from aiapy.calibrate.utils import get_error_table
 from aiapy.conftest import CHANNELS, RANDOM_GENERATOR
 from aiapy.tests.data import get_test_filepath
 

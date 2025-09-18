@@ -9,9 +9,6 @@ build:
       - git fetch --unshallow || true
     pre_install:
       - git update-index --assume-unchanged .rtd-environment.yml docs/conf.py
-    post_install:
-    # Pin numpy for now
-     - pip install -U "numpy<2.3.0"
 
 conda:
   environment: .rtd-environment.yml

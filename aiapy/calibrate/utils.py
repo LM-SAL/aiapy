@@ -20,8 +20,8 @@ from sunpy.time import TimeRange
 
 from aiapy import _SSW_MIRRORS
 from aiapy.data._manager import manager
-from aiapy.util.decorators import validate_channel
-from aiapy.util.net import _get_data_from_jsoc
+from aiapy.utils.decorators import validate_channel
+from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = [
     "get_correction_table",

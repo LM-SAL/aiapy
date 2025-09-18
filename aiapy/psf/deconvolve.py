@@ -17,7 +17,7 @@ except ImportError:
     HAS_CUPY = False
 
 from aiapy.psf.psf import calculate_psf
-from aiapy.util import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning
 
 __all__ = ["deconvolve"]
 

@@ -8,7 +8,7 @@ from astropy.time import Time
 
 from sunpy.time import TimeRange
 
-from aiapy.calibrate.util import (
+from aiapy.calibrate.utils import (
     _select_epoch_from_correction_table,
     get_correction_table,
     get_error_table,

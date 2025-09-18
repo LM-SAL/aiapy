@@ -9,7 +9,7 @@ import numpy as np
 
 import astropy.units as u
 
-from aiapy.util.exceptions import AIApyUserWarning
+from aiapy.utils.exceptions import AIApyUserWarning
 
 __all__ = ["update_pointing"]
 
@@ -40,7 +40,7 @@ def update_pointing(smap, *, pointing_table):
         Input map.
     pointing_table : `~astropy.table.QTable`
         Table of pointing information.
-        You can get this table by calling `aiapy.calibrate.util.get_pointing_table`.
+        You can get this table by calling `aiapy.calibrate.utils.get_pointing_table`.
 
     Returns
     -------
@@ -49,7 +49,7 @@ def update_pointing(smap, *, pointing_table):
 
     See Also
     --------
-    `aiapy.calibrate.util.get_pointing_table`
+    `aiapy.calibrate.utils.get_pointing_table`
     """
     # NOTE: Warn user if it looks like they may have changed the resolution of their map
     # as this will cause the pointing update to be incorrect. This is not a strict check

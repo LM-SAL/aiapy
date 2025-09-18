@@ -15,10 +15,10 @@ from sunpy.util.metadata import MetaDict
 
 from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
-from aiapy.calibrate.util import _select_epoch_from_correction_table
+from aiapy.calibrate.utils import _select_epoch_from_correction_table
 from aiapy.data._manager import manager
-from aiapy.util import telescope_number
-from aiapy.util.decorators import validate_channel
+from aiapy.utils import telescope_number
+from aiapy.utils.decorators import validate_channel
 
 __all__ = ["Channel"]
 
@@ -310,7 +310,7 @@ class Channel:
             The time of the observation.
         correction_table : `astropy.table.QTable`
             Table of correction parameters.
-            See `aiapy.calibrate.util.get_correction_table` for more information.
+            See `aiapy.calibrate.utils.get_correction_table` for more information.
 
         Returns
         -------
@@ -318,7 +318,7 @@ class Channel:
 
         See Also
         --------
-        aiapy.calibrate.util.get_correction_table
+        aiapy.calibrate.utils.get_correction_table
         """
         table = _select_epoch_from_correction_table(
             self.channel,
@@ -398,7 +398,7 @@ class Channel:
             If true, include the effect of crosstalk between channels that share a telescope
         correction_table : `~astropy.table.Table`
             Table of correction parameters.
-            See `aiapy.calibrate.util.get_correction_table` for more information.
+            See `aiapy.calibrate.utils.get_correction_table` for more information.
 
         Returns
         -------

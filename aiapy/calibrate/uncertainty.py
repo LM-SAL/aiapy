@@ -6,8 +6,8 @@ import numpy as np
 
 import astropy.units as u
 
-from aiapy.util import telescope_number
-from aiapy.util.decorators import validate_channel
+from aiapy.utils import telescope_number
+from aiapy.utils.decorators import validate_channel
 
 __all__ = ["estimate_error"]
 
@@ -55,7 +55,7 @@ def estimate_error(
     include_chianti : `bool`, optional
         If True, include the atomic data errors from CHIANTI in the uncertainty.
     error_table : `~astropy.table.QTable`
-        Error table to use. Use `~aiapy.calibrate.util.get_error_table` to get the
+        Error table to use. Use `~aiapy.calibrate.utils.get_error_table` to get the
         appropriate error table.
 
     Returns
@@ -64,7 +64,7 @@ def estimate_error(
 
     See Also
     --------
-    aiapy.calibrate.util.get_error_table
+    aiapy.calibrate.utils.get_error_table
     """
     counts = np.atleast_1d(counts)
     error_table = error_table[error_table["WAVELNTH"] == channel]

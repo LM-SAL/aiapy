@@ -11,9 +11,9 @@ import sunpy.data.test
 from sunpy.map import Map
 
 from aiapy.calibrate import correct_degradation, degradation, register
-from aiapy.calibrate.util import get_correction_table
+from aiapy.calibrate.utils import get_correction_table
 from aiapy.tests.data import get_test_filepath
-from aiapy.util import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning
 
 
 @pytest.fixture

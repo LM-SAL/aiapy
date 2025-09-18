@@ -10,8 +10,8 @@ from astropy.time import Time
 
 from sunpy.time import parse_time
 
-from aiapy.util.decorators import validate_channel
-from aiapy.util.net import _get_data_from_jsoc
+from aiapy.utils.decorators import validate_channel
+from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = ["check_quality_flag", "sdo_location", "telescope_number"]
 

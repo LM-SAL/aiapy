@@ -4,7 +4,7 @@
 Bug Fixes
 ---------
 
-- Added support for `sunpy.time.TimeRange` for `aiapy.calibrate.util.get_pointing_table`. (`#360 <https://github.com/LM-SAL/aiapy/pull/360>`__)
+- Added support for `sunpy.time.TimeRange` for `aiapy.calibrate.utils.get_pointing_table`. (`#360 <https://github.com/LM-SAL/aiapy/pull/360>`__)
 
 
 0.10.1 (2025-02-12)
@@ -13,7 +13,7 @@ Bug Fixes
 New Features
 ------------
 
-- Added a function `~aiapy.util.check_quality_flag` to interpret quality flags from ``QUALITY`` keyword. (`#350 <https://github.com/LM-SAL/aiapy/pull/350>`__)
+- Added a function `~aiapy.utils.check_quality_flag` to interpret quality flags from ``QUALITY`` keyword. (`#350 <https://github.com/LM-SAL/aiapy/pull/350>`__)
 
 
 0.10.0 (2025-01-08)
@@ -28,20 +28,20 @@ Breaking Changes
   In an effort to enable other sources of data to be provided to the broken functions, the following breaking changes have been made:
 
   1. `aiapy.calibrate.correct_degradation`: The "calibration_version" keyword has been removed and  "correction_table" is now a required argument.
-     To get a correction table, one can use the `aiapy.calibrate.util.get_correction_table`.
+     To get a correction table, one can use the `aiapy.calibrate.utils.get_correction_table`.
      This allows one to select between, JSOC, SSW, or a custom correction table.
      For SSW, the correction table will be the latest version of the SSW correction table (V10).
      If you want to use the JSOC, you can pass in "jsoc" as a string argument.
 
   2. `aiapy.calibrate.estimate_error`: "error_table" is now a required argument.
-     To get the error table, one can use the `aiapy.calibrate.util.get_error_table`.
+     To get the error table, one can use the `aiapy.calibrate.utils.get_error_table`.
      By default, this function will fetch the most recent version of the error table (V3) from SSW.
 
   3. `aiapy.response.channel.Channel.eve_correction`: "correction_table" is now a required argument.
-      As in `aiapy.calibrate.correct_degradation`, one can use the `aiapy.calibrate.util.get_correction_table` to get the correction table.
+      As in `aiapy.calibrate.correct_degradation`, one can use the `aiapy.calibrate.utils.get_correction_table` to get the correction table.
 
   4. `aiapy.calibrate.update_pointing`: "pointing_table" is now a required argument.
-     To get the pointing table, one can use `aiapy.calibrate.util.get_pointing_table`.
+     To get the pointing table, one can use `aiapy.calibrate.utils.get_pointing_table`.
      This function now has a "source" keyword which can be used to select between "JSOC" (plus a start and end time) and "LMSAL" to get a copy of the pointing information dated from 11/20/2024 stored on LMSAL servers.
 
   Note that many of the files from SSW are not updated with any frequency and provide worse results than using the data from the JSOC. (`#346 <https://github.com/LM-SAL/aiapy/pull/346>`__)
@@ -83,7 +83,7 @@ Breaking Changes
   This means that you can no longer pass them as positional arguments. (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
 - Removed ``setup.cfg`` and ``setup.py`` files, this means you will need to use a modern version of pip (23.0 or above) to install this package now. (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
 - Increased the minimum version of Python to 3.10 (`#313 <https://github.com/LM-SAL/aiapy/pull/313>`__)
-- Downgraded warning for Multiple Valid Epochs (`aiapy.util.util._select_epoch_from_correction_table`) to a logging debug message. (`#318 <https://github.com/LM-SAL/aiapy/pull/318>`__)
+- Downgraded warning for Multiple Valid Epochs (`aiapy.utils.utils._select_epoch_from_correction_table`) to a logging debug message. (`#318 <https://github.com/LM-SAL/aiapy/pull/318>`__)
 
 
 New Features
@@ -236,7 +236,7 @@ Internal Changes
 Bug Fixes
 ---------
 
-- Fixed a bug in the units on the table returned by `aiapy.calibrate.util.get_pointing_table`.
+- Fixed a bug in the units on the table returned by `aiapy.calibrate.utils.get_pointing_table`.
   The ``X0`` and ``Y0`` columns were incorrectly being assigned units of arcseconds instead
   of pixels. (`#132 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/132>`__)
 - Fixed an off-by-one bug in `aiapy.calibrate.update_pointing` where the
@@ -268,9 +268,9 @@ Breaking Changes
 New Features
 ------------
 
-- Added a new function :func:`aiapy.util.telescope_number` that returns the associated
+- Added a new function :func:`aiapy.utils.telescope_number` that returns the associated
   telscope number for a given filter wavelength. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
-- Added a new function :func:`aiapy.calibrate.util.get_error_table` to fetch and parse the
+- Added a new function :func:`aiapy.calibrate.utils.get_error_table` to fetch and parse the
   table with the associate error parameters.
   This is used primarily in :func:`aiapy.calibrate.estimate_error`. (`#116 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/116>`__)
 - Added a new function :func:`aiapy.calibrate.estimate_error` to calculate the error for
@@ -305,7 +305,7 @@ Features
 Features
 --------
 
-- Added a function (:func:`aiapy.util.sdo_location`) to obtain the SDO location at a given time. (`#57 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/57>`__)
+- Added a function (:func:`aiapy.utils.sdo_location`) to obtain the SDO location at a given time. (`#57 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/57>`__)
 - Added a function (:func:`aiapy.calibrate.respike`) for reinserting hot pixels into level 1 images. (`#62 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/62>`__)
 - Updated default calibration version to 10.
   Added test for version 10 (`#90 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/90>`__)
@@ -316,7 +316,7 @@ Bug Fixes
 - Updated default calibration version number for degradation correction.
   Added tests for multiple calibration versions (`#74 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/74>`__)
 - Fixed a bug where an out of date calibration epoch was used if there were older duplicate versions available in the same epoch. (`#90 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/90>`__)
-- `aiapy.calibrate.util.get_pointing_table` now raises a more user-friendly `RuntimeError` if no pointing information can be found during the requested times.
+- `aiapy.calibrate.utils.get_pointing_table` now raises a more user-friendly `RuntimeError` if no pointing information can be found during the requested times.
   Previously it would raise a `KeyError`. (`#91 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/91>`__)
 - `aiapy.calibrate.update_pointing` now searches 12 hours either side of the map date for pointing information.
   This allows for some very rare instances where more than 3 hours elapses between pointing information updates. (`#91 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/91>`__)
@@ -345,7 +345,7 @@ Features
   This makes it easier to compute the channel degradation over long intervals. (`#80 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/80>`__)
 - Citation information for `aiapy` is now available from ``aiapy.__citation__``. (`#82 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/82>`__)
 - The pointing table can now be passed in as a keyword argument to :func:`aiapy.calibrate.update_pointing`.
-  Added a :func:`aiapy.calibrate.util.get_pointing_table` to retrieve the 3-hour pointing table from JSOC over a given time interval. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
+  Added a :func:`aiapy.calibrate.utils.get_pointing_table` to retrieve the 3-hour pointing table from JSOC over a given time interval. (`#84 <https://gitlab.com/LMSAL_HUB/aia_hub/aiapy/-/merge_requests/84>`__)
 
 Bug Fixes
 ---------

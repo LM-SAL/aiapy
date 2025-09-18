@@ -18,7 +18,7 @@ import sunpy.map
 
 import aiapy.data.sample as sample_data
 from aiapy.calibrate import register, update_pointing
-from aiapy.calibrate.util import get_pointing_table
+from aiapy.calibrate.utils import get_pointing_table
 
 ###############################################################################
 # Performing multi-wavelength analysis on level 1 data can be problematic as
@@ -46,7 +46,7 @@ aia_map = sunpy.map.Map(sample_data.AIA_094_IMAGE)
 # The first step in this process is to update the metadata of the map to the
 # most recent pointing using  the `aiapy.calibrate.update_pointing` function.
 # One needs to get the pointing information from the JSOC using the
-# `aiapy.calibrate.util.get_pointing_table` function.
+# `aiapy.calibrate.utils.get_pointing_table` function.
 
 # Make range wide enough to get closest 3-hour pointing
 pointing_table = get_pointing_table("JSOC", time_range=(aia_map.date - 12 * u.h, aia_map.date + 12 * u.h))
