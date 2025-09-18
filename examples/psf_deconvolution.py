@@ -35,7 +35,7 @@ import aiapy.psf
 
 aia_map = sunpy.map.Map(sample_data.AIA_171_IMAGE)
 
-fig = plt.figure()
+fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(111, projection=aia_map)
 aia_map.plot(
     axes=ax,
@@ -60,16 +60,17 @@ psf = aiapy.psf.calculate_psf(aia_map.wavelength)
 
 fov = 500
 lc_x, lc_y = psf.shape[0] // 2 - fov // 2, psf.shape[1] // 2 - fov // 2
-fig = plt.figure()
+fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(111)
 ax.imshow(
     psf[lc_x : lc_x + fov, lc_y : lc_y + fov],
     norm=ImageNormalize(vmin=1e-8, vmax=1e-3, stretch=LogStretch()),
     origin="lower",
 )
-ax.set_title("PSF")
+ax.set_title(f"AIA {aia_map.wavelength.value:.0f} Å PSF")
 ax.set_xlabel("Pixels")
 ax.set_ylabel("Pixels")
+plt.colorbar(ax.images[0], ax=ax, label="Normalized Intensity")
 
 ###############################################################################
 # Now that we've downloaded our image and computed the PSF, we can deconvolve
@@ -87,7 +88,7 @@ aia_map_deconvolved = aiapy.psf.deconvolve(aia_map, psf=psf)
 ###############################################################################
 # Let's compare the convolved and deconvolved images.
 
-fig = plt.figure()
+fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(121, projection=aia_map)
 norm = ImageNormalize(vmin=0, vmax=1.5e4, stretch=AsinhStretch(0.01))
 aia_map.plot(axes=ax, norm=norm)
@@ -117,7 +118,7 @@ aia_map_deconvolved_sub = aia_map_deconvolved.submap(
     top_right=SkyCoord(*right_corner, frame=aia_map_deconvolved.coordinate_frame),
 )
 
-fig = plt.figure()
+fig = plt.figure(figsize=(12, 8))
 
 ax = fig.add_subplot(121, projection=aia_map_sub)
 aia_map_sub.plot(axes=ax, norm=norm)
@@ -129,5 +130,6 @@ ax.set_title("Deconvolved")
 ax.coords[0].set_axislabel(" ")
 ax.coords[1].set_axislabel(" ")
 ax.coords[1].set_ticklabel_visible(visible=False)
+fig.tight_layout()
 
 plt.show()

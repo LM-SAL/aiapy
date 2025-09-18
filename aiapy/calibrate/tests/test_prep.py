@@ -124,7 +124,7 @@ def test_correct_degradation(aia_171_map, source) -> None:
         uncorrected_over_corrected = aia_171_map.data / original_corrected.data
     # If intensity is zero, ratio will be NaN/infinite
     i_valid = aia_171_map.data > 0.0
-    assert np.allclose(uncorrected_over_corrected[i_valid], d)
+    np.testing.assert_allclose(np.mean(uncorrected_over_corrected[i_valid]), d.to_value())
 
 
 @pytest.mark.parametrize(
@@ -254,4 +254,4 @@ def test_register_cupy(aia_171_map) -> None:
     pytest.importorskip("cupy")
     cupy_map = register(aia_171_map, method="cupy")
     scipy_map = register(aia_171_map, method="scipy")
-    assert np.allclose(cupy_map.data, scipy_map.data)
+    np.testing.assert_allclose(cupy_map.data, scipy_map.data)

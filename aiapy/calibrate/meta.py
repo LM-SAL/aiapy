@@ -113,7 +113,7 @@ def update_pointing(smap, *, pointing_table):
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
     crota2 = pointing_table[f"A_{w_str}_INSTROT"][i_nearest] + smap.meta["SAT_ROT"] * u.degree
-    crota2 = crota2.to_value("deg")
+    crota2 = crota2.to_value("degree")
     # Update headers
     for key, value in [
         ("crpix1", crpix1),

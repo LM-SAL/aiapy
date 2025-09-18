@@ -39,7 +39,7 @@ def test_respike_meta(respiked_map) -> None:
 @pytest.mark.remote_data
 def test_fetch_with_prefetched_spikes(aia_193_level1_map, respiked_map, spikes) -> None:
     respiked_map_prefetched = respike(aia_193_level1_map, spikes=spikes)
-    assert np.allclose(respiked_map.data, respiked_map_prefetched.data)
+    np.testing.assert_allclose(respiked_map.data, respiked_map_prefetched.data)
 
 
 @pytest.mark.remote_data
@@ -56,7 +56,7 @@ def test_cutout(respiked_map, aia_193_level1_map) -> None:
             top_right=SkyCoord(*trc, frame=aia_193_level1_map.coordinate_frame),
         ),
     )
-    assert np.allclose(respiked_map_cutout.data, cutout_map_respiked.data)
+    np.testing.assert_allclose(respiked_map_cutout.data, cutout_map_respiked.data)
 
 
 @pytest.mark.remote_data

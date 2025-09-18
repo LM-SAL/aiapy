@@ -47,7 +47,7 @@ def test_fix_pointing(aia_193_level1_map, pointing_table) -> None:
     # these keys are not modified since the existing metadata and the pointing table
     # for this time are the same.
     new_pointing_table = pointing_table.copy()
-    new_pointing_table["A_193_INSTROT"] = 0 * u.deg
+    new_pointing_table["A_193_INSTROT"] = 0 * u.degree
     new_pointing_table["A_193_IMSCALE"] = 1.2 * u.arcsec / u.pixel
     aia_map_updated = update_pointing(aia_193_level1_map, pointing_table=new_pointing_table)
     for k in keys:

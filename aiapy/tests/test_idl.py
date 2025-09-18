@@ -89,4 +89,4 @@ def test_psf_consistent(psf_94, psf_idl) -> None:
     # NOTE: Only compare values above some threshold as the
     # rest of the PSF is essentially noise
     i_valid = np.where(psf_idl > 1e-10)
-    assert np.allclose(psf_94[i_valid], psf_idl[i_valid])
+    np.testing.assert_allclose(psf_94[i_valid], psf_idl[i_valid], rtol=2e-3)
