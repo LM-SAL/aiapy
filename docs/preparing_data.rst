@@ -29,7 +29,7 @@ If you want to do any additional data processing steps (e.g., PSF deconvolution)
    * Level 1.5, in its typical usage, only includes steps 1 and 4.
      Unless stated otherwise, any science publication mentioning level 1.5 AIA data does not include steps 2, 3, 5 and 6.
    * The PSF functions are defined on the level 1 pixel grid so PSF deconvolution **MUST** be done on the level 1 data products (i.e., before image registration).
-     This is described in the PSF gallery example :ref:`sphx_glr_generated_gallery_skip_psf_deconvolution.py`.
+     This is described in the PSF gallery example :ref:`sphx_glr_generated_gallery_psf_deconvolution.py`.
    * The pointing update should be done prior to image registration as the updated keywords, namely ``CRPIX1`` and ``CRPIX2``, are used in the image registration step.
    * The exposure time normalization and degradation correction (`aiapy.calibrate.correct_degradation`) operations are just scalar multiplication and are thus linear such that their ordering is inconsequential.
    * Exposure time normalization can be performed by simply dividing a map by the exposure time property, ``my_map / my_map.exposure_time``.
