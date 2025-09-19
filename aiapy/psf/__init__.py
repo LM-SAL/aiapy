@@ -13,7 +13,6 @@ try:
     import jax.numpy as np
     from jax import jit, lax
 
-    _jit_shape = partial(jit, static_argnames=("shape",))
     _jit_iterations = partial(jit, static_argnames=("iterations",))
 
 except ImportError:
@@ -33,10 +32,8 @@ except ImportError:
 
     lax = _LaxShim()
 
-    def _jit_shape(fun=None, **kwargs):  # NOQA: ARG001
+    def _jit_iterations(fun=None, **kwargs):  # NOQA: ARG001
         return fun
-
-    _jit_iterations = _jit_shape
 
 
 from .deconvolve import *

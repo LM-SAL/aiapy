@@ -2,6 +2,8 @@
 Calculate the point spread function (PSF) for the AIA telescopes.
 """
 
+from numpy import asarray
+
 import astropy.units as u
 
 from sunpy.util.decorators import deprecated
@@ -111,51 +113,46 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
             AIA PSF Characterization and Deconvolution
             <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`__
     """
-    meshinfo = filter_mesh_parameters(use_preflightcore=use_preflightcore)
-    meshinfo = meshinfo[channel]
-    angles_entrance = meshinfo["angle_arm"]
-    angles_focal_plane = u.Quantity([45.0, -45.0], "deg")
-    if diffraction_orders is None:
-        diffraction_orders = np.arange(-100, 101, 1)
-    psf_entrance = _psf(meshinfo, angles_entrance, diffraction_orders)
-    psf_focal_plane = _psf(
-        meshinfo,
-        angles_focal_plane,
-        diffraction_orders,
-        focal_plane=True,
-    )
+    mesh_info = filter_mesh_parameters(use_preflightcore=use_preflightcore)[channel]
+    diffraction_orders = np.arange(-100, 101, 1) if diffraction_orders is None else np.asarray(diffraction_orders)
+    psf_e = _psf(mesh_info, mesh_info["angle_arm"], diffraction_orders, focal_plane=False)
+    psf_f = _psf(mesh_info, u.Quantity([45.0, -45.0], "deg"), diffraction_orders, focal_plane=True)
     # Composite PSF
-    psf = abs(np.fft.fft2(np.fft.fft2(psf_focal_plane) * np.fft.fft2(psf_entrance)))
-    # Center PSF in the middle of the image
-    psf = np.roll(np.roll(psf, psf.shape[1] // 2, axis=1), psf.shape[0] // 2, axis=0)
-    # Normalize by total number of pixels
-    return psf / (psf.shape[0] * psf.shape[1])
+    psf = np.abs(np.fft.fft2(np.fft.fft2(psf_e) * np.fft.fft2(psf_f)))
+    # Center PSF at pixel (0,0)
+    psf = np.fft.fftshift(psf)
+    # Normalize by total number of pixels and always return a numpy array
+    return asarray(psf / (psf.shape[0] * psf.shape[1]))
 
 
-def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
-    psf = np.zeros((4096, 4096))
-    nx, ny = psf.shape
-    width_x = meshinfo["width"].to_value()
-    width_y = meshinfo["width"].to_value()
-    # x and y position grids
-    x = np.outer(np.ones(ny), np.arange(nx) + 0.5)
-    y = np.outer(np.arange(ny) + 0.5, np.ones(nx))
-    area_not_mesh = 0.82  # fractional area not covered by the mesh
-    spacing = meshinfo["spacing_fp"] if focal_plane else meshinfo["spacing_e"]
-    mesh_ratio = (meshinfo["mesh_pitch"] / meshinfo["mesh_width"]).to_value()
-    spacing_x = spacing * np.cos(angles.to_value("radian"))
-    spacing_y = spacing * np.sin(angles.to_value("radian"))
+def _psf(mesh_info, angles, diffraction_orders, *, focal_plane=False):
+    ny, nx = 4096, 4096
+    width = mesh_info["width"].to_value("pixel")
+    spacing = (mesh_info["spacing_fp"] if focal_plane else mesh_info["spacing_e"]).to_value("pixel")
+    mesh_ratio = (mesh_info["mesh_pitch"] / mesh_info["mesh_width"]).to_value()
+    area_not_mesh = 0.82
+    x = np.arange(nx) + 0.5
+    y = np.arange(ny) + 0.5
+    cx0 = 0.5 * nx + 0.5
+    cy0 = 0.5 * ny + 0.5
+    ang = np.asarray(angles.to_value(u.rad))
+    dxs = spacing * np.cos(ang)
+    dys = spacing * np.sin(ang)
+    psf_spikes = np.zeros((ny, nx))
     for order in diffraction_orders:
         if order == 0:
             continue
-        intensity = np.sinc(order / mesh_ratio) ** 2  # I_0
-        for dx, dy in zip(spacing_x.value, spacing_y.value, strict=True):
-            x_centered = x - (0.5 * nx + dx * order + 0.5)
-            y_centered = y - (0.5 * ny + dy * order + 0.5)
-            psf += np.exp(-width_x * x_centered * x_centered - width_y * y_centered * y_centered) * intensity
-    # Contribution from core
-    psf_core = np.exp(-width_x * (x - 0.5 * nx - 0.5) ** 2 - width_y * (y - 0.5 * ny - 0.5) ** 2)
-    return (1 - area_not_mesh) * psf / psf.sum() + area_not_mesh * psf_core / psf_core.sum()
+        i0 = np.sinc(order / mesh_ratio) ** 2
+        for dx, dy in zip(dxs, dys, strict=True):
+            gx = np.exp(-width * (x - (cx0 + dx * order)) ** 2)
+            gy = np.exp(-width * (y - (cy0 + dy * order)) ** 2)
+            psf_spikes = psf_spikes + i0 * (gy[:, None] * gx[None, :])
+    gx0 = np.exp(-width * (x - cx0) ** 2)
+    gy0 = np.exp(-width * (y - cy0) ** 2)
+    psf_core = gy0[:, None] * gx0[None, :]
+    psf_spikes = psf_spikes / psf_spikes.sum()
+    psf_core = psf_core / psf_core.sum()
+    return (1.0 - area_not_mesh) * psf_spikes + area_not_mesh * psf_core
 
 
 @deprecated("0.11.0", alternative="calculate_psf")
