@@ -11,9 +11,10 @@ try:
     jax.config.update("jax_enable_x64", True)  # NOQA: FBT003
 
     import jax.numpy as np
-    from jax import jit, lax
+    from jax import jit as jax_jit
+    from jax import lax
 
-    _jit_iterations = partial(jit, static_argnames=("iterations",))
+    _jit_iterations = partial(jax_jit, static_argnames=("iterations",))
 
 except ImportError:
     import numpy as np  # NOQA: F401
@@ -32,6 +33,9 @@ except ImportError:
 
     lax = _LaxShim()
 
+    def jax_jit(func):
+        return func
+
     def _jit_iterations(fun=None, **kwargs):  # NOQA: ARG001
         return fun
 
@@ -39,3 +43,5 @@ except ImportError:
 from .deconvolve import *
 from .psf import *
 from .utils import *
+
+__all__ = ["calculate_psf", "deconvolve", "filter_mesh_parameters", "psf"]  # NOQA: F405

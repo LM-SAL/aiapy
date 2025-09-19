@@ -8,7 +8,7 @@ import astropy.units as u
 
 from sunpy.util.decorators import deprecated
 
-from aiapy.psf import np
+from aiapy.psf import jax_jit, lax, np
 from aiapy.psf.utils import filter_mesh_parameters
 from aiapy.utils.decorators import validate_channel
 
@@ -125,28 +125,47 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     return asarray(psf / (psf.shape[0] * psf.shape[1]))
 
 
-def _psf(mesh_info, angles, diffraction_orders, *, focal_plane=False):
+def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
     ny, nx = 4096, 4096
-    width = mesh_info["width"].to_value("pixel")
-    spacing = (mesh_info["spacing_fp"] if focal_plane else mesh_info["spacing_e"]).to_value("pixel")
-    mesh_ratio = (mesh_info["mesh_pitch"] / mesh_info["mesh_width"]).to_value()
+    width = meshinfo["width"].to_value("pixel")
+    spacing = (meshinfo["spacing_fp"] if focal_plane else meshinfo["spacing_e"]).to_value("pixel")
+    mesh_ratio = (meshinfo["mesh_pitch"] / meshinfo["mesh_width"]).decompose().value
     area_not_mesh = 0.82
+    # 1-D coordinates and image center
     x = np.arange(nx) + 0.5
     y = np.arange(ny) + 0.5
     cx0 = 0.5 * nx + 0.5
     cy0 = 0.5 * ny + 0.5
+    # Per-angle pixel offsets
     ang = np.asarray(angles.to_value(u.rad))
     dxs = spacing * np.cos(ang)
     dys = spacing * np.sin(ang)
-    psf_spikes = np.zeros((ny, nx))
-    for order in diffraction_orders:
-        if order == 0:
-            continue
-        i0 = np.sinc(order / mesh_ratio) ** 2
-        for dx, dy in zip(dxs, dys, strict=True):
-            gx = np.exp(-width * (x - (cx0 + dx * order)) ** 2)
-            gy = np.exp(-width * (y - (cy0 + dy * order)) ** 2)
-            psf_spikes = psf_spikes + i0 * (gy[:, None] * gx[None, :])
+    orders = np.asarray(diffraction_orders)
+
+    @jax_jit
+    def _spikes_kernel(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0):
+        width = np.asarray(width, dtype=x.dtype)
+        mesh_ratio = np.asarray(mesh_ratio, dtype=x.dtype)
+        cx0 = np.asarray(cx0, dtype=x.dtype)
+        cy0 = np.asarray(cy0, dtype=x.dtype)
+        psf0 = np.zeros((y.shape[0], x.shape[0]), dtype=x.dtype)
+
+        def order_body(i, acc):
+            m = orders[i]
+            i0 = (np.sinc(m / mesh_ratio) ** 2) * (m != 0)
+
+            def angle_body(j, inner):
+                dx, dy = dxs[j], dys[j]
+                gx = np.exp(-width * (x - (cx0 + dx * m)) ** 2)
+                gy = np.exp(-width * (y - (cy0 + dy * m)) ** 2)
+                return inner + i0 * (gy[:, None] * gx[None, :])
+
+            return lax.fori_loop(0, dxs.shape[0], angle_body, acc)
+
+        return lax.fori_loop(0, orders.shape[0], order_body, psf0)
+
+    psf_spikes = _spikes_kernel(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0)
+    # Gaussian core
     gx0 = np.exp(-width * (x - cx0) ** 2)
     gy0 = np.exp(-width * (y - cy0) ** 2)
     psf_core = gy0[:, None] * gx0[None, :]
