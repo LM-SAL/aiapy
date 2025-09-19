@@ -29,11 +29,8 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
 
     .. note::
 
-        If the `~cupy` package is installed
-        and your machine has an NVIDIA GPU, the PSF calculation will
-        automatically be accelerated with CUDA. This can lead to
-        several orders of magnitude in performance increase compared to
-        pure `numpy` on a CPU.
+        If the jax package is installed it will be used to accelerate the computation.
+        jax can use CPUs or GPUs, `see their documentation for instructions <https://docs.jax.dev/en/latest/installation.html>`__.
 
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,
