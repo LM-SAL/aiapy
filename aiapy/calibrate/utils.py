@@ -62,7 +62,7 @@ def _fetch_error_table_latest():
     return manager.get("error_table_latest")
 
 
-def get_correction_table(source):
+def get_correction_table(source="SSW"):
     """
     Return table of degradation correction factors.
 
@@ -198,7 +198,7 @@ def _get_time(time_range: Time | TimeRange | list | tuple):
     return start, end
 
 
-def get_pointing_table(source, *, time_range=None):
+def get_pointing_table(source="lmsal", time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 

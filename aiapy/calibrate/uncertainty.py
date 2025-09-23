@@ -6,6 +6,7 @@ import numpy as np
 
 import astropy.units as u
 
+from aiapy.calibrate.utils import get_error_table
 from aiapy.utils import telescope_number
 from aiapy.utils.decorators import validate_channel
 
@@ -22,7 +23,7 @@ def estimate_error(
     include_preflight=False,
     include_eve=False,
     include_chianti=False,
-    error_table,
+    error_table=None,
     **kwargs,
 ) -> u.DN / u.pix:
     """
@@ -67,6 +68,8 @@ def estimate_error(
     aiapy.calibrate.utils.get_error_table
     """
     counts = np.atleast_1d(counts)
+    if error_table is None:
+        error_table = get_error_table()
     error_table = error_table[error_table["WAVELNTH"] == channel]
     # Shot noise
     # NOTE: pixel and photon are "unitless" so we multiply/divide by these
