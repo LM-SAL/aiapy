@@ -83,10 +83,10 @@ def test_psf_consistent(psf_94, psf_idl) -> None:
 
     **WARNING** This test will take a very long time to run.
     """
-    # NOTE: The IDL and Python PSF functions have been found to
-    # agree within 0.2% for all points along the PSF arms for
-    # both the preflight and non-preflight cases.
     # NOTE: Only compare values above some threshold as the
     # rest of the PSF is essentially noise
     i_valid = np.where(psf_idl > 1e-10)
+    # NOTE: The IDL and Python PSF functions have been found to
+    # agree within 0.2% for all points along the PSF arms for
+    # both the preflight and non-preflight cases.
     np.testing.assert_allclose(psf_94[i_valid], psf_idl[i_valid], rtol=2e-3)
