@@ -198,7 +198,7 @@ def _get_time(time_range: Time | TimeRange | list | tuple):
     return start, end
 
 
-def get_pointing_table(source="lmsal", time_range=None):
+def get_pointing_table(source="jsoc", time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 
