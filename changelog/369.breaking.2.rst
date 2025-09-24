@@ -1,0 +1,4 @@
+Make the ``source`` keyword for :func:`~aiapy.calibrate.utils.get_correction_table` and
+:func:`~aiapy.calibrate.utils.get_pointing_table` optional. The default source for
+:func:`~aiapy.calibrate.utils.get_correction_table` "SSW" is and the default source for
+:func:`~aiapy.calibrate.utils.get_pointing_table` is "jsoc".

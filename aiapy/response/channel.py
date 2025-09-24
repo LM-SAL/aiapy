@@ -15,7 +15,7 @@ from sunpy.util.metadata import MetaDict
 
 from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
-from aiapy.calibrate.utils import _select_epoch_from_correction_table
+from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
 from aiapy.data._manager import manager
 from aiapy.utils import telescope_number
 from aiapy.utils.decorators import validate_channel
@@ -282,7 +282,7 @@ class Channel:
         return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
     @u.quantity_input
-    def eve_correction(self, obstime, correction_table) -> u.dimensionless_unscaled:
+    def eve_correction(self, obstime, correction_table=None) -> u.dimensionless_unscaled:
         r"""
         Correct effective area to give good agreement with full-disk EVE data.
 
@@ -320,6 +320,8 @@ class Channel:
         --------
         aiapy.calibrate.utils.get_correction_table
         """
+        if correction_table is None:
+            correction_table = get_correction_table()
         table = _select_epoch_from_correction_table(
             self.channel,
             obstime,
@@ -363,7 +365,7 @@ class Channel:
         obstime=None,
         include_eve_correction=False,
         include_crosstalk=True,
-        correction_table,
+        correction_table=None,
     ) -> u.DN / u.ph * u.cm**2:
         r"""
         The wavelength response function is the product of the gain and the

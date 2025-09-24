@@ -13,7 +13,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.utils import _select_epoch_from_correction_table
+from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
 from aiapy.utils import AIApyUserWarning
 from aiapy.utils.decorators import validate_channel
 
@@ -115,7 +115,7 @@ def register(smap, *, missing=None, order=3, method="scipy"):
     return newmap
 
 
-def correct_degradation(smap, *, correction_table):
+def correct_degradation(smap, *, correction_table=None):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -155,7 +155,7 @@ def degradation(
     channel: u.angstrom,
     obstime,
     *,
-    correction_table,
+    correction_table=None,
 ) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -205,6 +205,8 @@ def degradation(
     aiapy.response.Channel.wavelength_response
     aiapy.response.Channel.eve_correction
     """
+    if correction_table is None:
+        correction_table = get_correction_table()
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
