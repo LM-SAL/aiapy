@@ -43,7 +43,8 @@ def test_correction_table(source) -> None:
         "EFF_AREA",
         "EFF_WVLN",
     ]
-    assert all(cn in table.colnames for cn in expected_columns)
+    for col in expected_columns:
+        assert col in table.colnames
     assert isinstance(table["T_START"], Time)
     assert isinstance(table["T_STOP"], Time)
 
@@ -63,7 +64,8 @@ def test_correction_table_selection(wavelength) -> None:
         "EFF_AREA",
         "EFF_WVLN",
     ]
-    assert all(cn in table.colnames for cn in expected_columns)
+    for col in expected_columns:
+        assert col in table.colnames
     assert isinstance(table["T_START"], Time)
     assert isinstance(table["T_STOP"], Time)
 
@@ -102,7 +104,8 @@ def test_pointing_table() -> None:
     table_jsoc = get_pointing_table("jsoc", time_range=(t - 3 * u.h, t + 3 * u.h))
     for table in [table_lmsal, table_jsoc]:
         assert isinstance(table, QTable)
-        assert all(cn in table.colnames for cn in expected_columns)
+        for col in expected_columns:
+            assert col in table.colnames
         assert isinstance(table["T_START"], Time)
         assert isinstance(table["T_STOP"], Time)
         # Ensure that none of the pointing parameters are masked columns

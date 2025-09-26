@@ -190,9 +190,9 @@ def degradation(
         Wavelength of the channel.
     obstime : `~astropy.time.Time`
         Observation time.
-    correction_table : `~astropy.table.Table`
+    correction_table : `~astropy.table.Table`, optional
         Table of correction parameters.
-        You can get this table by calling `aiapy.calibrate.utils.get_correction_table`.
+        Defaults to None, which will use the table returned by `aiapy.calibrate.utils.get_correction_table`.
 
     Returns
     -------

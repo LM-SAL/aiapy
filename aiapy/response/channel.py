@@ -308,9 +308,10 @@ class Channel:
         ----------
         obstime : `~astropy.time.Time`
             The time of the observation.
-        correction_table : `astropy.table.QTable`
+        correction_table : `astropy.table.QTable`, optional
             Table of correction parameters.
-            See `aiapy.calibrate.utils.get_correction_table` for more information.
+            Defaults to None, which will use the table returned by
+            `aiapy.calibrate.utils.get_correction_table`.
 
         Returns
         -------
