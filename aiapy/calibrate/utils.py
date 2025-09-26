@@ -198,7 +198,7 @@ def _get_time(time_range: Time | TimeRange | list | tuple):
     return start, end
 
 
-def get_pointing_table(source, time_range=None):
+def get_pointing_table(source="lmsal", time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 
@@ -229,15 +229,13 @@ def get_pointing_table(source, time_range=None):
     .. note::
 
         The LMSAL pointing table is a copy of the JSOC table, synced daily.
-        It was originally designed as a stop-gap measure while the JSOC recovered
-        from its historic water damage.
+        It is possible that the two tables may be out of sync by up to one day.
 
     Parameters
     ----------
     source : str
         Name of the source from which to retrieve the pointing table.
-        Must be one of ``"jsoc"`` or ``"lmsal"``.
-        The case of the input string is ignored.
+        Must be one of ``"jsoc"`` or ``"lmsal"`` and is case-insensitive.
         If you choose ``"jsoc"``, you must also provide ``time_range``.
     time_range : `~astropy.time.Time`, `~sunpy.time.TimeRange`, tuple, list, optional
         Time range for which to retrieve the pointing table.

@@ -113,7 +113,7 @@ def test_register_level_15(lvl_15_map) -> None:
     ],
 )
 def test_correct_degradation(aia_171_map, source) -> None:
-    correction_table = get_correction_table(source=source)
+    correction_table = get_correction_table() if source is None else get_correction_table(source=source)
     original_corrected = correct_degradation(
         aia_171_map,
         correction_table=correction_table,
