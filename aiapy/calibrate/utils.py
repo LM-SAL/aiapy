@@ -39,8 +39,8 @@ _URL_HASH_ERROR_TABLE = {
     )
 }
 _URL_HASH_POINTING_TABLE = (
-    "https://aia.lmsal.com/public/master_aia_pointing3h.csv",
-    "a2c80fa0ea3453c62c91f51df045ae04b771d5cbb51c6495ed56de0da2a5482e",
+    "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv",
+    None,
 )
 _URL_HASH_CORRECTION_TABLE = {
     10: (
@@ -62,7 +62,7 @@ def _fetch_error_table_latest():
     return manager.get("error_table_latest")
 
 
-def get_correction_table(source="SSW"):
+def get_correction_table(source="JSOC") -> QTable:
     """
     Return table of degradation correction factors.
 
@@ -198,11 +198,9 @@ def _get_time(time_range: Time | TimeRange | list | tuple):
     return start, end
 
 
-def get_pointing_table(source="jsoc", time_range=None):
+def get_pointing_table(source="lmsal", time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
-
-    This function can either fetch the pointing table from JSOC or from aia.lmsal.com.
 
     This function queries `JSOC <http://jsoc.stanford.edu/>`__ for
     the 3-hourly master pointing table (MPT) in the interval defined by
@@ -228,19 +226,20 @@ def get_pointing_table(source="jsoc", time_range=None):
 
     .. note::
 
-        The LMSAL pointing table is a static copy of the JSOC table dated from 11/20/2024.
-        It was designed as a stop-gap measure while the JSOC recovered from its recent
-        water damage.
+        This function can either fetch the pointing table from JSOC or from GitHub.
+        The LMSAL pointing table is a copy of the JSOC table, synced daily.
+        It is possible that the two tables may be out of sync by up to one day.
 
     Parameters
     ----------
     source : str
         Name of the source from which to retrieve the pointing table.
-        Must be one of ``"jsoc"`` or ``"lmsal"``.
-    time_range : `~astropy.time.Time`, `~sunpy.time.TimeRange`, optional
+        Must be one of ``"jsoc"`` or ``"lmsal"`` and is case-insensitive.
+        If you choose ``"jsoc"``, you must also provide ``time_range``.
+    time_range : `~astropy.time.Time`, `~sunpy.time.TimeRange`, tuple, list, optional
         Time range for which to retrieve the pointing table.
-        You can pass in a `~astropy.time.Time` object or a tuple of start and end times.
-        Alternatively, you can pass in a `~sunpy.time.TimeRange` object.
+        You can pass in a `~astropy.time.Time` object, a tuple or list of start and end times,
+        or a `~sunpy.time.TimeRange` object.
 
     Returns
     -------
@@ -252,21 +251,24 @@ def get_pointing_table(source="jsoc", time_range=None):
     """
     if source.lower() == "jsoc":
         if time_range is None:
-            msg = "time_range must be provided if the source is 'jsoc'"
+            # If you do a query without a time range, JSOC returns a truncated error.
+            msg = "time_range must be provided when source is 'jsoc'"
             raise ValueError(msg)
         start, end = _get_time(time_range)
-        table = QTable.from_pandas(
-            _get_data_from_jsoc(query=f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]", key="**ALL**")
-        )
+        query = f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]"
+        table = QTable.from_pandas(_get_data_from_jsoc(query=f"{query}", key="**ALL**"))
     elif source.lower() == "lmsal":
-        table = QTable(astropy_ascii.read(_fetch_pointing_table()))
+        with manager.skip_hash_check():
+            table = QTable(astropy_ascii.read(_fetch_pointing_table()))
     else:
         msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
         raise ValueError(msg)
     # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
     # TODO: Remove when astropy > 7.1.1 is out
-    new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
-    new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ErfaWarning)
+        new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
+        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
     table["T_START"] = new_start_times
     table["T_STOP"] = new_end_times
     for c in table.colnames:

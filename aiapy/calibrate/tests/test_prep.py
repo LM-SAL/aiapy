@@ -103,14 +103,17 @@ def test_register_level_15(lvl_15_map) -> None:
 @pytest.mark.parametrize(
     ("source"),
     [
-        pytest.param("jsoc", marks=pytest.mark.remote_data),
+        pytest.param(None, marks=pytest.mark.remote_data),
+        # We test different casings to make sure it's case insensitive
+        pytest.param("JSOC", marks=pytest.mark.remote_data),
+        pytest.param("jsOc", marks=pytest.mark.remote_data),
         pytest.param("SsW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
         str(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
     ],
 )
 def test_correct_degradation(aia_171_map, source) -> None:
-    correction_table = get_correction_table(source=source)
+    correction_table = get_correction_table() if source is None else get_correction_table(source=source)
     original_corrected = correct_degradation(
         aia_171_map,
         correction_table=correction_table,
