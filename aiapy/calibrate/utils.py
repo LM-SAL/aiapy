@@ -202,8 +202,6 @@ def get_pointing_table(source="lmsal", time_range=None):
     """
     Retrieve 3-hourly master pointing table from the given source.
 
-    This function can either fetch the pointing table from JSOC or from GitHub.
-
     This function queries `JSOC <http://jsoc.stanford.edu/>`__ for
     the 3-hourly master pointing table (MPT) in the interval defined by
     ``start`` and ``end``.
@@ -228,6 +226,7 @@ def get_pointing_table(source="lmsal", time_range=None):
 
     .. note::
 
+        This function can either fetch the pointing table from JSOC or from GitHub.
         The LMSAL pointing table is a copy of the JSOC table, synced daily.
         It is possible that the two tables may be out of sync by up to one day.
 
