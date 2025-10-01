@@ -3,6 +3,8 @@ This package contains functions for deconvolving AIA images with the instrument
 point spread function (PSF).
 """
 
+from sunpy import log
+
 try:
     from functools import partial
 
@@ -15,7 +17,7 @@ try:
     from jax import lax
 
     _jit_iterations = partial(jax_jit, static_argnames=("iterations",))
-
+    log.debug("Using jax for the PSF module.")
 except ImportError:
     import numpy as np  # NOQA: F401
 
@@ -39,6 +41,7 @@ except ImportError:
     def _jit_iterations(fun=None, **kwargs):  # NOQA: ARG001
         return fun
 
+    log.debug("Using numpy for the PSF module.")
 
 from .deconvolve import *
 from .psf import *

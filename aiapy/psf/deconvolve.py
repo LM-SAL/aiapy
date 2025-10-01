@@ -16,10 +16,6 @@ __all__ = ["deconvolve"]
 
 @_jit_iterations
 def _rl_deconvolve(img, psf_fft, psf_conj, *, iterations: int):
-    """
-    Richardson-Lucy deconvolution core.
-    """
-
     def body(_, current):
         est = np.fft.irfft2(np.fft.rfft2(current) * psf_fft)
         ratio = img / est
