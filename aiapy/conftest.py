@@ -4,6 +4,7 @@ import pytest
 from numpy.random import default_rng
 
 import astropy.units as u
+from astropy.io import fits
 
 import sunpy.data.test
 import sunpy.map
@@ -40,6 +41,19 @@ def psf_94():
     import aiapy.psf  # NOQA: PLC0415
 
     return aiapy.psf.calculate_psf(CHANNELS[0], use_preflightcore=True)
+
+
+@pytest.fixture
+def remote_131_map():
+    return sunpy.map.Map(
+        "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia.lev1_euv_12s.2024-05-08T014308Z.131.image_lev1.fits"
+    )
+
+
+@pytest.fixture
+def remote_131_idl_deconvolved_output():
+    # IDL was run with: aia_deconvolve_richardsonlucy(image,psf,niter=30)
+    return fits.getdata("https://github.com/sunpy/data/raw/refs/heads/main/aiapy/deconvolved_image_131.fits.fz")
 
 
 def idl_available() -> bool | None:
