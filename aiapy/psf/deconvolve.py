@@ -7,14 +7,14 @@ import warnings
 
 from numpy import asarray
 
-from aiapy.psf import _jit_iterations, lax, np
+from aiapy.psf import _jit_over_iterations, lax, np
 from aiapy.psf.psf import calculate_psf
 from aiapy.utils import AIApyUserWarning
 
 __all__ = ["deconvolve"]
 
 
-@_jit_iterations
+@_jit_over_iterations
 def _rl_deconvolve(img, psf_fft, psf_conj, *, iterations: int):
     def body(_, current):
         est = np.fft.irfft2(np.fft.rfft2(current) * psf_fft)

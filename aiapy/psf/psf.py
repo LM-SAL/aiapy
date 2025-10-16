@@ -8,7 +8,7 @@ import astropy.units as u
 
 from sunpy.util.decorators import deprecated
 
-from aiapy.psf import jax_jit, lax, np
+from aiapy.psf import jit, lax, np
 from aiapy.psf.utils import filter_mesh_parameters
 from aiapy.utils.decorators import validate_channel
 
@@ -30,7 +30,7 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     .. note::
 
         If the jax package is installed it will be used to accelerate the computation.
-        jax can use CPUs or GPUs, `see their documentation for instructions <https://docs.jax.dev/en/latest/installation.html>`__.
+        jax can use CPUs or GPUs. See their `documentation for instructions <https://docs.jax.dev/en/latest/installation.html>`__.
 
     The point spread function (PSF) can be modeled as a 2D Gaussian function
     of the radial distance :math:`r` from the center,
@@ -112,14 +112,33 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     """
     mesh_info = filter_mesh_parameters(use_preflightcore=use_preflightcore)[channel]
     diffraction_orders = np.arange(-100, 101, 1) if diffraction_orders is None else np.asarray(diffraction_orders)
-    psf_e = _psf(mesh_info, mesh_info["angle_arm"], diffraction_orders, focal_plane=False)
-    psf_f = _psf(mesh_info, u.Quantity([45.0, -45.0], "deg"), diffraction_orders, focal_plane=True)
-    # Composite PSF
-    psf = np.abs(np.fft.fft2(np.fft.fft2(psf_e) * np.fft.fft2(psf_f)))
+    psf_entrance = _psf(mesh_info, mesh_info["angle_arm"], diffraction_orders, focal_plane=False)
+    psf_focal_plane = _psf(mesh_info, u.Quantity([45.0, -45.0], "deg"), diffraction_orders, focal_plane=True)
+    # Composite PSF of entrance and focal plane PSFs
+    psf = np.abs(np.fft.fft2(np.fft.fft2(psf_entrance) * np.fft.fft2(psf_focal_plane)))
     # Center PSF at pixel (0,0)
     psf = np.fft.fftshift(psf)
     # Normalize by total number of pixels and always return a numpy array
     return asarray(psf / (psf.shape[0] * psf.shape[1]))
+
+
+@jit
+def _calculate_mesh_spikes(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0):
+    psf0 = np.zeros((y.shape[0], x.shape[0]), dtype=x.dtype)
+
+    def order_body(i, acc):
+        m = orders[i]
+        i0 = (np.sinc(m / mesh_ratio) ** 2) * (m != 0)
+
+        def angle_body(j, inner):
+            dx, dy = dxs[j], dys[j]
+            gx = np.exp(-width * (x - (cx0 + dx * m)) ** 2)
+            gy = np.exp(-width * (y - (cy0 + dy * m)) ** 2)
+            return inner + i0 * (gy[:, None] * gx[None, :])
+
+        return lax.fori_loop(0, dxs.shape[0], angle_body, acc)
+
+    return lax.fori_loop(0, orders.shape[0], order_body, psf0)
 
 
 def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
@@ -127,6 +146,10 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
     width = meshinfo["width"].to_value("pixel")
     spacing = (meshinfo["spacing_fp"] if focal_plane else meshinfo["spacing_e"]).to_value("pixel")
     mesh_ratio = (meshinfo["mesh_pitch"] / meshinfo["mesh_width"]).decompose().value
+    # Fractional area not covered by the mesh
+    # Sourced from AIA Instrument Paper
+    # Table 3 Multilayer and filter properties.
+    # The metal filters are supported on a 82% transmitting nickel mesh
     area_not_mesh = 0.82
     # 1-D coordinates and image center
     x = np.arange(nx) + 0.5
@@ -138,34 +161,9 @@ def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
     dxs = spacing * np.cos(ang)
     dys = spacing * np.sin(ang)
     orders = np.asarray(diffraction_orders)
-
-    @jax_jit
-    def _spikes_kernel(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0):
-        width = np.asarray(width, dtype=x.dtype)
-        mesh_ratio = np.asarray(mesh_ratio, dtype=x.dtype)
-        cx0 = np.asarray(cx0, dtype=x.dtype)
-        cy0 = np.asarray(cy0, dtype=x.dtype)
-        psf0 = np.zeros((y.shape[0], x.shape[0]), dtype=x.dtype)
-
-        def order_body(i, acc):
-            m = orders[i]
-            i0 = (np.sinc(m / mesh_ratio) ** 2) * (m != 0)
-
-            def angle_body(j, inner):
-                dx, dy = dxs[j], dys[j]
-                gx = np.exp(-width * (x - (cx0 + dx * m)) ** 2)
-                gy = np.exp(-width * (y - (cy0 + dy * m)) ** 2)
-                return inner + i0 * (gy[:, None] * gx[None, :])
-
-            return lax.fori_loop(0, dxs.shape[0], angle_body, acc)
-
-        return lax.fori_loop(0, orders.shape[0], order_body, psf0)
-
-    psf_spikes = _spikes_kernel(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0)
+    psf_spikes = _calculate_mesh_spikes(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0)
     # Gaussian core
-    gx0 = np.exp(-width * (x - cx0) ** 2)
-    gy0 = np.exp(-width * (y - cy0) ** 2)
-    psf_core = gy0[:, None] * gx0[None, :]
+    psf_core = np.exp(-width * (x - cx0) ** 2)[:, None] * np.exp(-width * (y - cy0) ** 2)[None, :]
     psf_spikes = psf_spikes / psf_spikes.sum()
     psf_core = psf_core / psf_core.sum()
     return (1.0 - area_not_mesh) * psf_spikes + area_not_mesh * psf_core
