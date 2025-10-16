@@ -50,7 +50,7 @@ def test_counts_shapes(counts) -> None:
             True,
             True,
             False,
-            pytest.raises(ValueError, match="Cannot include both EVE and pre-flight correction."),
+            pytest.raises(ValueError, match=r"Cannot include both EVE and pre-flight correction."),
         ),
     ],
 )

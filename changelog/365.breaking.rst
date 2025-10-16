@@ -1,0 +1,1 @@
+The keyword, ``use_gpu``, in `aiapy.psf.calculate_psf` and `aiapy.psf.deconvolve` has been removed.

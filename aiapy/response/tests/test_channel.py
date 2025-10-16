@@ -86,7 +86,7 @@ def test_telescope_number(channel) -> None:
 
 
 def test_invalid_channel() -> None:
-    with pytest.raises(ValueError, match='channel "1.0 Angstrom" not in list of valid channels'):
+    with pytest.raises(ValueError, match=r'channel "1.0 Angstrom" not in list of valid channels'):
         Channel(1 * u.angstrom)
 
 

@@ -79,7 +79,7 @@ def test_invalid_correction_table_input() -> None:
 
 
 def test_invalid_wavelength_raises_exception() -> None:
-    with pytest.raises(ValueError, match='channel "1800.0 Angstrom" not in list of valid channels'):
+    with pytest.raises(ValueError, match=r'channel "1800.0 Angstrom" not in list of valid channels'):
         _select_epoch_from_correction_table(1800 * u.angstrom, obstime, correction_table_local)
 
 
