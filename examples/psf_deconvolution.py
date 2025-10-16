@@ -6,6 +6,7 @@ Deconvolving images with the instrument Point Spread Function (PSF)
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
+# sphinx_gallery_thumbnail_number = 3
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -127,24 +128,22 @@ fig.tight_layout()
 # We can see this more clearly by plotting the intensity of the original
 # and deconvolved images across the top of the loop top.
 
-x_locations = np.linspace(
-    aia_map_deconvolved_sub.dimensions.x.value * 0.55, aia_map_deconvolved_sub.dimensions.x.value * 0.7
-)
-y_locations = 0.59 * aia_map_deconvolved_sub.dimensions.y.value * np.ones(x_locations.shape)
-slit_locations = np.s_[
-    np.round(y_locations[0]).astype(int), np.round(x_locations[0]).astype(int) : np.round(x_locations[-1]).astype(int)
-]
+line_coords = SkyCoord([950, 1050], [-137, -137], unit=(u.arcsec, u.arcsec), frame=aia_map_sub.coordinate_frame)
+intensity_coords = sunpy.map.pixelate_coord_path(aia_map_sub, line_coords)
+before_intensity = sunpy.map.sample_at_coords(aia_map_sub, intensity_coords)
+after_intensity = sunpy.map.sample_at_coords(aia_map_deconvolved_sub, intensity_coords)
+angular_separation = intensity_coords.separation(intensity_coords[0]).to(u.arcsec)
 
-fig = plt.figure(figsize=(10, 6))
-ax1 = fig.add_subplot(121, projection=aia_map_deconvolved_sub)
-aia_map_deconvolved_sub.plot(axes=ax1)
-ax1.plot(x_locations, y_locations, lw=1)
+fig = plt.figure(figsize=(12, 5))
+ax1 = fig.add_subplot(121, projection=aia_map_sub)
+aia_map_sub.plot(axes=ax1)
+ax1.plot_coord(intensity_coords)
+
 ax2 = fig.add_subplot(122)
-slit_coordinates = sunpy.map.all_coordinates_from_map(aia_map_sub)[slit_locations].Tx
-ax2.plot(slit_coordinates, aia_map_sub.data[slit_locations], label="Original")
-ax2.plot(slit_coordinates, aia_map_deconvolved_sub.data[slit_locations], label="Deconvolved")
+ax2.plot(angular_separation, before_intensity, label="Original")
+ax2.plot(angular_separation, after_intensity, label="Deconvolved")
+ax2.set_xlabel("Angular distance along slit [arcsec]")
 ax2.set_ylabel(f"Intensity [{aia_map_sub.unit}]")
-ax2.set_xlabel(r"Helioprojective Longitude [arcsec]")
 ax2.legend(loc="best", ncol=2, frameon=False)
 fig.tight_layout()
 
