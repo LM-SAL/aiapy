@@ -27,7 +27,6 @@ except ImportError:
     import numpy as np  # NOQA: F401
 
     class _LaxShim:
-
         @staticmethod
         def fori_loop(lower, upper, body_fun, init_val):
             acc = init_val
