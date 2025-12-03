@@ -15,6 +15,6 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: scientific-python/spec0-action@fa33c6c11eaf1dc244b17df5537875e2eab11e82
+      - uses: scientific-python/spec0-action@ci
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
