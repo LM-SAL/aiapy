@@ -9,13 +9,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aiapy"
 description = "Python library for AIA data analysis."
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 readme = { file = "README.rst", content-type = "text/x-rst" }
 license = { file = "licenses/LICENSE.rst" }
 authors = [
   { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
 ]
 dependencies = [
+  "matplotlib>=1.20",
   'sunpy[net,image,map]>=6.0',
 ]
 dynamic = ["version"]
