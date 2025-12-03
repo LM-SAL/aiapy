@@ -145,6 +145,7 @@ intersphinx_mapping = {
     ),
     "skimage": ("https://scikit-image.org/docs/stable/", None),
     "sunpy": ("https://docs.sunpy.org/en/stable/", None),
+    "jax": ("https://docs.jax.dev/en/latest/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------

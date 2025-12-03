@@ -76,7 +76,7 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map) -> None:
     """
     # A submap
     original_cutout = aia_171_map.submap(aia_171_map.center, top_right=aia_171_map.top_right_coord)
-    with pytest.raises(ValueError, match="Input must be a full disk image."):
+    with pytest.raises(ValueError, match=r"Input must be a full disk image."):
         register(original_cutout)
     # A Map besides AIA or HMI
     with pytest.raises(TypeError, match="Input must be an AIAMap"):
@@ -225,7 +225,7 @@ def test_degradation_4500_missing() -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     with pytest.raises(
         ValueError,
-        match="Correction table does not contain calibration for 4500.0 Angstrom. Max version is 3.",
+        match=r"Correction table does not contain calibration for 4500.0 Angstrom. Max version is 3.",
     ):
         degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("SSW"))
 
