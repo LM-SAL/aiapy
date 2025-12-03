@@ -16,7 +16,7 @@ authors = [
   { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
 ]
 dependencies = [
-  "matplotlib>=1.20",
+  "matplotlib>=3.8.0",
   'sunpy[net,image,map]>=6.0',
 ]
 dynamic = ["version"]
