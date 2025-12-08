@@ -47,7 +47,7 @@ classifiers = [
 all = ["aiapy"]
 performance = ["jax"]
 performance_nvidia = ["jax[cuda13]"]
-performance_mac = ["jax-metal"]
+performance_mac = ["jax-metal ; sys_platform == 'darwin'"]
 tests = [
   "pytest",
   "pytest-doctestplus",
