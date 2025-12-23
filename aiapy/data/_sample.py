@@ -65,20 +65,16 @@ def _retry_sample_data(results, new_url_base):
     return new_results
 
 
-def _handle_final_errors(results) -> None:
+def _handle_final_errors(results):
     for err in results.errors:
         file_name = err.url.split("/")[-1]
-        log.debug(
-            f"Failed to download {_SAMPLE_FILES[file_name]} from {err.url}: {err.exception}",
-        )
-        log.error(
-            f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors, the file will not be available.",
-        )
+        log.debug(f"Failed to download {_SAMPLE_FILES[file_name]} from {err.url}: {err.exception}")
+        log.error(f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors, the file will not be available.")
 
 
 def _get_sampledata_dir():
     # Workaround for tox only. This is not supported as a user option
-    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR")
+    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR", "")
     if sampledata_dir:
         sampledata_dir = Path(sampledata_dir).expanduser().resolve()
         _is_writable_dir(sampledata_dir)
@@ -107,7 +103,7 @@ def _get_sample_files(filename_list, *, no_download=False, force_download=False)
     Returns
     -------
     `list` of `pathlib.Path`
-        List of disk locations corresponding to the list of filenames.  An entry
+        List of disk locations corresponding to the list of filenames. An entry
         will be ``None`` if ``no_download == True`` and the file is not present.
 
     Raises
@@ -120,7 +116,7 @@ def _get_sample_files(filename_list, *, no_download=False, force_download=False)
     if no_download:
         fullpaths = [fp if fp.exists() else None for fp in fullpaths]
     else:
-        to_download = zip(filename_list, fullpaths, strict=True)
+        to_download = zip(filename_list, fullpaths, strict=False)
         if not force_download:
             to_download = [(fn, fp) for fn, fp in to_download if not fp.exists()]
         if to_download:

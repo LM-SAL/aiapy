@@ -17,8 +17,9 @@ __all__ = ["manager"]
 
 
 class AIAParfiveDownloader(DownloaderBase):
-    def download(self, url, path) -> None:
-        downloader = Downloader()
+    def download(self, url, path, **kwargs) -> None:
+        overwrite = kwargs.pop("overwrite") if "overwrite" in kwargs else False
+        downloader = Downloader(overwrite=overwrite, progress=True)
         path = Path(path)
         filename = path.name
         directory = path.parent

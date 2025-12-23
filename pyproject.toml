@@ -9,14 +9,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aiapy"
 description = "Python library for AIA data analysis."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 readme = { file = "README.rst", content-type = "text/x-rst" }
 license = { file = "licenses/LICENSE.rst" }
 authors = [
   { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
 ]
 dependencies = [
-  'sunpy[net,image,map]>=6.0',
+  'sunpy[net,image,map]>=7.0',
 ]
 dynamic = ["version"]
 keywords = [
@@ -40,6 +40,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Astronomy",
 ]
 
