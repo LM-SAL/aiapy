@@ -1,3 +1,40 @@
+0.11.0 (2025-12-23)
+===================
+
+Breaking Changes
+----------------
+
+- Renamed ``aiapy.psf.psf`` to `aiapy.psf.calculate_psf` to better reflect its purpose. (`#363 <https://github.com/LM-SAL/aiapy/pull/363>`__)
+- Dropped Python 3.10 support.
+  The minimum required Python version is now 3.11. (`#364 <https://github.com/LM-SAL/aiapy/pull/364>`__)
+- The keyword, ``use_gpu``, in `aiapy.psf.calculate_psf` and `aiapy.psf.deconvolve` has been removed. (`#365 <https://github.com/LM-SAL/aiapy/pull/365>`__)
+- Renamed all "util" modules to "utils". (`#366 <https://github.com/LM-SAL/aiapy/pull/366>`__)
+- Moved ``aiapy.psf.psf.filter_mesh_parameters`` to `aiapy.psf.filter_mesh_parameters`. (`#367 <https://github.com/LM-SAL/aiapy/pull/367>`__)
+- Make the ``source`` keyword for :func:`~aiapy.calibrate.utils.get_correction_table` and
+  :func:`~aiapy.calibrate.utils.get_pointing_table` optional. The default source for
+  :func:`~aiapy.calibrate.utils.get_correction_table` "SSW" is and the default source for
+  :func:`~aiapy.calibrate.utils.get_pointing_table` is "jsoc". (`#369 <https://github.com/LM-SAL/aiapy/pull/369>`__)
+- Passing a correction table or pointing table explicitly is no longer required for functions that
+  use these tables. In cases where a table is not passed explicitly, the a table is created using
+  the default source. (`#369 <https://github.com/LM-SAL/aiapy/pull/369>`__)
+- Increased minimum required version of Python to 3.12. (`#378 <https://github.com/LM-SAL/aiapy/pull/378>`__)
+- Increased minimum required version of sunpy to 7.0.0 (`#378 <https://github.com/LM-SAL/aiapy/pull/378>`__)
+
+
+New Features
+------------
+
+- Modify :func:`~aiapy.calibrate.update_pointing` to allow for updating pointing information
+  of maps that have been cropped. This function no longer raises an exception if the input map
+  does not include the full Sun or is not at the expected resolution. A warning is now raised
+  if the plate scale is significantly different (:math:`>1\%`) than the expected plate scale. (`#362 <https://github.com/LM-SAL/aiapy/pull/362>`__)
+- Removed the need for CuPy in `aiapy.psf.calculate_psf` and `aiapy.psf.deconvolve`.
+  It has been replaced with `JAX <https://docs.jax.dev/en/latest/>`__ which enables faster CPU computations with optional GPU support.
+
+  This means that the performance of these calculations has been significantly improved on machines without a compatible NVIDIA GPU.
+  In early testing, it is around 15 times faster on the CPU compared to NumPy. (`#365 <https://github.com/LM-SAL/aiapy/pull/365>`__)
+
+
 0.10.2 (2025-09-13)
 ===================
 

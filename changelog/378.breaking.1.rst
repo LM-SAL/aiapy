@@ -1,1 +1,0 @@
-Increased minimum required version of sunpy to 7.0.0

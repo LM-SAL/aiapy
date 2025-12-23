@@ -1,3 +1,0 @@
-Passing a correction table or pointing table explicitly is no longer required for functions that
-use these tables. In cases where a table is not passed explicitly, the a table is created using
-the default source.
