@@ -35,7 +35,7 @@ jobs:
       coverage: codecov
       toxdeps: tox-pypi-filter
       envs: |
-        - linux: py313
+        - linux: py314
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - run: python -m pip install -U --user build
       - run: python -m build . --sdist
       - run: python -m pip install -U --user twine
@@ -59,10 +59,10 @@ jobs:
       coverage: codecov
       toxdeps: tox-pypi-filter
       envs: |
-        - windows: py311
-        - macos: py312
-        - linux: py311-oldestdeps
-        - linux: py313-devdeps
+        - windows: py312
+        - macos: py313
+        - linux: py312-oldestdeps
+        - linux: py314-devdeps
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
