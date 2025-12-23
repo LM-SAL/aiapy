@@ -69,12 +69,12 @@ def _handle_final_errors(results):
     for err in results.errors:
         file_name = err.url.split("/")[-1]
         log.debug(f"Failed to download {_SAMPLE_FILES[file_name]} from {err.url}: {err.exception}")
-        log.error(f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors,the file will not be available.")
+        log.error(f"Failed to download {_SAMPLE_FILES[file_name]} from all mirrors, the file will not be available.")
 
 
 def _get_sampledata_dir():
     # Workaround for tox only. This is not supported as a user option
-    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR", "False")
+    sampledata_dir = os.environ.get("SUNPY_SAMPLEDIR", "")
     if sampledata_dir:
         sampledata_dir = Path(sampledata_dir).expanduser().resolve()
         _is_writable_dir(sampledata_dir)
