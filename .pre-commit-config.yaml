@@ -2,7 +2,7 @@ exclude: ".*(.fits|.fts|.fit|.header|.txt|tca.*|extern.*|aiapy/extern|^CITATION.
 repos:
     # This should be before any formatting hooks like isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.0"
+    rev: "v0.14.10"
     hooks:
       - id: ruff
         args: ["--fix", "--unsafe-fixes"]
