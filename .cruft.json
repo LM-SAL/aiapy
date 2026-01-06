@@ -17,7 +17,7 @@
       "changelog_url": "https://aiapy.readthedocs.io/en/stable/changelog.html",
       "issue_tracker_url": "https://github.com/LM-SAL/aiapy/issues/",
       "license": "BSD 3-Clause",
-      "minimum_python_version": "3.10",
+      "minimum_python_version": "3.12",
       "use_compiled_extensions": "n",
       "enable_dynamic_dev_versions": "y",
       "include_example_code": "y",
