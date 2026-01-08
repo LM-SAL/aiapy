@@ -79,7 +79,7 @@ jobs:
         if: steps.cruft_json.outputs.has_changes == '1'
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.BOT_TEMPLATE_WORKFLOW }}
           add-paths: "."
           commit-message: "Automatic package template update"
           branch: "cruft/update"
