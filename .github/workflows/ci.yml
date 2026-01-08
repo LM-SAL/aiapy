@@ -45,7 +45,11 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
+<<<<<<<
           python-version: '3.14'
+=======
+          python-version: '3.13'
+>>>>>>>
       - run: python -m pip install -U --user build
       - run: python -m build . --sdist
       - run: python -m pip install -U --user twine
@@ -59,8 +63,14 @@ jobs:
       coverage: codecov
       toxdeps: tox-pypi-filter
       envs: |
+<<<<<<<
         - windows: py312
         - macos: py313
+=======
+        - linux: py314
+        - windows: py312
+        - macos: py312
+>>>>>>>
         - linux: py312-oldestdeps
         - linux: py314-devdeps
     secrets:
@@ -120,7 +130,11 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v2
     with:
       python-version: '3.13'
+<<<<<<<
       test_extras: 'all,tests'
+=======
+      test_extras: 'tests'
+>>>>>>>
       test_command: 'pytest -p no:warnings --doctest-rst --pyargs aiapy'
       submodules: false
     secrets:
