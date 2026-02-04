@@ -1,15 +1,11 @@
-include README.rst
-include CHANGES.rst
-include setup.cfg
-include LICENSE.rst
-include pyproject.toml
-
-recursive-include aiapy *.pyx *.c *.pxd
-
-prune .codecov.yml
-prune .gitlab-ci.yml
+# Exclude specific files
+# All files which are tracked by git and not explicitly excluded here are included by setuptools_scm
+# Prune folders
 prune build
-prune docs/*
-prune joss
-
+prune docs/_build
+prune docs/api
 global-exclude *.pyc *.o
+
+# This subpackage is only used in development checkouts
+# and should not be included in built tarballs
+prune aiapy/_dev

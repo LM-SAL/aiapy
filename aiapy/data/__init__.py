@@ -1,3 +1,3 @@
-from aiapy.data._sample import download_sample_data
-
-__all__ = ["download_sample_data"]
+"""
+This module provides sample data, testing data and a data manager.
+"""

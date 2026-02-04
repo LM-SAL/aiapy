@@ -1,74 +1,55 @@
-aiapy
-=====
+=========
+``aiapy``
+=========
 
-aiapy is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory spacecraft.
+.. image:: https://github.com/LM-SAL/aiapy/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/LM-SAL/aiapy/actions/workflows/ci.yml
+    :alt: aiapy CI status
+
+.. image:: https://readthedocs.org/projects/aiapy/badge/?version=stable
+    :target: https://aiapy.readthedocs.io/en/stable/?badge=stable
+    :alt: Documentation Status
+
+.. image:: https://img.shields.io/pypi/v/aiapy.svg
+    :target: https://pypi.org/project/aiapy/
+    :alt: PyPI Project
+
+.. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat
+    :target: https://sunpy.org
+    :alt: SunPy Powered
+
+.. image:: https://codecov.io/gh/LM-SAL/aiapy/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/LM-SAL/aiapy
+    :alt: Codecov coverage
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10064346.svg
+    :target: https://doi.org/10.5281/zenodo.10064346
+    :alt: Zenodo DOI
+
+.. image:: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04/status.svg
+    :target: https://joss.theoj.org/papers/9bfcd1677e43046a5136766863419a04
+    :alt: JOSS
+
+``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
 For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
 For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
-
-Installation
-------------
-
-The current stable version of aiapy is available through the Python Package Index and can be installed via ``pip``
-
-.. code-block:: shell
-
-   pip install aiapy
-
-or through the Anaconda distribution via ``conda-forge``,
-
-.. code-block:: shell
-
-   conda install -c conda-forge aiapy
-
-These are the recommended ways to obtain and install aiapy.
-Alternatively, you can install the current development version directly from GitLab,
-
-.. code-block:: shell
-
-   git clone https://gitlab.com/LMSAL_HUB/aia_hub/aiapy.git
-   cd aiapy
-   pip install -e .[all]
-
-If you'll be developing aiapy, see the `development setup guide <https://aiapy.readthedocs.io/en/latest/develop.html>`__.
-
-Testing
--------
-
-If you want to run the test suite, first install the dev requirements,
-
-.. code-block:: shell
-
-   pip install -e .[dev]
-
-and then run
-
-.. code-block:: shell
-
-   pytest --remote-data=any
-
-If an internet connection is not available, exclude the ``--remote-data`` flag.
-
-A valid install of IDL and SSW are required to run the tests that compare results from aiapy and SSW.
-If one is not available, these tests are automatically skipped.
-
-The entire test suite can also be run using tox.
-For additional instructions, please see the `SunPy development guide on testing <https://docs.sunpy.org/en/latest/dev_guide/tests.html>`__.
 
 Citing
 ------
 
-If you use aiapy in your scientific work, we would appreciate you citing it in your publications.
-The latest citation information can be found in the `documentation <https://aiapy.readthedocs.io/en/latest/about.html>`__, or obtained with ``aiapy.__citation__``.
+If you use ``aiapy`` in your scientific work, we would appreciate you citing it in your publications.
+The latest citation information can be found in the `documentation <https://aiapy.readthedocs.io/en/latest/citation.html>`__, or obtained with ``aiapy.__citation__``.
 
 Contributing
 ------------
 
-We love contributions! aiapy is open source, built on open source, and we'd love to have you hang out in our community.
+``aiapy`` is open source software, built on top of other open source software, and we'd love to have you contribute
 
-If you can write code at all, you can contribute code to open source.
-Contributing to open source projects is a fantastic way to advance one's coding skills ; it's trying to create something, making mistakes, and learning from those mistakes.
-That's how we all improve, and we are happy to help others learn.
+Please checkout the `contributing guide <https://aiapy.readthedocs.io/en/latest/develop.html>`__ for more information on how to contribute to aiapy.
 
-Being an open source contributor doesn't just mean writing code, either.
-You can help out by writing documentation, tests, or even giving feedback about the project (and yes - that includes giving feedback about the contribution process).
-Some of these contributions may be the most valuable to the project as a whole, because you're coming to the project with fresh eyes, so you can see the errors and assumptions that seasoned contributors have glossed over.
+Usage of Generative AI
+----------------------
+
+We expect authentic engagement in our community.
+Be wary of posting output from large language models or similar generative AI as comments on GitHub or any other platforms, as such comments tend to be formulaic and low‑quality content.
+If you use generative AI tools as an aid in developing code or documentation changes, ensure that you fully understand the proposed changes and can explain why they are the correct approach and an improvement to the current state.

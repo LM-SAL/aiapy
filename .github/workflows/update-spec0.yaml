@@ -1,0 +1,20 @@
+name: Update SPEC 0 dependencies
+
+on:
+  schedule:
+    # Every Sunday at midnight UTC
+    - cron: "0 0 * * SUN"
+  # On demand:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: scientific-python/spec0-action@ci
+        with:
+          token: ${{ secrets.GH_PAT }}

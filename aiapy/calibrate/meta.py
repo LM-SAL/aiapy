@@ -1,105 +1,71 @@
 """
-Functions for updating/fixing header keywords
+Functions for updating/fixing header keywords.
 """
+
 import copy
 import warnings
 
 import numpy as np
 
-import astropy.time
 import astropy.units as u
-from astropy.coordinates import CartesianRepresentation, HeliocentricMeanEcliptic, SkyCoord
-from sunpy.map import contains_full_disk
 
-from aiapy.calibrate.util import get_pointing_table
-from aiapy.util import detector_dimensions
-from aiapy.util.exceptions import AiapyUserWarning
+from aiapy.calibrate.utils import get_pointing_table
+from aiapy.utils.exceptions import AIApyUserWarning
 
-__all__ = ['fix_observer_location', 'update_pointing']
+__all__ = ["update_pointing"]
 
 
-def fix_observer_location(smap):
+def update_pointing(smap, *, pointing_table=None):
     """
-    Fix inaccurate ``HGS_LON`` and ``HGS_LAT`` FITS keywords.
+    Update the pointing information in the input map header.
 
-    The heliographic Stonyhurst latitude and longitude locations in the
-    AIA FITS headers are incorrect. This function fixes the values of these
-    keywords using the heliocentric aries ecliptic keywords, ``HAEX_OBS,
-    HAEY_OBS, HAEZ_OBS``.
-
-    .. note:: `~sunpy.map.sources.AIAMap` already accounts for the inaccurate
-              HGS keywords by using the HAE keywords to construct the
-              derived observer location.
-
-    Parameters
-    ----------
-    smap : `~sunpy.map.source.sdo.AIAMap`
-    """
-    # Create observer coordinate from HAE coordinates
-    coord = SkyCoord(
-        x=smap.meta['haex_obs'] * u.m,
-        y=smap.meta['haey_obs'] * u.m,
-        z=smap.meta['haez_obs'] * u.m,
-        representation_type=CartesianRepresentation,
-        frame=HeliocentricMeanEcliptic,
-        obstime=smap.date,
-    ).heliographic_stonyhurst
-    # Update header
-    new_meta = copy.deepcopy(smap.meta)
-    new_meta['hgln_obs'] = coord.lon.to(u.degree).value
-    new_meta['hglt_obs'] = coord.lat.to(u.degree).value
-    new_meta['dsun_obs'] = coord.radius.to(u.m).value
-
-    return smap._new_instance(
-        smap.data,
-        new_meta,
-        plot_settings=smap.plot_settings,
-        mask=smap.mask
-    )
-
-
-def update_pointing(smap, pointing_table=None):
-    """
-    Update pointing information in the `smap` header.
-
-    This function updates the pointing information in `smap` by
+    This function updates the pointing information in ``smap`` by
     updating the ``CRPIX1, CRPIX2, CDELT1, CDELT2, CROTA2`` keywords
-    in the header using the information provided in `pointing_table`.
-    If `pointing_table` is not specified, the 3-hour pointing
-    information is queried from the `JSOC <http://jsoc.stanford.edu/>`_.
+    in the header using the information provided in ``pointing_table``.
 
-    .. note:: The method removes any ``PCi_j`` matrix keys in the header and
-              updates the ``CROTA2`` keyword.
+    .. note::
 
-    .. note:: If correcting pointing information for a large number of images,
-              it is strongly recommended to query the table once for the
-              appropriate interval and then pass this table in rather than
-              executing repeated queries.
+        The method removes any ``PCi_j`` matrix keys in the header and
+        updates the ``CROTA2`` keyword.
+
+    .. warning::
+
+        This function is only intended to be used on level 1 images,
+        including cutouts/submaps. This function should be applied before
+        rotating, resampling, rebinning, or interpolating the map in any
+        way.
 
     Parameters
     ----------
-    smap : `~sunpy.map.sources.sdo.AIAMap`
-    pointing_table : `~astropy.table.QTable`, optional
-        Table of pointing information. If not specified, the table
-        will be retrieved from JSOC.
+    smap : `~sunpy.map.sources.AIAMap`
+        Input map.
+    pointing_table : `~astropy.table.QTable`
+        Table of pointing information.
+        You can get this table by calling `aiapy.calibrate.utils.get_pointing_table`.
 
     Returns
     -------
-    `~sunpy.map.sources.sdo.AIAMap`
+    `~sunpy.map.sources.AIAMap`
+        Updated map with pointing information.
 
     See Also
     --------
-    aiapy.calibrate.util.get_pointing_table
+    `aiapy.calibrate.utils.get_pointing_table`
     """
-    # This function can only be applied to full-resolution, full-frame images
-    if not contains_full_disk(smap):
-        raise ValueError("Input must be a full disk image.")
-    shape_full_frame = detector_dimensions().value
-    if not all(d == (s*u.pixel) for d, s in zip(smap.dimensions, shape_full_frame)):
-        raise ValueError(f"Input must be at the full resolution of {shape_full_frame}")
+    # NOTE: Warn user if it looks like they may have changed the resolution of their map
+    # as this will cause the pointing update to be incorrect. This is not a strict check
+    # because the exact plate scale is not known a priori.
+    target_plate_scale = 0.6 * u.arcsec / u.pixel
+    if not all(np.fabs(u.Quantity(smap.scale) / target_plate_scale - 1) < 0.01):
+        msg = (
+            f"Input map has plate scale {u.Quantity(smap.scale)} which is significantly "
+            f"different than {target_plate_scale}. This function is only meant to be used "
+            "with maps which have not been resampled or rebinned. The updated pointing is "
+            "likely incorrect."
+        )
+        warnings.warn(msg, AIApyUserWarning, stacklevel=3)
     if pointing_table is None:
-        # Make range wide enough to get closest 3-hour pointing
-        pointing_table = get_pointing_table(smap.date - 12*u.h, smap.date + 12*u.h)
+        pointing_table = get_pointing_table()
     # Find row in which T_START <= T_OBS < T_STOP
     # The following notes are from a private communication with J. Serafin (LMSAL)
     # and are preserved here to explain the reasoning for selecting the particular
@@ -110,63 +76,71 @@ def update_pointing(smap, pointing_table=None):
     # NOTE: For SDO data, T_OBS is preferred to DATE-OBS in the case of the
     # MPT, using DATE-OBS from near the slot boundary might result in selecting
     # an incorrect MPT record.
-    t_obs = smap.meta.get('T_OBS')
-    if t_obs is None:
-        warnings.warn('T_OBS key is missing from metadata. Falling back to Map.date. '
-                      'This may result in selecting in incorrect record from the '
-                      'master pointing table.', AiapyUserWarning)
-        t_obs = smap.date
-    t_obs = astropy.time.Time(t_obs)
-    t_obs_in_interval = np.logical_and(t_obs >= pointing_table['T_START'],
-                                       t_obs < pointing_table['T_STOP'])
+    # NOTE: In sunpy >=6.0, the reference_date property was introduced which, for
+    # AIA maps, will always be pulled from "T_OBS"
+    t_obs_in_interval = np.logical_and(
+        smap.reference_date >= pointing_table["T_START"],
+        smap.reference_date < pointing_table["T_STOP"],
+    )
     if not t_obs_in_interval.any():
-        raise IndexError(f'No valid entries for {t_obs} in pointing table '
-                         f'with first T_START date of {pointing_table[0]["T_START"]} '
-                         f'and a last T_STOP date of {pointing_table[-1]["T_STOP"]}.')
+        msg = (
+            f"No valid entries for {smap.reference_date} in pointing table "
+            f"with first T_START date of {pointing_table[0]['T_START']} "
+            f"and a last T_STOP date of {pointing_table[-1]['T_STOP']}."
+        )
+        raise IndexError(msg)
     i_nearest = np.where(t_obs_in_interval)[0][0]
-    w_str = f'{smap.wavelength.to(u.angstrom).value:03.0f}'
+    w_str = f"{smap.wavelength.to(u.angstrom).value:03.0f}"
     new_meta = copy.deepcopy(smap.meta)
     # Extract new pointing parameters
     # The x0 and y0 keywords denote the location of the center
     # of the Sun in CCD pixel coordinates (0-based), but FITS WCS indexing is
     # 1-based. See Section 2.2 of
     # http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_K_AIA-SDO_FITS_Keyword_Document.pdf
-    x0_mp = pointing_table[f'A_{w_str}_X0'][i_nearest].to('pix').value
-    y0_mp = pointing_table[f'A_{w_str}_Y0'][i_nearest].to('pix').value
-    crpix1 = x0_mp + 1
-    crpix2 = y0_mp + 1
-    cdelt = pointing_table[f'A_{w_str}_IMSCALE'][i_nearest].to('arcsecond / pixel').value
+    x0_mp_new = pointing_table[f"A_{w_str}_X0"][i_nearest].to_value("pix")
+    y0_mp_new = pointing_table[f"A_{w_str}_Y0"][i_nearest].to_value("pix")
+    crpix1 = smap.reference_pixel.x.to_value("pix") + 1
+    crpix2 = smap.reference_pixel.y.to_value("pix") + 1
+    # NOTE: Updating the reference pixel in this way only works if the map has not been
+    # rotated or resampled from the original level 1 data. It is calculated in this way
+    # to allow for updating the pointing in cropped maps.
+    if ((x0_mp_old := smap.meta.get("x0_mp")) is not None) and ((y0_mp_old := smap.meta.get("y0_mp")) is not None):
+        crpix1 += x0_mp_new - x0_mp_old
+        crpix2 += y0_mp_new - y0_mp_old
+    else:
+        warnings.warn(
+            "x0_mp and/or y0_mp keywords are missing. Skipping reference pixel update.", AIApyUserWarning, stacklevel=3
+        )
+    cdelt = pointing_table[f"A_{w_str}_IMSCALE"][i_nearest].to_value("arcsecond / pixel")
     # CROTA2 is the sum of INSTROT and SAT_ROT.
     # See http://jsoc.stanford.edu/~jsoc/keywords/AIA/AIA02840_H_AIA-SDO_FITS_Keyword_Document.pdf
     # NOTE: Is the value of SAT_ROT in the header accurate?
-    crota2 = pointing_table[f'A_{w_str}_INSTROT'][i_nearest] + smap.meta['SAT_ROT'] * u.degree
-    crota2 = crota2.to('deg').value
+    crota2 = pointing_table[f"A_{w_str}_INSTROT"][i_nearest] + smap.meta["SAT_ROT"] * u.degree
+    crota2 = crota2.to_value("degree")
     # Update headers
-    for key, value in [('crpix1', crpix1),
-                       ('crpix2', crpix2),
-                       ('x0_mp', x0_mp),  # x0_mp and y0_mp are not standard FITS keywords but they are
-                       ('y0_mp', y0_mp),  # used when respiking submaps so we update them here.
-                       ('cdelt1', cdelt),
-                       ('cdelt2', cdelt),
-                       ('crota2', crota2)]:
+    for key, value in [
+        ("crpix1", crpix1),
+        ("crpix2", crpix2),
+        ("cdelt1", cdelt),
+        ("cdelt2", cdelt),
+        ("crota2", crota2),
+        ("x0_mp", x0_mp_new),  # x0_mp and y0_mp are not standard FITS keywords but they are
+        ("y0_mp", y0_mp_new),  # used when respiking submaps so they are updated here.
+    ]:
         if np.isnan(value):
             # There are some entries in the pointing table returned from the JSOC that are marked as
             # MISSING. These get converted to NaNs when we cast it to an astropy quantity table. In
             # these cases, we just want to skip updating the pointing information.
-            warnings.warn(f'Missing value in pointing table for {key}. This key will not be updated.',
-                          AiapyUserWarning)
+            warnings.warn(
+                f"Missing value in pointing table for {key}. This key will not be updated.",
+                AIApyUserWarning,
+                stacklevel=3,
+            )
         else:
             new_meta[key] = value
-
-    # sunpy map converts crota to a PCi_j matrix, so we remove it to force the
-    # re-conversion.
-    new_meta.pop('PC1_1')
-    new_meta.pop('PC1_2')
-    new_meta.pop('PC2_1')
-    new_meta.pop('PC2_2')
-    return smap._new_instance(
-        smap.data,
-        new_meta,
-        plot_settings=smap.plot_settings,
-        mask=smap.mask
-    )
+    # sunpy.map.Map converts crota to a PCi_j matrix, so we remove it to force the re-conversion.
+    new_meta.pop("PC1_1")
+    new_meta.pop("PC1_2")
+    new_meta.pop("PC2_1")
+    new_meta.pop("PC2_2")
+    return smap._new_instance(smap.data, new_meta, plot_settings=smap.plot_settings, mask=smap.mask)

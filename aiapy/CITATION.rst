@@ -27,5 +27,5 @@ The project citation should be to the `aiapy paper`_ and the software citation s
 
 You can also obtain this information with ``aiapy.__citation__``.
 
-.. _Zenodo DOI: https://zenodo.org/record/4274931
+.. _Zenodo DOI: https://doi.org/10.5281/zenodo.10064346
 .. _aiapy paper: https://joss.theoj.org/papers/10.21105/joss.02801
