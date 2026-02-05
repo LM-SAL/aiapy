@@ -207,6 +207,9 @@ def degradation(
     """
     if correction_table is None:
         correction_table = get_correction_table()
+    # Drop all rows which are not for the latest version
+    max_version = correction_table["VER_NUM"].max()
+    correction_table = correction_table[correction_table["VER_NUM"] == max_version]
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)

@@ -1,0 +1,2 @@
+Ensured that `aiapy.calibrate.degradation` no longer accounts for possibility of multiple calibration versions in correction table.
+This resolves issues where incorrect degradation corrections were applied due to multiple entries in the calibration table.

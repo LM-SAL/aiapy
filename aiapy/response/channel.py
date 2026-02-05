@@ -22,7 +22,6 @@ from aiapy.utils.decorators import validate_channel
 
 __all__ = ["Channel"]
 
-# TODO: Work out what changes with version.
 AIA_INSTRUMENT_FILE = "sdo/aia/response/aia_V{}_{}_fullinst.genx"
 VERSION_NUMBER = 8  # Most recent version number for instrument response data
 # URLs and SHA-256 hashes for each version for the EUV and FUV files

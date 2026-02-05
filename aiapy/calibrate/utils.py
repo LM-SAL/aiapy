@@ -16,7 +16,7 @@ from astropy.table import QTable
 from astropy.time import Time
 
 from sunpy import log
-from sunpy.time import TimeRange
+from sunpy.time import TimeRange, parse_time
 
 from aiapy import _SSW_MIRRORS
 from aiapy.data._manager import manager
@@ -62,7 +62,7 @@ def _fetch_error_table_latest():
     return manager.get("error_table_latest")
 
 
-def get_correction_table(source="JSOC") -> QTable:
+def get_correction_table(source="SSW") -> QTable:
     """
     Return table of degradation correction factors.
 
@@ -118,20 +118,14 @@ def get_correction_table(source="JSOC") -> QTable:
         "EFF_WVLN",
     ]
     table = table[selected_cols]
-    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-    # TODO: Remove when astropy > 7.1.1 is out
-    new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
-    table["T_START"] = new_start_times
+    table["T_START"] = parse_time(table["T_START"])
     # NOTE: The warning from erfa here is due to the fact that dates in
     # this table include at least one date from 2030 and converting this
     # date to UTC is ambiguous as the UTC conversion is not well defined
     # at this date.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=ErfaWarning)
-        # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-        # TODO: Remove when astropy > 7.1.1 is out
-        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
-        table["T_STOP"] = new_end_times
+        table["T_STOP"] = parse_time(table["T_STOP"])
     table["WAVELNTH"].unit = "Angstrom"
     table["EFF_WVLN"].unit = "Angstrom"
     table["EFF_AREA"].unit = "cm2"
@@ -157,6 +151,14 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
     wave = channel.to(u.angstrom).value
     table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
+    # Check that there is only one version in the table
+    unique_versions = np.unique(table["VER_NUM"])
+    if len(unique_versions) > 1:
+        msg = (
+            f"Provided correction table contains multiple versions for {channel}."
+            f" Please provide a table with only one version: {unique_versions}"
+        )
+        raise ValueError(msg)
     table.sort("DATE")  # Newest entries will be last
     if len(table) == 0:
         extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
@@ -263,14 +265,10 @@ def get_pointing_table(source="lmsal", time_range=None):
     else:
         msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
         raise ValueError(msg)
-    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-    # TODO: Remove when astropy > 7.1.1 is out
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=ErfaWarning)
-        new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
-        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
-    table["T_START"] = new_start_times
-    table["T_STOP"] = new_end_times
+        table["T_START"] = parse_time(table["T_START"])
+        table["T_STOP"] = parse_time(table["T_STOP"])
     for c in table.colnames:
         if "X0" in c or "Y0" in c:
             table[c].unit = "pixel"
