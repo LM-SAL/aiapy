@@ -27,7 +27,7 @@ with contextlib.suppress(ImportError):
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
-    return m.resample(detector_dimensions)
+    return m.resample(detector_dimensions())
 
 
 @pytest.fixture

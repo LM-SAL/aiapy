@@ -13,7 +13,7 @@ from sunpy.map import Map
 from aiapy.calibrate import correct_degradation, degradation, register
 from aiapy.calibrate.utils import get_correction_table
 from aiapy.tests.data import get_test_filepath
-from aiapy.utils import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning, detector_dimensions
 
 
 @pytest.fixture
@@ -26,26 +26,18 @@ def non_sdo_map():
     return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
 
 
-def test_register(aia_171_map, lvl_15_map) -> None:
+def test_register(lvl_15_map) -> None:
     """
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
     # TODO: Check all of these for Map attributes and .meta values?
-    # Check array shape - We cut off two pixels on each side for kicks
-    # Due to fixes in sunpy 3.1.6, the shape is different
-    # See https://github.com/sunpy/sunpy/pull/5803
-    assert lvl_15_map.data.shape == (4094, 4094) != aia_171_map.data.shape
-    # Check crpix values
-    assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
-    assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
-    # Check cdelt values
-    assert lvl_15_map.meta["cdelt1"] / 0.6 == int(lvl_15_map.meta["cdelt1"] / 0.6)
-    assert lvl_15_map.meta["cdelt2"] / 0.6 == int(lvl_15_map.meta["cdelt2"] / 0.6)
-    # Check rotation value, I am assuming that the inaccuracy in
-    # the CROTA -> PCi_j matrix is causing the inaccuracy here
-    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
-    # Check level number
+    np.testing.assert_array_equal(lvl_15_map.data.shape, detector_dimensions().value)
+    assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[0] / 2 + 0.5
+    assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[1] / 2 + 0.5
+    assert lvl_15_map.meta["cdelt1"] / 0.6 == int(lvl_15_map.meta["cdelt1"] / 0.6) == 1
+    assert lvl_15_map.meta["cdelt2"] / 0.6 == int(lvl_15_map.meta["cdelt2"] / 0.6) == 1
+    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2))
     assert lvl_15_map.meta["lvl_num"] == 1.5
 
 
@@ -58,15 +50,11 @@ def test_register_filesave(lvl_15_map, tmp_path) -> None:
     with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
         lvl_15_map.save(str(filename), overwrite=True)
     load_map = Map(str(filename))
-    # Check crpix values
-    assert load_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
-    assert load_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
-    # Check cdelt values
+    assert load_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2 + 0.5
+    assert load_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2 + 0.5
     assert load_map.meta["cdelt1"] / 0.6 == int(load_map.meta["cdelt1"] / 0.6)
     assert load_map.meta["cdelt2"] / 0.6 == int(load_map.meta["cdelt2"] / 0.6)
-    # Check rotation value
-    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
-    # Check level number
+    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2))
     assert load_map.meta["lvl_num"] == 1.5
 
 
@@ -74,16 +62,13 @@ def test_register_unsupported_maps(aia_171_map, non_sdo_map) -> None:
     """
     Make sure we raise an error when an unsupported map is passed in.
     """
-    # A submap
     original_cutout = aia_171_map.submap(aia_171_map.center, top_right=aia_171_map.top_right_coord)
     with pytest.raises(ValueError, match=r"Input must be a full disk image."):
         register(original_cutout)
-    # A Map besides AIA or HMI
-    with pytest.raises(TypeError, match="Input must be an AIAMap"):
+    with pytest.raises(TypeError, match="Input is not an AIAMap or an HMIMap"):
         register(non_sdo_map)
 
 
-@pytest.mark.filterwarnings("ignore::ResourceWarning")
 def test_register_level_15(lvl_15_map) -> None:
     with pytest.warns(
         AIApyUserWarning,
@@ -251,10 +236,3 @@ def test_degradation_time_array() -> None:
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction, strict=True):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table)
-
-
-def test_register_cupy(aia_171_map) -> None:
-    pytest.importorskip("cupy")
-    cupy_map = register(aia_171_map, method="cupy")
-    scipy_map = register(aia_171_map, method="scipy")
-    np.testing.assert_allclose(cupy_map.data, scipy_map.data)

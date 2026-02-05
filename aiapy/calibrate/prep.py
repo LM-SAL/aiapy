@@ -10,7 +10,6 @@ import numpy as np
 import astropy.units as u
 import astropy.wcs
 from astropy.coordinates import SkyCoord
-from astropy.wcs.utils import pixel_to_pixel
 
 from sunpy.map import contains_full_disk
 from sunpy.map.header_helper import make_fitswcs_header
@@ -29,9 +28,6 @@ __all__ = ["correct_degradation", "degradation", "register"]
 @add_common_docstring(rotation_function_names=_rotation_function_names)
 def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
     """
-    Processes a full-disk level 1 `~sunpy.map.sources.AIAMap` into a level
-    1.5 `~sunpy.map.sources.AIAMap`.
-
     Rotates, scales and translates the image so that solar North is aligned
     with the y axis, each pixel is 0.6 arcsec across, and the center of the
     Sun is at the center of the image. The actual transformation is done by
@@ -62,14 +58,14 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
     Returns
     -------
     `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`:
-        A level 1.5 copy of `~sunpy.map.sources.AIAMap` or
+        A promoted copy of `~sunpy.map.sources.AIAMap` or
         `~sunpy.map.sources.sdo.HMIMap`.
     """
     if not isinstance(smap, (AIAMap, HMIMap)):
-        warnings.warn("Input is not an AIAMap or an HMIMap", AIApyUserWarning, stacklevel=2)
+        warnings.warn("Input is not an AIAMap or an HMIMap", TypeError, stacklevel=2)
     if not contains_full_disk(smap):
         msg = "Input must be a full disk image."
-        raise ValueError(msg)
+        raise ValueError(msg) from None
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
             "Image registration should only be applied to level 1 data",
@@ -90,27 +86,13 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
         scale=scale,
         rotation_matrix=np.eye(2),
     )
-    wcs_l15_full_disk = astropy.wcs.WCS(header_l15_full_disk)
-    # Find the bottom left corner of the map in the full-frame WCS
-    blc_full_disk = pixel_to_pixel(smap.wcs, wcs_l15_full_disk, 0, 0) * u.pix
-    # Calculate distance between full-frame center and bottom left corner
-    # This is the location of disk center in the aligned WCS of this map
-    ref_pixel = ref_pixel_full_disk - blc_full_disk
-    # Construct the L1.5 WCS for this map and reproject
-    wcs_l15 = astropy.wcs.WCS(
-        make_fitswcs_header(
-            smap.data.shape,
-            ref_coord,
-            reference_pixel=ref_pixel,
-            scale=scale,
-            rotation_matrix=np.eye(2),
-        )
-    )
-    # Force parallel reprojection
-    kwargs["parallel"] = kwargs.get("parallel", True)
+    wcs_l15_full_disk = astropy.wcs.WCS(header_l15_full_disk, preserve_units=True)
+    # Use the full-frame WCS directly so disk center is at image center
     kwargs["return_footprint"] = kwargs.get("return_footprint", False)
-    kwargs["block_size"] = kwargs.get("block_size", (256, 256))
-    smap_l15 = smap.reproject_to(wcs_l15, algorithm=algorithm, **kwargs)
+    # This was selected as the fastest method in local testing
+    kwargs["parallel"] = kwargs.get("parallel", True)
+    kwargs["block_size"] = kwargs.get("block_size", (1024, 1024))
+    smap_l15 = smap.reproject_to(wcs_l15_full_disk, algorithm=algorithm, **kwargs)
     # Fill in missing values
     data = smap_l15.data
     missing = smap.data.min() if missing is None else missing
@@ -123,7 +105,7 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
     new_meta.update(smap_l15.meta)
     # TODO: check if any other keys need to be manually modified?
     new_meta["lvl_num"] = 1.5
-    return smap_l15._new_instance(data, new_meta, plot_settings=smap_l15.plot_settings)
+    return smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
 
 
 def correct_degradation(smap, *, correction_table=None):

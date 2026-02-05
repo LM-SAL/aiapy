@@ -76,7 +76,6 @@ def test_exceptions(aia_193_level1_map, key, value, error, match) -> None:
 
 
 @pytest.mark.remote_data
-@pytest.mark.filterwarnings("ignore::ResourceWarning")
 def test_resample_warning(aia_193_level1_map) -> None:
     despiked_map_resample = aia_193_level1_map.resample((512, 512) * u.pixel)
     with pytest.warns(AIApyUserWarning, match="is significantly different from the expected level 1 plate scale"):

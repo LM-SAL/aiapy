@@ -6,7 +6,7 @@ from numpy import asarray
 
 import astropy.units as u
 
-from sunpy.utils.decorators import deprecated
+from sunpy.util.decorators import deprecated
 
 from aiapy.psf import jit, lax, np
 from aiapy.psf.utils import filter_mesh_parameters
