@@ -1,0 +1,3 @@
+`aiapy.calibrate.prep.register` now uses `reproject` for image registration instead of `scipy.ndimage.affine_transform`.
+This change improves the accuracy of the registration and will mean that the returned images are always 4096 x 4096 pixels.
+However, it may also lead to slightly longer processing times in most cases.

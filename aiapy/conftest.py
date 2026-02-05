@@ -10,6 +10,8 @@ import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.utils import detector_dimensions
+
 RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
@@ -25,7 +27,7 @@ with contextlib.suppress(ImportError):
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
-    return m.resample((4096, 4096) * u.pixel)
+    return m.resample(detector_dimensions())
 
 
 @pytest.fixture
