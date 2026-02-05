@@ -4,10 +4,12 @@ import pytest
 
 import astropy.units as u
 from astropy.table import QTable
+from astropy.tests.helper import assert_quantity_allclose
 from astropy.time import Time
 
 from sunpy.time import TimeRange
 
+from aiapy.calibrate import degradation
 from aiapy.calibrate.utils import (
     _select_epoch_from_correction_table,
     get_correction_table,
@@ -19,6 +21,16 @@ from aiapy.tests.data import get_test_filepath
 # These are not fixtures so that they can be easily used in the parametrize mark
 obstime = Time("2015-01-01T00:00:00", scale="utc")
 correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+
+
+@pytest.fixture(scope="module")
+def jsoc_table():
+    return get_correction_table("jsoc")
+
+
+@pytest.fixture(scope="module")
+def ssw_table():
+    return get_correction_table("ssw")
 
 
 @pytest.mark.parametrize(
@@ -90,6 +102,16 @@ def test_obstime_out_of_range() -> None:
 
 
 @pytest.mark.remote_data
+def test_multiple_versions(jsoc_table) -> None:
+    obstime_out_of_range = Time("2015-01-01T12:00:00", scale="utc")
+    with pytest.raises(
+        ValueError,
+        match=r"Provided correction table contains multiple versions for 94.0 Angstrom. Please provide a table with only one version: \[ 1  2  3  8  9 10\]",
+    ):
+        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, jsoc_table)
+
+
+@pytest.mark.remote_data
 def test_pointing_table() -> None:
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
@@ -147,3 +169,14 @@ def test_error_table(error_table) -> None:
 def test_invalid_error_table_input() -> None:
     with pytest.raises(TypeError, match="source must be a filepath, or 'SSW', not -1"):
         get_error_table(-1)
+
+
+@pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
+def test_versions_in_calibration_tables(channel, jsoc_table, ssw_table) -> None:
+    # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
+    # Issue is that we do not use the latest version of the correction table by default
+    # if multiple versions are available for a given time
+    time = Time("2010-11-03T12:15:00")
+    d_jsoc = degradation(channel, time, correction_table=jsoc_table)
+    d_ssw = degradation(channel, time, correction_table=ssw_table)
+    assert_quantity_allclose(d_jsoc, d_ssw)

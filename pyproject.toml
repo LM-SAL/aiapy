@@ -16,6 +16,7 @@ authors = [
   { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
 ]
 dependencies = [
+  'astropy>=7.2.0',
   'sunpy[net,image,map]>=7.0',
 ]
 dynamic = ["version"]
@@ -108,8 +109,6 @@ version_file = "aiapy/_version.py"
 
   number_incorrect_long = "The number in the changelog file you added does not match the number of this pull request. Please rename the file."
 
-# TODO: This should be in towncrier.toml but Giles currently only works looks in
-# pyproject.toml we should move this back when it's fixed.
 [tool.towncrier]
   package = "aiapy"
   filename = "CHANGELOG.rst"
