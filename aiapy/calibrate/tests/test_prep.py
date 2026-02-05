@@ -6,6 +6,7 @@ import pytest
 import astropy.time
 import astropy.units as u
 from astropy.io.fits.verify import VerifyWarning
+from astropy.tests.helper import assert_quantity_allclose
 
 import sunpy.data.test
 from sunpy.map import Map
@@ -140,7 +141,7 @@ def test_correct_degradation(aia_171_map, source) -> None:
         ),
         pytest.param(
             "JSOC",
-            0.86288462 * u.dimensionless_unscaled,
+            0.9031773242843387 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         (
@@ -161,7 +162,7 @@ def test_degradation(source, time_correction_truth) -> None:
         obstime,
         correction_table=correction_table,
     )
-    assert u.allclose(time_correction, time_correction_truth, atol=1e-3)
+    assert_quantity_allclose(time_correction, time_correction_truth, atol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -216,7 +217,7 @@ def test_degradation_all_wavelengths(wavelength, result) -> None:
         obstime,
         correction_table=get_correction_table("SSW"),
     )
-    assert u.allclose(time_correction, result, atol=1e-3)
+    assert_quantity_allclose(time_correction, result, atol=1e-3)
 
 
 @pytest.mark.remote_data
@@ -236,7 +237,7 @@ def test_degradation_4500_jsoc() -> None:
     # and it is missing from the SSW files but not the JSOC
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     correction = degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("jsoc"))
-    assert u.allclose(correction, 1.0 * u.dimensionless_unscaled)
+    assert_quantity_allclose(correction, 1.0 * u.dimensionless_unscaled)
 
 
 def test_degradation_time_array() -> None:

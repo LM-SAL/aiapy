@@ -5,6 +5,7 @@ import pytest
 
 import astropy.time
 import astropy.units as u
+from astropy.tests.helper import assert_quantity_allclose
 
 from sunpy.util.metadata import MetaDict
 
@@ -144,7 +145,7 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     correction_table = get_correction_table(source=source)
     eve_correction = channel.eve_correction(obstime, correction_table=correction_table)
-    assert u.allclose(eve_correction, eve_correction_truth)
+    assert_quantity_allclose(eve_correction, eve_correction_truth)
 
 
 def test_wavelength_response_smoke_tests(channel) -> None:
@@ -171,7 +172,7 @@ def test_wavelength_response_uncorrected(channel, idl_environment) -> None:
     r = channel.wavelength_response(correction_table=correction_table)
     ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
@@ -183,7 +184,7 @@ def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
         verbose=False,
     )
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 @pytest.mark.parametrize("include_eve_correction", [False, True])
@@ -210,7 +211,7 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         verbose=False,
     )
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert u.allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
 
 
 @pytest.mark.remote_data

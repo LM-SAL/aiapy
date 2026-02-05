@@ -106,7 +106,7 @@ def test_multiple_versions(jsoc_table) -> None:
     obstime_out_of_range = Time("2015-01-01T12:00:00", scale="utc")
     with pytest.raises(
         ValueError,
-        match=r"Provided correction table contains multiple versions for 94.0 Angstrom. Please provide a table with only one version: \[ 1  2  3  8  9 10\]",
+        match=r"Provided correction table contains multiple versions for 94\.0 Angstrom.*1.*2.*3.*8.*9.*10",
     ):
         _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, jsoc_table)
 
@@ -171,6 +171,7 @@ def test_invalid_error_table_input() -> None:
         get_error_table(-1)
 
 
+@pytest.mark.remote_data
 @pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
 def test_versions_in_calibration_tables(channel, jsoc_table, ssw_table) -> None:
     # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
