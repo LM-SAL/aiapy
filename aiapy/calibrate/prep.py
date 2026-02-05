@@ -207,9 +207,16 @@ def degradation(
     """
     if correction_table is None:
         correction_table = get_correction_table()
-    # Drop all rows which are not for the latest version
-    max_version = correction_table["VER_NUM"].max()
-    correction_table = correction_table[correction_table["VER_NUM"] == max_version]
+    # Keep only the latest version for this channel.
+    # Avoid filtering to the global max which can drop channels without that version.
+    thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
+    wave = channel.to_value(u.angstrom)
+    channel_table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
+    if len(channel_table) > 0:
+        max_version = channel_table["VER_NUM"].max()
+        correction_table = channel_table[channel_table["VER_NUM"] == max_version]
+    else:
+        correction_table = channel_table
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
