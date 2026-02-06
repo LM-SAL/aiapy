@@ -150,8 +150,9 @@ ax.legend(loc=1, frameon=False)
 
 obstime = astropy.time.Time("2019-01-01T00:00:00")
 wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime, correction_table=correction_table)
+# For the EVE correction, we need to specify the version of the correction table to use.
 wavelength_response_335_eve = aia_335_channel.wavelength_response(
-    obstime=obstime, include_eve_correction=True, correction_table=correction_table
+    obstime=obstime, include_eve_correction=True, correction_table=correction_table[correction_table["VER_NUM"] == 10]
 )
 
 ###############################################################################

@@ -13,7 +13,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.utils import _filter_table_for_version, _select_epoch_from_correction_table, get_correction_table
 from aiapy.utils import AIApyUserWarning
 from aiapy.utils.decorators import validate_channel
 
@@ -207,16 +207,7 @@ def degradation(
     """
     if correction_table is None:
         correction_table = get_correction_table()
-    # Keep only the latest version for this channel.
-    # Avoid filtering to the global max which can drop channels without that version.
-    thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
-    wave = channel.to_value(u.angstrom)
-    channel_table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
-    if len(channel_table) > 0:
-        max_version = channel_table["VER_NUM"].max()
-        correction_table = channel_table[channel_table["VER_NUM"] == max_version]
-    else:
-        correction_table = channel_table
+    correction_table = _filter_table_for_version(channel, correction_table)
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)

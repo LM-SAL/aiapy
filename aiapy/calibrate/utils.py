@@ -134,6 +134,22 @@ def get_correction_table(source="SSW") -> QTable:
 
 @u.quantity_input
 @validate_channel("channel")
+def _filter_table_for_version(channel: u.angstrom, correction_table: QTable) -> QTable:
+    # Keep only the latest version for this channel.
+    # Avoid filtering to the global max which can drop channels without that version.
+    thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
+    wave = channel.to_value(u.angstrom)
+    channel_table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
+    if len(channel_table) > 0:
+        max_version = channel_table["VER_NUM"].max()
+        correction_table = channel_table[channel_table["VER_NUM"] == max_version]
+    else:
+        correction_table = channel_table
+    return correction_table
+
+
+@u.quantity_input
+@validate_channel("channel")
 def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction_table):
     """
     Return correction table with only the first epoch and the epoch in which
@@ -159,7 +175,6 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
             f" Please provide a table with only one version: {unique_versions}"
         )
         raise ValueError(msg)
-    table.sort("DATE")  # Newest entries will be last
     if len(table) == 0:
         extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
         msg = f"Correction table does not contain calibration for {channel}.{extra_msg}"

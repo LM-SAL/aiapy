@@ -32,22 +32,38 @@ def test_register(aia_171_map, lvl_15_map) -> None:
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
-    # TODO: Check all of these for Map attributes and .meta values?
     # Check array shape - We cut off two pixels on each side for kicks
     # Due to fixes in sunpy 3.1.6, the shape is different
     # See https://github.com/sunpy/sunpy/pull/5803
     assert lvl_15_map.data.shape == (4094, 4094) != aia_171_map.data.shape
     # Check crpix values
-    assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
-    assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
+    crpix1 = lvl_15_map.data.shape[1] / 2.0 + 0.5
+    crpix2 = lvl_15_map.data.shape[0] / 2.0 + 0.5
+    assert lvl_15_map.meta["crpix1"] == crpix1
+    assert lvl_15_map.meta["crpix2"] == crpix2
+    assert lvl_15_map.reference_pixel.x.to_value(u.pix) + 1 == crpix1
+    assert lvl_15_map.reference_pixel.y.to_value(u.pix) + 1 == crpix2
     # Check cdelt values
-    assert lvl_15_map.meta["cdelt1"] / 0.6 == int(lvl_15_map.meta["cdelt1"] / 0.6)
-    assert lvl_15_map.meta["cdelt2"] / 0.6 == int(lvl_15_map.meta["cdelt2"] / 0.6)
+    cdelt1 = lvl_15_map.meta["cdelt1"]
+    cdelt2 = lvl_15_map.meta["cdelt2"]
+    assert cdelt1 / 0.6 == int(cdelt1 / 0.6)
+    assert cdelt2 / 0.6 == int(cdelt2 / 0.6)
+    assert lvl_15_map.scale[0].to_value(u.arcsec / u.pix) == cdelt1
+    assert lvl_15_map.scale[1].to_value(u.arcsec / u.pix) == cdelt2
     # Check rotation value, I am assuming that the inaccuracy in
     # the CROTA -> PCi_j matrix is causing the inaccuracy here
+    np.testing.assert_allclose(
+        lvl_15_map.rotation_matrix,
+        np.array(
+            [
+                [lvl_15_map.meta["pc1_1"], lvl_15_map.meta["pc1_2"]],
+                [lvl_15_map.meta["pc2_1"], lvl_15_map.meta["pc2_2"]],
+            ]
+        ),
+    )
     np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
     # Check level number
-    assert lvl_15_map.meta["lvl_num"] == 1.5
+    assert lvl_15_map.processing_level == lvl_15_map.meta["lvl_num"] == 1.5
 
 
 def test_register_filesave(lvl_15_map, tmp_path) -> None:
