@@ -13,7 +13,7 @@ from sunpy.map.sources.sdo import AIAMap, HMIMap
 from sunpy.util.decorators import add_common_docstring
 
 from aiapy.calibrate.transform import _rotation_function_names
-from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.utils import _filter_table_for_version, _select_epoch_from_correction_table, get_correction_table
 from aiapy.utils import AIApyUserWarning
 from aiapy.utils.decorators import validate_channel
 
@@ -207,6 +207,7 @@ def degradation(
     """
     if correction_table is None:
         correction_table = get_correction_table()
+    correction_table = _filter_table_for_version(channel, correction_table)
     if obstime.shape == ():
         obstime = obstime.reshape((1,))
     ratio = np.zeros(obstime.shape)
