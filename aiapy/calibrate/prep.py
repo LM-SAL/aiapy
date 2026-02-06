@@ -40,8 +40,6 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
         after this procedure will therefore differ from the original
         file.
 
-    Additional keyword arguments are passed through to the reprojection function.
-
     Parameters
     ----------
     smap : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
@@ -51,9 +49,10 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
         filled in with ``missing``. If `None`, the default value will be the
         minimum value of ``smap``
     algorithm : `str`, optional
-        The reprojection algorithm to use. See the `reproject documentation
-        <https://reproject.readthedocs.io/en/stable/#reference-api>`__
-        for details. Default is 'interpolation'.
+        The reprojection algorithm to use. See the `reproject` documentation
+        for details on different algorithms. Default is 'interpolation'.
+    **kwargs
+        Additional keyword arguments are passed to the `sunpy.map.GenericMap.reproject_to`.
 
     Returns
     -------
