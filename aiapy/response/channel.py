@@ -15,7 +15,7 @@ from sunpy.util.metadata import MetaDict
 
 from aiapy import _SSW_MIRRORS
 from aiapy.calibrate import degradation
-from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
 from aiapy.data._manager import manager
 from aiapy.utils import telescope_number
 from aiapy.utils.decorators import validate_channel
@@ -281,7 +281,9 @@ class Channel:
         return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
 
     @u.quantity_input
-    def eve_correction(self, obstime, correction_table=None) -> u.dimensionless_unscaled:
+    def eve_correction(
+        self, obstime, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION
+    ) -> u.dimensionless_unscaled:
         r"""
         Correct effective area to give good agreement with full-disk EVE data.
 
@@ -311,6 +313,9 @@ class Channel:
             Table of correction parameters.
             Defaults to None, which will use the table returned by
             `aiapy.calibrate.utils.get_correction_table`.
+        calibration_version : `int`, optional
+            The version of the correction table to use.
+            Defaults to the latest version defined in this module.
 
         Returns
         -------
@@ -326,6 +331,7 @@ class Channel:
             self.channel,
             obstime,
             correction_table=correction_table,
+            calibration_version=calibration_version,
         )
         effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
         return table["EFF_AREA"][0] / effective_area_interp
@@ -366,6 +372,7 @@ class Channel:
         include_eve_correction=False,
         include_crosstalk=True,
         correction_table=None,
+        calibration_version=LATEST_CORRECTION_VERSION,
     ) -> u.DN / u.ph * u.cm**2:
         r"""
         The wavelength response function is the product of the gain and the
@@ -401,6 +408,9 @@ class Channel:
         correction_table : `~astropy.table.Table`
             Table of correction parameters.
             See `aiapy.calibrate.utils.get_correction_table` for more information.
+        calibration_version : `int`, optional
+                The version of the correction table to use.
+                Defaults to the latest version defined in this module.
 
         Returns
         -------
@@ -416,8 +426,12 @@ class Channel:
         """
         eve_correction, time_correction = 1, 1
         if obstime is not None:
-            time_correction = degradation(self.channel, obstime, correction_table=correction_table)
+            time_correction = degradation(
+                self.channel, obstime, correction_table=correction_table, calibration_version=calibration_version
+            )
             if include_eve_correction:
-                eve_correction = self.eve_correction(obstime, correction_table=correction_table)
+                eve_correction = self.eve_correction(
+                    obstime, correction_table=correction_table, calibration_version=calibration_version
+                )
         crosstalk = self.crosstalk if include_crosstalk else 0 * u.cm**2
         return (self.effective_area + crosstalk) * self.gain * time_correction * eve_correction

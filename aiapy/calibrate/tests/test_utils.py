@@ -24,12 +24,12 @@ correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210
 
 
 @pytest.fixture(scope="module")
-def jsoc_table():
+def latest_jsoc_correction_table():
     return get_correction_table("jsoc")
 
 
 @pytest.fixture(scope="module")
-def ssw_table():
+def latest_ssw_correction_table():
     return get_correction_table("ssw")
 
 
@@ -63,7 +63,7 @@ def test_correction_table(source) -> None:
 
 @pytest.mark.parametrize("wavelength", [94 * u.angstrom, 1600 * u.angstrom])
 def test_correction_table_selection(wavelength) -> None:
-    table = _select_epoch_from_correction_table(wavelength, obstime, correction_table_local)
+    table = _select_epoch_from_correction_table(wavelength, obstime, correction_table_local, 8)
     assert isinstance(table, QTable)
     expected_columns = [
         "VER_NUM",
@@ -98,17 +98,7 @@ def test_invalid_wavelength_raises_exception() -> None:
 def test_obstime_out_of_range() -> None:
     obstime_out_of_range = Time("2000-01-01T12:00:00", scale="utc")
     with pytest.raises(ValueError, match=f"No valid calibration epoch for {obstime_out_of_range}"):
-        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local)
-
-
-@pytest.mark.remote_data
-def test_multiple_versions(jsoc_table) -> None:
-    obstime_out_of_range = Time("2015-01-01T12:00:00", scale="utc")
-    with pytest.raises(
-        ValueError,
-        match=r"Provided correction table contains multiple versions for 94\.0 Angstrom.*1.*2.*3.*8.*9.*10",
-    ):
-        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, jsoc_table)
+        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local, 8)
 
 
 @pytest.mark.remote_data
@@ -173,11 +163,13 @@ def test_invalid_error_table_input() -> None:
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
-def test_versions_in_calibration_tables(channel, jsoc_table, ssw_table) -> None:
+def test_use_latest_version_in_correction_tables(
+    channel, latest_jsoc_correction_table, latest_ssw_correction_table
+) -> None:
     # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
     # Issue is that we do not use the latest version of the correction table by default
     # if multiple versions are available for a given time
     time = Time("2010-11-03T12:15:00")
-    d_jsoc = degradation(channel, time, correction_table=jsoc_table)
-    d_ssw = degradation(channel, time, correction_table=ssw_table)
+    d_jsoc = degradation(channel, time, correction_table=latest_jsoc_correction_table)
+    d_ssw = degradation(channel, time, correction_table=latest_ssw_correction_table)
     assert_quantity_allclose(d_jsoc, d_ssw)

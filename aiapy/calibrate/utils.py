@@ -24,6 +24,7 @@ from aiapy.utils.decorators import validate_channel
 from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = [
+    "LATEST_CORRECTION_VERSION",
     "get_correction_table",
     "get_error_table",
     "get_pointing_table",
@@ -40,13 +41,14 @@ _URL_HASH_POINTING_TABLE = (
     "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv",
     None,
 )
+LATEST_CORRECTION_VERSION = 10
 _URL_HASH_CORRECTION_TABLE = {
-    10: (
+    LATEST_CORRECTION_VERSION: (
         [urljoin(mirror, "sdo/aia/response/aia_V10_20201119_190000_response_table.txt") for mirror in _SSW_MIRRORS],
         "0a3f2db39d05c44185f6fdeec928089fb55d1ce1e0a805145050c6356cbc6e98",
     )
 }
-_URL_HASH_CORRECTION_TABLE["latest"] = _URL_HASH_CORRECTION_TABLE[10]
+_URL_HASH_CORRECTION_TABLE["latest"] = _URL_HASH_CORRECTION_TABLE[LATEST_CORRECTION_VERSION]
 _URL_HASH_ERROR_TABLE["latest"] = _URL_HASH_ERROR_TABLE[3]
 
 
@@ -132,23 +134,9 @@ def get_correction_table(source="SSW") -> QTable:
 
 @u.quantity_input
 @validate_channel("channel")
-def _filter_table_for_version(channel: u.angstrom, correction_table: QTable) -> QTable:
-    # Keep only the latest version for this channel.
-    # Avoid filtering to the global max which can drop channels without that version.
-    thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
-    wave = channel.to_value(u.angstrom)
-    channel_table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
-    if len(channel_table) > 0:
-        max_version = channel_table["VER_NUM"].max()
-        correction_table = channel_table[channel_table["VER_NUM"] == max_version]
-    else:
-        correction_table = channel_table
-    return correction_table
-
-
-@u.quantity_input
-@validate_channel("channel")
-def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction_table):
+def _select_epoch_from_correction_table(
+    channel: u.angstrom, obstime, correction_table, calibration_version=LATEST_CORRECTION_VERSION
+):
     """
     Return correction table with only the first epoch and the epoch in which
     ``obstime`` falls and for only one given calibration version.
@@ -158,6 +146,9 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     channel : `~astropy.units.Quantity`
     obstime : `~astropy.time.Time`
     correction_table : `~astropy.table.QTable`
+    calibration_version : `int`
+        The version of the correction table to use.
+        Defaults to the latest version defined in this module.
     """
     # Select only this channel
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
@@ -165,17 +156,15 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
     wave = channel.to(u.angstrom).value
     table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
-    # Check that there is only one version in the table
-    unique_versions = np.unique(table["VER_NUM"])
-    if len(unique_versions) > 1:
-        msg = (
-            f"Provided correction table contains multiple versions for {channel}."
-            f" Please provide a table with only one version: {unique_versions}"
-        )
-        raise ValueError(msg)
+    # 4500 only went to level 3 for calibration.
+    if wave == 4500:
+        calibration_version = min(calibration_version, 3)
+    table = table[table["VER_NUM"] == calibration_version]
     if len(table) == 0:
-        extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
-        msg = f"Correction table does not contain calibration for {channel}.{extra_msg}"
+        msg = (
+            f"Correction table does not contain calibration for {channel:0.0f} and version {calibration_version}."
+            " If you are after 4500, you should use the JSOC source to fetch the correct version."
+        )
         raise ValueError(
             msg,
         )

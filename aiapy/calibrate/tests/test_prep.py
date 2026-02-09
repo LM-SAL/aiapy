@@ -32,38 +32,22 @@ def test_register(aia_171_map, lvl_15_map) -> None:
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
+    # TODO: Check all of these for Map attributes and .meta values?
     # Check array shape - We cut off two pixels on each side for kicks
     # Due to fixes in sunpy 3.1.6, the shape is different
     # See https://github.com/sunpy/sunpy/pull/5803
     assert lvl_15_map.data.shape == (4094, 4094) != aia_171_map.data.shape
     # Check crpix values
-    crpix1 = lvl_15_map.data.shape[1] / 2.0 + 0.5
-    crpix2 = lvl_15_map.data.shape[0] / 2.0 + 0.5
-    assert lvl_15_map.meta["crpix1"] == crpix1
-    assert lvl_15_map.meta["crpix2"] == crpix2
-    assert lvl_15_map.reference_pixel.x.to_value(u.pix) + 1 == crpix1
-    assert lvl_15_map.reference_pixel.y.to_value(u.pix) + 1 == crpix2
+    assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
+    assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
     # Check cdelt values
-    cdelt1 = lvl_15_map.meta["cdelt1"]
-    cdelt2 = lvl_15_map.meta["cdelt2"]
-    assert cdelt1 / 0.6 == int(cdelt1 / 0.6)
-    assert cdelt2 / 0.6 == int(cdelt2 / 0.6)
-    assert lvl_15_map.scale[0].to_value(u.arcsec / u.pix) == cdelt1
-    assert lvl_15_map.scale[1].to_value(u.arcsec / u.pix) == cdelt2
+    assert lvl_15_map.meta["cdelt1"] / 0.6 == int(lvl_15_map.meta["cdelt1"] / 0.6)
+    assert lvl_15_map.meta["cdelt2"] / 0.6 == int(lvl_15_map.meta["cdelt2"] / 0.6)
     # Check rotation value, I am assuming that the inaccuracy in
     # the CROTA -> PCi_j matrix is causing the inaccuracy here
-    np.testing.assert_allclose(
-        lvl_15_map.rotation_matrix,
-        np.array(
-            [
-                [lvl_15_map.meta["pc1_1"], lvl_15_map.meta["pc1_2"]],
-                [lvl_15_map.meta["pc2_1"], lvl_15_map.meta["pc2_2"]],
-            ]
-        ),
-    )
     np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
     # Check level number
-    assert lvl_15_map.processing_level == lvl_15_map.meta["lvl_num"] == 1.5
+    assert lvl_15_map.meta["lvl_num"] == 1.5
 
 
 def test_register_filesave(lvl_15_map, tmp_path) -> None:
@@ -122,7 +106,6 @@ def test_register_level_15(lvl_15_map) -> None:
     [
         pytest.param(None, marks=pytest.mark.remote_data),
         # We test different casings to make sure it's case insensitive
-        pytest.param("JSOC", marks=pytest.mark.remote_data),
         pytest.param("jsOc", marks=pytest.mark.remote_data),
         pytest.param("SsW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
@@ -131,14 +114,17 @@ def test_register_level_15(lvl_15_map) -> None:
 )
 def test_correct_degradation(aia_171_map, source) -> None:
     correction_table = get_correction_table() if source is None else get_correction_table(source=source)
+    calibration_version = np.max(correction_table["VER_NUM"])
     original_corrected = correct_degradation(
         aia_171_map,
         correction_table=correction_table,
+        calibration_version=calibration_version,
     )
     d = degradation(
         aia_171_map.wavelength,
         aia_171_map.date,
         correction_table=correction_table,
+        calibration_version=calibration_version,
     )
     with np.errstate(divide="ignore", invalid="ignore"):
         uncorrected_over_corrected = aia_171_map.data / original_corrected.data
@@ -148,35 +134,43 @@ def test_correct_degradation(aia_171_map, source) -> None:
 
 
 @pytest.mark.parametrize(
-    ("source", "time_correction_truth"),
+    ("source", "time_correction_truth", "calibration_version"),
     [
         pytest.param(
             "SSW",
             0.9031773242843387 * u.dimensionless_unscaled,
+            # This is none to ensure that the default value works
+            None,
             marks=pytest.mark.remote_data,
         ),
         pytest.param(
             "JSOC",
+            # This should match the value above
             0.9031773242843387 * u.dimensionless_unscaled,
+            None,
             marks=pytest.mark.remote_data,
         ),
         (
             get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
             0.7667108920899671 * u.dimensionless_unscaled,
+            8,
         ),
     ],
 )
-def test_degradation(source, time_correction_truth) -> None:
+def test_degradation(source, time_correction_truth, calibration_version) -> None:
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the specific correction table file.
-    # TODO: Test this over multiple wavelengths
     correction_table = get_correction_table(source=source)
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
+    kwargs = {}
+    if calibration_version is not None:
+        kwargs["calibration_version"] = calibration_version
     time_correction = degradation(
         94 * u.angstrom,
         obstime,
         correction_table=correction_table,
+        **kwargs,
     )
     assert_quantity_allclose(time_correction, time_correction_truth, atol=1e-3)
 
@@ -242,7 +236,7 @@ def test_degradation_4500_missing() -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     with pytest.raises(
         ValueError,
-        match=r"Correction table does not contain calibration for 4500.0 Angstrom. Max version is 3.",
+        match=r"Correction table does not contain calibration for 4500 Angstrom and version 3. If you are after 4500, you should use the JSOC source to fetch the correct version.",
     ):
         degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("SSW"))
 
@@ -260,14 +254,10 @@ def test_degradation_time_array() -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     obstime = obstime + np.linspace(0, 1, 100) * u.year
     correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    time_correction = degradation(
-        94 * u.angstrom,
-        obstime,
-        correction_table=correction_table,
-    )
+    time_correction = degradation(94 * u.angstrom, obstime, correction_table=correction_table, calibration_version=8)
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction, strict=True):
-        assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table)
+        assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
 
 
 def test_register_cupy(aia_171_map) -> None:

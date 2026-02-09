@@ -16,7 +16,7 @@ authors = [
   { name = "AIA Instrument Team @ LMSAL", email = "nfreij@set.org" },
 ]
 dependencies = [
-  'astropy>=7.2.0',
+  'astropy>=7.1.1',
   'sunpy[net,image,map]>=7.0',
 ]
 dynamic = ["version"]
