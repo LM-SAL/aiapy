@@ -17,6 +17,8 @@ authors = [
 ]
 dependencies = [
   'astropy>=7.1.1',
+  "numpy>=2.0.0",
+  "matplotlib>3.9.0",
   'sunpy[net,image,map]>=7.0',
 ]
 dynamic = ["version"]
@@ -38,7 +40,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
