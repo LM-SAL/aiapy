@@ -163,7 +163,6 @@ def _select_epoch_from_correction_table(
     if len(table) == 0:
         msg = (
             f"Correction table does not contain calibration for {channel:0.0f} and version {calibration_version}."
-            " If you are after 4500, you should use the JSOC source to fetch the correct version."
         )
         raise ValueError(
             msg,
