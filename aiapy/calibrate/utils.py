@@ -161,9 +161,7 @@ def _select_epoch_from_correction_table(
         calibration_version = min(calibration_version, 3)
     table = table[table["VER_NUM"] == calibration_version]
     if len(table) == 0:
-        msg = (
-            f"Correction table does not contain calibration for {channel:0.0f} and version {calibration_version}."
-        )
+        msg = f"Correction table does not contain calibration for {channel:0.0f} and version {calibration_version}."
         raise ValueError(
             msg,
         )

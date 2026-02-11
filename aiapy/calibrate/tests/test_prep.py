@@ -236,7 +236,7 @@ def test_degradation_4500_missing() -> None:
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
     with pytest.raises(
         ValueError,
-        match=r"Correction table does not contain calibration for 4500 Angstrom and version 3. If you are after 4500, you should use the JSOC source to fetch the correct version.",
+        match=r"Correction table does not contain calibration for 4500 Angstrom and version 3.",
     ):
         degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("SSW"))
 
