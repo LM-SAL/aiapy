@@ -2,10 +2,13 @@
 ``aiapy``
 =========
 
-Python library for AIA data analysis.
+``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
 
-* Homepage: https://aia.lmsal.com
-* Documentation: https://aiapy.readthedocs.io/en/stable/
+For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
+
+For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
+
+- `Homepage <https://aia.lmsal.com>`__
 """
 
 from itertools import compress
@@ -14,6 +17,8 @@ from pathlib import Path
 from .version import version as __version__
 
 _SSW_MIRRORS = [
+    # Github mirror managed by LMSAL
+    "https://raw.githubusercontent.com/LM-SAL/backup-files/refs/heads/aia/static/",
     "https://soho.nascom.nasa.gov/solarsoft/",
     "https://hesperia.gsfc.nasa.gov/ssw/",
 ]
