@@ -128,6 +128,7 @@ def test_update_pointing_no_entry_raises_exception(aia_193_level1_map, pointing_
         update_pointing(aia_193_level1_map, pointing_table=pointing_table)
 
 
+@pytest.mark.remote_data
 def test_fix_pointing_missing_value(aia_193_level1_map, mock_pointing_table) -> None:
     # Adjust map to a date we know has missing pointing information
     aia_193_level1_map.meta["date-obs"] = "2010-09-30T06:51:48.344"
