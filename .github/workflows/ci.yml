@@ -127,10 +127,6 @@ jobs:
       test_extras: 'all,tests'
       test_command: 'pytest -p no:warnings --doctest-rst --pyargs aiapy'
       submodules: false
-<<<<<<<
-    secrets:
-      pypi_token: ${{ secrets.pypi_token }}
-=======
       save_artifacts: true
       upload_to_pypi: false
 
@@ -155,6 +151,3 @@ jobs:
 
       - name: Run upload
         uses: pypa/gh-action-pypi-publish@v1.13.0  # zizmor: ignore[unpinned-uses]
-
-
->>>>>>>
