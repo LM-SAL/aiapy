@@ -81,7 +81,7 @@ jobs:
         if: steps.cruft_json.outputs.has_changes == '1'
         uses: peter-evans/create-pull-request@v8  # zizmor: ignore[unpinned-uses]
         with:
-          token: ${{ secrets.BOT_TEMPLATE_WORKFLOW }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: "."
           commit-message: "Automatic package template update"
           branch: "cruft/update"
