@@ -1,4 +1,4 @@
-exclude: ".*(.fits|.fts|.fit|.header|.txt|tca.*|extern.*|aiapy/extern|^CITATION.rst)$"
+exclude: "(.*/)?CITATION.rst$|.*(.fits|.fts|.fit|.header|.txt|tca.*|extern.*|irispy/extern)$"
 repos:
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: v1.23.1
@@ -48,12 +48,11 @@ repos:
         types_or: [python, rst, yaml, json]
       - id: mixed-line-ending
         types_or: [python, rst, yaml, json]
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        args: ["--write-changes"]
-        types_or: [python, rst]
+  # See https://github.com/python-trio/trio/pull/3255
+  -   repo: https://github.com/adhtruong/mirrors-typos
+      rev: v1.43.5
+      hooks:
+      - id: typos
         exclude: *exclude_dirs
 ci:
   autofix_prs: false
