@@ -1,12 +1,3 @@
-<<<<<<<
-=========
-=======
-Python library for AIA data analysis
-====================================
-
-Usage of Generative AI
-----------------------
->>>>>>>
 ``aiapy``
 =========
 
@@ -14,30 +5,6 @@ Usage of Generative AI
     :target: https://github.com/LM-SAL/aiapy/actions/workflows/ci.yml
     :alt: aiapy CI status
 
-<<<<<<<
-=======
-If you use generative AI tools as an aid in developing code or documentation changes, ensure that you fully understand the proposed changes and can explain why they are the correct approach and an improvement to the current state.
-For more information see our documentation on fair and appropriate `AI usage <https://docs.sunpy.org/en/latest/dev_guide/contents/ai_usage.html>`__.
-
-Contributing
-------------
-
-We love contributions! aiapy is open source,
-built on open source, and we'd love to have you hang out in our community.
-
-If you would like to get involved, check out the `Developers Guide`_ section of the SunPy docs.
-Stop by our chat room `#sunpy:openastronomy.org`_ if you have any questions.
-Help is always welcome so let us know what you like to work on, or check out the `issues page`_ for the list of known outstanding items.
-
-For more information on contributing to SunPy, please read our `Newcomers' guide`_.
-
-.. _Developers Guide: https://docs.sunpy.org/en/latest/dev_guide/index.html
-.. _`#sunpy:openastronomy.org`: https://app.element.io/#/room/#sunpy:openastronomy.org
-.. _issues page: https://github.com/LM-SAL/aiapy/issues/
-.. _Newcomers' guide: https://docs.sunpy.org/en/latest/dev_guide/contents/newcomers.html
-
-When you are interacting with the SunPy community you are asked at to follow our `code of conduct <https://sunpy.org/coc>`__.
->>>>>>>
 .. image:: https://readthedocs.org/projects/aiapy/badge/?version=stable
     :target: https://aiapy.readthedocs.io/en/stable/?badge=stable
     :alt: Documentation Status
@@ -72,13 +39,6 @@ Citing
 If you use ``aiapy`` in your scientific work, we would appreciate you citing it in your publications.
 The latest citation information can be found in the `documentation <https://aiapy.readthedocs.io/en/latest/citation.html>`__, or obtained with ``aiapy.__citation__``.
 
-Contributing
-------------
-
-``aiapy`` is open source software, built on top of other open source software, and we'd love to have you contribute
-
-Please checkout the `contributing guide <https://aiapy.readthedocs.io/en/latest/develop.html>`__ for more information on how to contribute to aiapy.
-
 Usage of Generative AI
 ----------------------
 
@@ -88,19 +48,12 @@ Be wary of posting output from large language models or similar generative AI as
 If you use generative AI tools as an aid in developing code or documentation changes, ensure that you fully understand the proposed changes and can explain why they are the correct approach and an improvement to the current state.
 For more information see our documentation on fair and appropriate `AI usage <https://docs.sunpy.org/en/latest/dev_guide/contents/ai_usage.html>`__.
 
-License
--------
-
-This project is Copyright (c) AIA Instrument Team @ LMSAL and licensed under
-the terms of the BSD 3-Clause license. This package is based upon
-the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`__
-which is licensed under the BSD 3-clause licence. See the licenses folder for
-more information.
-
 Contributing
 ------------
 
-We love contributions! irispy is open source, built on open source, and we'd love to have you hang out in our community.
+We love contributions! aiapy is open source, built on open source, and we'd love to have you hang out in our community.
+
+Please checkout the `contributing guide <https://aiapy.readthedocs.io/en/latest/develop.html>`__ for more information on how to contribute to aiapy.
 
 **Imposter syndrome disclaimer**: We want your help. No, really.
 
@@ -122,3 +75,12 @@ Note: This disclaimer was originally written by
 `PyCon talk <https://www.youtube.com/watch?v=6Uj746j9Heo>`__, and was adapted by
 irispy-lmsal based on its use in the README file for the
 `MetPy project <https://github.com/Unidata/MetPy>`__.
+
+License
+-------
+
+This project is Copyright (c) AIA Instrument Team @ LMSAL and licensed under
+the terms of the BSD 3-Clause license. This package is based upon
+the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`__
+which is licensed under the BSD 3-clause licence. See the licenses folder for
+more information.
