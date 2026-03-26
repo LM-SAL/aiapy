@@ -29,12 +29,10 @@ __all__ = [
     "get_pointing_table",
 ]
 
-# Error table filename available from SSW
-_AIA_ERROR_FILE = "sdo/aia/response/aia_V{}_error_table.txt"
 # URLs and SHA-256 hashes for each version of the error tables
 _URL_HASH_ERROR_TABLE = {
     3: (
-        [urljoin(mirror, _AIA_ERROR_FILE.format(3)) for mirror in _SSW_MIRRORS],
+        [urljoin(mirror, "sdo/aia/response/aia_V3_error_table.txt") for mirror in _SSW_MIRRORS],
         "66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894",
     )
 }

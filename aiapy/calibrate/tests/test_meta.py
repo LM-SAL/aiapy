@@ -56,7 +56,7 @@ def test_fix_pointing(aia_193_level1_map, pointing_table) -> None:
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize(
-    ("t_delt_factor", "expected_entry"),
+    ("t_delta_factor", "expected_entry"),
     [
         # T_OBS = T_START[i] chooses the i-th entry
         (0, 0),
@@ -70,10 +70,10 @@ def test_fix_pointing(aia_193_level1_map, pointing_table) -> None:
         (1.001, 1),
     ],
 )
-def test_update_pointing_accuracy(aia_193_level1_map, pointing_table, t_delt_factor, expected_entry) -> None:
+def test_update_pointing_accuracy(aia_193_level1_map, pointing_table, t_delta_factor, expected_entry) -> None:
     t_start = pointing_table[0]["T_START"]
-    t_delt = pointing_table[0]["T_STOP"] - t_start  # This is nearly always 3 hours
-    aia_193_level1_map.meta["T_OBS"] = (t_start + t_delt * t_delt_factor).isot
+    t_delta = pointing_table[0]["T_STOP"] - t_start  # This is nearly always 3 hours
+    aia_193_level1_map.meta["T_OBS"] = (t_start + t_delta * t_delta_factor).isot
     aia_map_updated = update_pointing(aia_193_level1_map, pointing_table=pointing_table)
     assert aia_map_updated.reference_pixel.x == pointing_table[expected_entry]["A_193_X0"]
     assert aia_map_updated.reference_pixel.y == pointing_table[expected_entry]["A_193_Y0"]
@@ -128,6 +128,7 @@ def test_update_pointing_no_entry_raises_exception(aia_193_level1_map, pointing_
         update_pointing(aia_193_level1_map, pointing_table=pointing_table)
 
 
+@pytest.mark.remote_data
 def test_fix_pointing_missing_value(aia_193_level1_map, mock_pointing_table) -> None:
     # Adjust map to a date we know has missing pointing information
     aia_193_level1_map.meta["date-obs"] = "2010-09-30T06:51:48.344"
