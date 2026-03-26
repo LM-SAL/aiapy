@@ -13,7 +13,7 @@ from astropy.coordinates import SkyCoord
 
 from sunpy.map.header_helper import make_fitswcs_header
 
-from aiapy.calibrate.utils import _select_epoch_from_correction_table, get_correction_table
+from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
 from aiapy.utils import detector_dimensions
 from aiapy.utils.decorators import validate_channel
 from aiapy.utils.exceptions import AIApyUserWarning
@@ -104,7 +104,7 @@ def register(smap, *, missing=None, algorithm="interpolation", **kwargs):
     return smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
 
 
-def correct_degradation(smap, *, correction_table=None):
+def correct_degradation(smap, *, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION):
     """
     Apply time-dependent degradation correction to an AIA map.
 
@@ -120,6 +120,9 @@ def correct_degradation(smap, *, correction_table=None):
     correction_table : `~astropy.table.Table`
         Table of correction parameters.
         You can get this table by calling `aiapy.calibrate.utils.get_correction_table`.
+    calibration_version : `int`, optional
+        The version of the correction table to use.
+        Defaults to the latest version defined in this module.
 
     Returns
     -------
@@ -134,6 +137,7 @@ def correct_degradation(smap, *, correction_table=None):
         smap.wavelength,
         smap.date,
         correction_table=correction_table,
+        calibration_version=calibration_version,
     )
     return smap / d
 
@@ -145,6 +149,7 @@ def degradation(
     obstime,
     *,
     correction_table=None,
+    calibration_version=LATEST_CORRECTION_VERSION,
 ) -> u.dimensionless_unscaled:
     r"""
     Correction to account for time-dependent degradation of the instrument.
@@ -182,6 +187,9 @@ def degradation(
     correction_table : `~astropy.table.Table`, optional
         Table of correction parameters.
         Defaults to None, which will use the table returned by `aiapy.calibrate.utils.get_correction_table`.
+    calibration_version : `int`, optional
+        The version of the correction table to use.
+        Defaults to the latest version defined in this module.
 
     Returns
     -------
@@ -201,7 +209,9 @@ def degradation(
     ratio = np.zeros(obstime.shape)
     poly = np.zeros(obstime.shape)
     for idx, t in enumerate(obstime):
-        table = _select_epoch_from_correction_table(channel, t, correction_table)
+        table = _select_epoch_from_correction_table(
+            channel, t, correction_table, calibration_version=calibration_version
+        )
         # Time difference between obstime and start of epoch
         dt = (t - table["T_START"][-1]).to(u.day).value
         # Correction to most recent epoch

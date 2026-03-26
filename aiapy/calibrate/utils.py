@@ -16,7 +16,7 @@ from astropy.table import QTable
 from astropy.time import Time
 
 from sunpy import log
-from sunpy.time import TimeRange
+from sunpy.time import TimeRange, parse_time
 
 from aiapy import _SSW_MIRRORS
 from aiapy.data._manager import manager
@@ -24,17 +24,16 @@ from aiapy.utils.decorators import validate_channel
 from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = [
+    "LATEST_CORRECTION_VERSION",
     "get_correction_table",
     "get_error_table",
     "get_pointing_table",
 ]
 
-# Error table filename available from SSW
-_AIA_ERROR_FILE = "sdo/aia/response/aia_V{}_error_table.txt"
 # URLs and SHA-256 hashes for each version of the error tables
 _URL_HASH_ERROR_TABLE = {
     3: (
-        [urljoin(mirror, _AIA_ERROR_FILE.format(3)) for mirror in _SSW_MIRRORS],
+        [urljoin(mirror, "sdo/aia/response/aia_V3_error_table.txt") for mirror in _SSW_MIRRORS],
         "66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894",
     )
 }
@@ -42,13 +41,14 @@ _URL_HASH_POINTING_TABLE = (
     "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv",
     None,
 )
+LATEST_CORRECTION_VERSION = 10
 _URL_HASH_CORRECTION_TABLE = {
-    10: (
+    LATEST_CORRECTION_VERSION: (
         [urljoin(mirror, "sdo/aia/response/aia_V10_20201119_190000_response_table.txt") for mirror in _SSW_MIRRORS],
         "0a3f2db39d05c44185f6fdeec928089fb55d1ce1e0a805145050c6356cbc6e98",
     )
 }
-_URL_HASH_CORRECTION_TABLE["latest"] = _URL_HASH_CORRECTION_TABLE[10]
+_URL_HASH_CORRECTION_TABLE["latest"] = _URL_HASH_CORRECTION_TABLE[LATEST_CORRECTION_VERSION]
 _URL_HASH_ERROR_TABLE["latest"] = _URL_HASH_ERROR_TABLE[3]
 
 
@@ -62,7 +62,7 @@ def _fetch_error_table_latest():
     return manager.get("error_table_latest")
 
 
-def get_correction_table(source="JSOC") -> QTable:
+def get_correction_table(source="SSW") -> QTable:
     """
     Return table of degradation correction factors.
 
@@ -118,20 +118,14 @@ def get_correction_table(source="JSOC") -> QTable:
         "EFF_WVLN",
     ]
     table = table[selected_cols]
-    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-    # TODO: Remove when astropy > 7.1.1 is out
-    new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
-    table["T_START"] = new_start_times
+    table["T_START"] = parse_time(table["T_START"])
     # NOTE: The warning from erfa here is due to the fact that dates in
     # this table include at least one date from 2030 and converting this
     # date to UTC is ambiguous as the UTC conversion is not well defined
     # at this date.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=ErfaWarning)
-        # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-        # TODO: Remove when astropy > 7.1.1 is out
-        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
-        table["T_STOP"] = new_end_times
+        table["T_STOP"] = parse_time(table["T_STOP"])
     table["WAVELNTH"].unit = "Angstrom"
     table["EFF_WVLN"].unit = "Angstrom"
     table["EFF_AREA"].unit = "cm2"
@@ -140,7 +134,9 @@ def get_correction_table(source="JSOC") -> QTable:
 
 @u.quantity_input
 @validate_channel("channel")
-def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction_table):
+def _select_epoch_from_correction_table(
+    channel: u.angstrom, obstime, correction_table, calibration_version=LATEST_CORRECTION_VERSION
+):
     """
     Return correction table with only the first epoch and the epoch in which
     ``obstime`` falls and for only one given calibration version.
@@ -150,6 +146,9 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     channel : `~astropy.units.Quantity`
     obstime : `~astropy.time.Time`
     correction_table : `~astropy.table.QTable`
+    calibration_version : `int`
+        The version of the correction table to use.
+        Defaults to the latest version defined in this module.
     """
     # Select only this channel
     # NOTE: The WAVE_STR prime keys for the aia.response JSOC series for the
@@ -157,10 +156,12 @@ def _select_epoch_from_correction_table(channel: u.angstrom, obstime, correction
     thin = "_THIN" if channel not in (1600, 1700, 4500) * u.angstrom else ""
     wave = channel.to(u.angstrom).value
     table = correction_table[correction_table["WAVE_STR"] == f"{wave:.0f}{thin}"]
-    table.sort("DATE")  # Newest entries will be last
+    # 4500 only went to level 3 for calibration.
+    if wave == 4500:
+        calibration_version = min(calibration_version, 3)
+    table = table[table["VER_NUM"] == calibration_version]
     if len(table) == 0:
-        extra_msg = " Max version is 3." if channel == 4500 * u.AA else ""
-        msg = f"Correction table does not contain calibration for {channel}.{extra_msg}"
+        msg = f"Correction table does not contain calibration for {channel:0.0f} and version {calibration_version}."
         raise ValueError(
             msg,
         )
@@ -263,14 +264,10 @@ def get_pointing_table(source="lmsal", time_range=None):
     else:
         msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
         raise ValueError(msg)
-    # Avoid a segfault in astropy when converting to Time with numpy 2.3.0
-    # TODO: Remove when astropy > 7.1.1 is out
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=ErfaWarning)
-        new_start_times = [Time(t, scale="utc") for t in table["T_START"]]
-        new_end_times = [Time(t, scale="utc") for t in table["T_STOP"]]
-    table["T_START"] = new_start_times
-    table["T_STOP"] = new_end_times
+        table["T_START"] = parse_time(table["T_START"])
+        table["T_STOP"] = parse_time(table["T_STOP"])
     for c in table.colnames:
         if "X0" in c or "Y0" in c:
             table[c].unit = "pixel"

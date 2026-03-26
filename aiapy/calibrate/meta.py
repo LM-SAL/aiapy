@@ -50,7 +50,7 @@ def update_pointing(smap, *, pointing_table=None):
 
     See Also
     --------
-    `aiapy.calibrate.utils.get_pointing_table`
+    aiapy.calibrate.utils.get_pointing_table
     """
     # NOTE: Warn user if it looks like they may have changed the resolution of their map
     # as this will cause the pointing update to be incorrect. This is not a strict check
