@@ -5,6 +5,7 @@ import pytest
 
 import astropy.units as u
 from astropy.table import QTable
+from astropy.tests.helper import assert_quantity_allclose
 from astropy.time import Time, TimeDelta
 
 from aiapy.calibrate import update_pointing
@@ -93,7 +94,7 @@ def test_update_pointing_submap(aia_193_level1_map, pointing_table) -> None:
     m_pointing_update_submap = update_pointing(aia_193_level1_map, pointing_table=pointing_table).submap(
         blc, top_right=trc
     )
-    assert u.allclose(
+    assert_quantity_allclose(
         u.Quantity(m_submap_pointing_update.reference_pixel),
         u.Quantity(m_pointing_update_submap.reference_pixel),
         rtol=1e-10,

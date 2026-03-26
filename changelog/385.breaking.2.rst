@@ -1,0 +1,3 @@
+Restored ``calibration_version`` parameter to `aiapy.calibrate.degradation` function.
+While it was removed to simplify the API, in hindsight it is clear that this parameter is necessary to
+properly handle cases where multiple calibration versions are present in the correction table.

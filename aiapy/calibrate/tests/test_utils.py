@@ -4,10 +4,12 @@ import pytest
 
 import astropy.units as u
 from astropy.table import QTable
+from astropy.tests.helper import assert_quantity_allclose
 from astropy.time import Time
 
 from sunpy.time import TimeRange
 
+from aiapy.calibrate import degradation
 from aiapy.calibrate.utils import (
     _select_epoch_from_correction_table,
     get_correction_table,
@@ -19,6 +21,16 @@ from aiapy.tests.data import get_test_filepath
 # These are not fixtures so that they can be easily used in the parametrize mark
 obstime = Time("2015-01-01T00:00:00", scale="utc")
 correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+
+
+@pytest.fixture(scope="module")
+def latest_jsoc_correction_table():
+    return get_correction_table("jsoc")
+
+
+@pytest.fixture(scope="module")
+def latest_ssw_correction_table():
+    return get_correction_table("ssw")
 
 
 @pytest.mark.parametrize(
@@ -51,7 +63,7 @@ def test_correction_table(source) -> None:
 
 @pytest.mark.parametrize("wavelength", [94 * u.angstrom, 1600 * u.angstrom])
 def test_correction_table_selection(wavelength) -> None:
-    table = _select_epoch_from_correction_table(wavelength, obstime, correction_table_local)
+    table = _select_epoch_from_correction_table(wavelength, obstime, correction_table_local, 8)
     assert isinstance(table, QTable)
     expected_columns = [
         "VER_NUM",
@@ -86,7 +98,7 @@ def test_invalid_wavelength_raises_exception() -> None:
 def test_obstime_out_of_range() -> None:
     obstime_out_of_range = Time("2000-01-01T12:00:00", scale="utc")
     with pytest.raises(ValueError, match=f"No valid calibration epoch for {obstime_out_of_range}"):
-        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local)
+        _select_epoch_from_correction_table(94 * u.angstrom, obstime_out_of_range, correction_table_local, 8)
 
 
 @pytest.mark.remote_data
@@ -147,3 +159,17 @@ def test_error_table(error_table) -> None:
 def test_invalid_error_table_input() -> None:
     with pytest.raises(TypeError, match="source must be a filepath, or 'SSW', not -1"):
         get_error_table(-1)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
+def test_use_latest_version_in_correction_tables(
+    channel, latest_jsoc_correction_table, latest_ssw_correction_table
+) -> None:
+    # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
+    # Issue is that we do not use the latest version of the correction table by default
+    # if multiple versions are available for a given time
+    time = Time("2010-11-03T12:15:00")
+    d_jsoc = degradation(channel, time, correction_table=latest_jsoc_correction_table)
+    d_ssw = degradation(channel, time, correction_table=latest_ssw_correction_table)
+    assert_quantity_allclose(d_jsoc, d_ssw)

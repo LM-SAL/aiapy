@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 import astropy.units as u
+from astropy.tests.helper import assert_quantity_allclose
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.utils import get_error_table
@@ -58,7 +59,7 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
         error_table=error_table,
         compare_idl=True,
     )
-    assert u.allclose(error, error_ssw, rtol=1e-4)
+    assert_quantity_allclose(error, error_ssw, rtol=1e-4)
 
 
 # For now, we only need the 94 Angstrom PSF
