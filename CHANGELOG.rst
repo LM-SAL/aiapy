@@ -1,3 +1,30 @@
+0.12.0 (2026-03-26)
+===================
+
+Breaking Changes
+----------------
+
+- Increased minimum version of astropy to 7.1.1 to simplify internal code within aiapy. (`#385 <https://github.com/LM-SAL/aiapy/pull/385>`__)
+- Restored ``calibration_version`` parameter to `aiapy.calibrate.degradation` function.
+  While it was removed to simplify the API, in hindsight it is clear that this parameter is necessary to
+  properly handle cases where multiple calibration versions are present in the correction table. (`#385 <https://github.com/LM-SAL/aiapy/pull/385>`__)
+- `aiapy.calibrate.utils.get_correction_table` now defaults to the latest version from SSW instead of the JSOC.
+  The table has not seen an update in a while, so this avoids an unnecessary network call to the JSOC. (`#385 <https://github.com/LM-SAL/aiapy/pull/385>`__)
+
+
+New Features
+------------
+
+- Added a new GitHub backup mirror for SSWIDL files used by aiapy. (`#391 <https://github.com/LM-SAL/aiapy/pull/391>`__)
+
+
+Bug Fixes
+---------
+
+- Ensured that `aiapy.calibrate.degradation` now once again accounts for possibility of multiple calibration versions in correction table.
+  This resolves issues where incorrect degradation corrections were applied due to multiple entries in the calibration table. (`#385 <https://github.com/LM-SAL/aiapy/pull/385>`__)
+
+
 0.11.0 (2025-12-23)
 ===================
 

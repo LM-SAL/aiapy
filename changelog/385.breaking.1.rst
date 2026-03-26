@@ -1,2 +1,0 @@
-`aiapy.calibrate.utils.get_correction_table` now defaults to the latest version from SSW instead of the JSOC.
-The table has not seen an update in a while, so this avoids an unnecessary network call to the JSOC.
