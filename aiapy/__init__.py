@@ -17,10 +17,10 @@ from pathlib import Path
 from .version import version as __version__
 
 _SSW_MIRRORS = [
-    # Github mirror managed by LMSAL
-    "https://raw.githubusercontent.com/LM-SAL/backup-files/refs/heads/aia/static/",
     "https://soho.nascom.nasa.gov/solarsoft/",
     "https://hesperia.gsfc.nasa.gov/ssw/",
+    # Github mirror managed by LMSAL
+    "https://raw.githubusercontent.com/LM-SAL/backup-files/refs/heads/aia/static/",
 ]
 
 
