@@ -1,4 +1,14 @@
+<<<<<<<
 =========
+=======
+``aiapy``
+=========
+
+Python library for AIA data analysis
+
+Usage of Generative AI
+----------------------
+>>>>>>>
 ``aiapy``
 =========
 
