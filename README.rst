@@ -1,6 +1,6 @@
-=========
-``aiapy``
-=========
+=====
+aiapy
+=====
 
 .. image:: https://github.com/LM-SAL/aiapy/actions/workflows/ci.yml/badge.svg
     :target: https://github.com/LM-SAL/aiapy/actions/workflows/ci.yml
@@ -31,7 +31,9 @@
     :alt: JOSS
 
 ``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.
+
 For more information, see the `aiapy documentation <https://aiapy.readthedocs.io/en/latest/>`__.
+
 For some examples of using aiapy, see `our gallery <https://aiapy.readthedocs.io/en/latest/generated/gallery/index.html>`__.
 
 Citing
@@ -76,12 +78,3 @@ Note: This disclaimer was originally written by
 `PyCon talk <https://www.youtube.com/watch?v=6Uj746j9Heo>`__, and was adapted by
 irispy-lmsal based on its use in the README file for the
 `MetPy project <https://github.com/Unidata/MetPy>`__.
-
-License
--------
-
-This project is Copyright (c) AIA Instrument Team @ LMSAL and licensed under
-the terms of the BSD 3-Clause license. This package is based upon
-the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`__
-which is licensed under the BSD 3-clause licence. See the licenses folder for
-more information.
