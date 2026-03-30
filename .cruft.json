@@ -6,7 +6,7 @@
     "cookiecutter": {
       "package_name": "aiapy",
       "module_name": "aiapy",
-      "short_description": "Python library for AIA data analysis",
+      "short_description": "``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.",
       "author_name": "AIA Instrument Team @ LMSAL",
       "author_email": "nfreij@seti.org",
       "project_url": "https://aia.lmsal.com/",
