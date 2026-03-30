@@ -10,6 +10,7 @@ from sunpy.util.decorators import deprecated
 
 from aiapy.psf import jit, lax, np
 from aiapy.psf.utils import filter_mesh_parameters
+from aiapy.utils import detector_dimensions
 from aiapy.utils.decorators import validate_channel
 
 __all__ = ["calculate_psf", "psf"]
@@ -142,7 +143,7 @@ def _calculate_mesh_spikes(x, y, dxs, dys, orders, width, mesh_ratio, cx0, cy0):
 
 
 def _psf(meshinfo, angles, diffraction_orders, *, focal_plane=False):
-    ny, nx = 4096, 4096
+    ny, nx = detector_dimensions().value
     width = meshinfo["width"].to_value("pixel")
     spacing = (meshinfo["spacing_fp"] if focal_plane else meshinfo["spacing_e"]).to_value("pixel")
     mesh_ratio = (meshinfo["mesh_pitch"] / meshinfo["mesh_width"]).decompose().value
