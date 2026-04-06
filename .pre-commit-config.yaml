@@ -6,7 +6,7 @@ repos:
       - id: zizmor
     # This should be before any formatting hooks like isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.8"
+    rev: "v0.15.9"
     hooks:
       - id: ruff
         args: ["--fix", "--unsafe-fixes"]
@@ -48,7 +48,7 @@ repos:
       - id: mixed-line-ending
   # See https://github.com/python-trio/trio/pull/3255
   -   repo: https://github.com/adhtruong/mirrors-typos
-      rev: v1.44.0
+      rev: v1.45.0
       hooks:
       - id: typos
         exclude: *exclude_dirs
