@@ -87,6 +87,9 @@ Changelog = "https://aiapy.readthedocs.io/en/stable/changelog.html"
 zip-safe = false
 include-package-data = true
 
+[tool.setuptools.package-data]
+aiapy = ["*.rst"]
+
 [tool.setuptools.packages.find]
 include = ["aiapy*"]
 exclude = ["aiapy._dev*"]
