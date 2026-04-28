@@ -8,7 +8,7 @@ The easiest way to install aiapy is to follow the instructions on
 :ref:`sunpy-tutorial-installing`. The only difference is that you will
 need to install aiapy instead of sunpy.
 
-If you are using Miniconda (rather than Miniforge), first add conda-forge:
+If you are not using Miniforge:
 
 .. code-block:: bash
 
