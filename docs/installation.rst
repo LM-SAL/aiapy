@@ -155,4 +155,4 @@ If you want the optional performance dependencies installed, you can do the foll
 
     $ pip install "aiapy[performance]"
     $ pip install "aiapy[performance_nvidia]"  # If you have a Nvidia GPU
-    $ pip install "aiapy[performance_mac]"  # If you have a Mac M1+ machine 
+    $ pip install "aiapy[performance_mac]"  # If you have a Mac M1+ machine
