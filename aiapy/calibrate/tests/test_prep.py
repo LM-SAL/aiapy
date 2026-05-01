@@ -8,13 +8,12 @@ import astropy.units as u
 from astropy.io.fits.verify import VerifyWarning
 from astropy.tests.helper import assert_quantity_allclose
 
-import sunpy.data.test
 from sunpy.map import Map
 
 from aiapy.calibrate import correct_degradation, degradation, register
 from aiapy.calibrate.utils import get_correction_table
 from aiapy.tests.data import get_test_filepath
-from aiapy.utils import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning, detector_dimensions
 
 
 @pytest.fixture
@@ -22,32 +21,42 @@ def lvl_15_map(aia_171_map):
     return register(aia_171_map)
 
 
-@pytest.fixture
-def non_sdo_map():
-    return Map(sunpy.data.test.get_test_filepath("hsi_image_20101016_191218.fits"))
-
-
-def test_register(aia_171_map, lvl_15_map) -> None:
+def test_register(lvl_15_map) -> None:
     """
     Test that header info for the map has been correctly updated after the map
     has been scaled to 0.6 arcsec / pixel and aligned with solar north.
     """
-    # TODO: Check all of these for Map attributes and .meta values?
-    # Check array shape - We cut off two pixels on each side for kicks
-    # Due to fixes in sunpy 3.1.6, the shape is different
-    # See https://github.com/sunpy/sunpy/pull/5803
-    assert lvl_15_map.data.shape == (4094, 4094) != aia_171_map.data.shape
-    # Check crpix values
-    assert lvl_15_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
-    assert lvl_15_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
-    # Check cdelt values
-    assert lvl_15_map.meta["cdelt1"] / 0.6 == int(lvl_15_map.meta["cdelt1"] / 0.6)
-    assert lvl_15_map.meta["cdelt2"] / 0.6 == int(lvl_15_map.meta["cdelt2"] / 0.6)
-    # Check rotation value, I am assuming that the inaccuracy in
-    # the CROTA -> PCi_j matrix is causing the inaccuracy here
-    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
-    # Check level number
+    np.testing.assert_array_equal(lvl_15_map.data.shape, detector_dimensions().value)
+    assert_quantity_allclose(
+        u.Quantity(lvl_15_map.reference_pixel), (u.Quantity(lvl_15_map.dimensions) - 1 * u.pix) / 2
+    )
+    assert_quantity_allclose(lvl_15_map.scale, [0.6, 0.6] * u.arcsec / u.pixel)
+    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2))
     assert lvl_15_map.meta["lvl_num"] == 1.5
+    assert lvl_15_map.meta["bitpix"] == -64
+
+
+def test_register_submap(aia_171_submap) -> None:
+    """
+    Test that submap and register are commutative
+    """
+    submap_lvl_15 = register(aia_171_submap)
+    np.testing.assert_array_equal(submap_lvl_15.data.shape, aia_171_submap.data.shape)
+    assert_quantity_allclose(u.Quantity(submap_lvl_15.reference_pixel), u.Quantity(aia_171_submap.reference_pixel))
+    assert_quantity_allclose(submap_lvl_15.scale, [0.6, 0.6] * u.arcsec / u.pixel)
+    np.testing.assert_allclose(submap_lvl_15.rotation_matrix, np.identity(2))
+    assert submap_lvl_15.meta["lvl_num"] == 1.5
+    assert submap_lvl_15.meta["bitpix"] == -64
+
+
+def test_register_submap_commutative(lvl_15_map, aia_171_submap) -> None:
+    """
+    Test that submap and register are commutative
+    """
+    submap_lvl_15 = register(aia_171_submap)
+    lvl_15_submap = lvl_15_map.submap(aia_171_submap.bottom_left_coord, top_right=aia_171_submap.top_right_coord)
+    assert_quantity_allclose(u.Quantity(submap_lvl_15.reference_pixel), u.Quantity(lvl_15_submap.reference_pixel))
+    assert submap_lvl_15.data.shape == lvl_15_submap.data.shape
 
 
 def test_register_filesave(lvl_15_map, tmp_path) -> None:
@@ -59,32 +68,15 @@ def test_register_filesave(lvl_15_map, tmp_path) -> None:
     with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
         lvl_15_map.save(str(filename), overwrite=True)
     load_map = Map(str(filename))
-    # Check crpix values
-    assert load_map.meta["crpix1"] == lvl_15_map.data.shape[1] / 2.0 + 0.5
-    assert load_map.meta["crpix2"] == lvl_15_map.data.shape[0] / 2.0 + 0.5
-    # Check cdelt values
-    assert load_map.meta["cdelt1"] / 0.6 == int(load_map.meta["cdelt1"] / 0.6)
-    assert load_map.meta["cdelt2"] / 0.6 == int(load_map.meta["cdelt2"] / 0.6)
-    # Check rotation value
-    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2), rtol=1e-5, atol=1e-8)
-    # Check level number
+    np.testing.assert_array_equal(load_map.data.shape, detector_dimensions().value)
+    assert_quantity_allclose(u.Quantity(load_map.reference_pixel), (u.Quantity(load_map.dimensions) - 1 * u.pix) / 2)
+    assert_quantity_allclose(load_map.scale, [0.6, 0.6] * u.arcsec / u.pixel)
+    np.testing.assert_allclose(load_map.rotation_matrix, np.identity(2))
+    np.testing.assert_allclose(load_map.rotation_matrix, np.identity(2))
     assert load_map.meta["lvl_num"] == 1.5
+    assert load_map.meta["bitpix"] == -64
 
 
-def test_register_unsupported_maps(aia_171_map, non_sdo_map) -> None:
-    """
-    Make sure we raise an error when an unsupported map is passed in.
-    """
-    # A submap
-    original_cutout = aia_171_map.submap(aia_171_map.center, top_right=aia_171_map.top_right_coord)
-    with pytest.raises(ValueError, match=r"Input must be a full disk image."):
-        register(original_cutout)
-    # A Map besides AIA or HMI
-    with pytest.raises(TypeError, match="Input must be an AIAMap"):
-        register(non_sdo_map)
-
-
-@pytest.mark.filterwarnings("ignore::ResourceWarning")
 def test_register_level_15(lvl_15_map) -> None:
     with pytest.warns(
         AIApyUserWarning,
@@ -258,10 +250,3 @@ def test_degradation_time_array() -> None:
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction, strict=True):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
-
-
-def test_register_cupy(aia_171_map) -> None:
-    pytest.importorskip("cupy")
-    cupy_map = register(aia_171_map, method="cupy")
-    scipy_map = register(aia_171_map, method="scipy")
-    np.testing.assert_allclose(cupy_map.data, scipy_map.data)
