@@ -4,6 +4,8 @@ omit =
   aiapy/*setup_package*
   aiapy/extern/*
   aiapy/version*
+  aiapy/_dev/*
+  */aiapy/_dev/*
   */aiapy/conftest.py
   */aiapy/*setup_package*
   */aiapy/extern/*
