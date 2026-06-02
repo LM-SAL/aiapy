@@ -84,7 +84,7 @@ plt.colorbar(ax.images[0], ax=ax, label="Normalized Intensity")
 # wavelength, it is most efficient to only calculate the PSF once.
 #
 # As with `aiapy.psf.calculate_psf`, this will be much faster if you have
-# a Nvidia GPU and `cupy` installed.
+# a Nvidia GPU and `jax` installed.
 
 aia_map_deconvolved = aiapy.psf.deconvolve(aia_map, psf=psf)
 

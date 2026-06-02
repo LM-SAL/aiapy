@@ -1,0 +1,4 @@
+`aiapy.calibrate.prep.register` now uses `reproject` for image registration instead of `scipy.ndimage.affine_transform`.
+This change means that the full resolution inputs are always returned as 4096 x 4096 pixels
+and that cutouts of level 1 images can be passed to this function.
+However, it may also lead to slightly longer processing times in most cases.

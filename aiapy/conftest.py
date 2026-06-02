@@ -1,31 +1,40 @@
-import contextlib
+import matplotlib as mpl
+
+# Force MPL to use non-gui backends for testing.
+mpl.use("Agg")
 
 import pytest
 from numpy.random import default_rng
 
 import astropy.units as u
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
 
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.utils import detector_dimensions
+
 RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
-
-with contextlib.suppress(ImportError):
-    import matplotlib as mpl
-
-    # Force MPL to use non-gui backends for testing.
-    mpl.use("Agg")
 
 
 @pytest.fixture
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
-    return m.resample((4096, 4096) * u.pixel)
+    return m.resample(detector_dimensions())
+
+
+@pytest.fixture
+def aia_171_submap():
+    m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
+    top_right = SkyCoord(0 * u.arcsec, -200 * u.arcsec, frame=m.coordinate_frame)
+    bottom_left = SkyCoord(-900 * u.arcsec, -900 * u.arcsec, frame=m.coordinate_frame)
+    m = m.resample(detector_dimensions())
+    return m.submap(bottom_left, top_right=top_right)
 
 
 @pytest.fixture
