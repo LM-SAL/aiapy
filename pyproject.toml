@@ -71,7 +71,6 @@ docs = [
   "sphinx-gallery>=0.17.0",
   "sphinxext-opengraph>=0.10.0",
   "sunpy-sphinx-theme>=2.0.13",
-  "sunpy-sphinx-theme>=2.0.13",
 ]
 dev = ["aiapy[all,tests,docs]"]
 
