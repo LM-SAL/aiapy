@@ -48,30 +48,29 @@ classifiers = [
 
 [project.optional-dependencies]
 all = ["aiapy"]
-performance = ["jax"]
-performance_nvidia = ["jax[cuda13]"]
-performance_mac = ["jax-metal ; sys_platform == 'darwin'"]
+performance = ["jax>=0.4.30"]
+performance_nvidia = ["jax[cuda13]>=0.4.30"]
+performance_mac = ["jax-metal>=0.1.1; sys_platform == 'darwin'"]
 tests = [
-  "pytest",
-  "pytest-doctestplus",
-  "pytest-cov",
-  "pytest-xdist",
+  "pytest>=8.3.0",
+  "pytest-doctestplus>=1.3.0",
+  "pytest-cov>=6.0.0",
+  "pytest-xdist>=3.7.0",
   "aiapy[all]",
   "hissw",
   "pytest-astropy",
 ]
 docs = [
-  "sphinx",
-  "sphinx-automodapi",
-  "sphinx-changelog",
-  "packaging",
+  "sphinx>=7.4.0",
+  "sphinx-automodapi>=0.18.0",
+  "sphinx-changelog>=1.6.0",
+  "packaging>=24.2",
   "aiapy[all]",
   "sphinx-copybutton",
-  "sphinx-design",
-  "sphinx-gallery",
-  "sphinxext-opengraph",
-  "sunpy-sphinx-theme",
-  "sunpy-sphinx-theme",
+  "sphinx-design>=0.6.1",
+  "sphinx-gallery>=0.17.0",
+  "sphinxext-opengraph>=0.10.0",
+  "sunpy-sphinx-theme>=2.0.13",
 ]
 dev = ["aiapy[all,tests,docs]"]
 
