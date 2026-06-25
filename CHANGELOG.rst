@@ -1,3 +1,12 @@
+0.12.1 (2026-06-25)
+===================
+
+Documentation
+-------------
+
+- Revamped the installation page for aiapy. (`#400 <https://github.com/LM-SAL/aiapy/pull/400>`__)
+
+
 0.12.0 (2026-03-26)
 ===================
 

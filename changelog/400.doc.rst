@@ -1,1 +1,0 @@
-Revamped the installation page for aiapy.
