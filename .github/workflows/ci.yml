@@ -110,6 +110,8 @@ jobs:
             apt:
               - graphviz
         - linux: py313-online
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build_dists:
     # Build wheels on PRs only when labelled. Releases will only be published if tagged ^v.*
