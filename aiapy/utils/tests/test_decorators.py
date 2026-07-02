@@ -20,10 +20,22 @@ def test_valid_channel_equivalent_unit(channel) -> None:
     assert identity(channel) == channel
 
 
-@pytest.mark.parametrize("channel", [1 * u.angstrom, 94, "94", None])
+@pytest.mark.parametrize("channel", [1 * u.angstrom, 195 * u.angstrom, 94 * u.s, 94, "94", None])
 def test_invalid_channel_raises_error(channel) -> None:
     with pytest.raises(ValueError, match="not in list of valid channels"):
         identity(channel)
+
+
+def test_channel_as_keyword_or_later_positional_argument() -> None:
+    @validate_channel("channel")
+    def f(_other, channel, _extra=None):
+        return channel
+
+    assert f(1, 94 * u.angstrom) == 94 * u.angstrom
+    assert f(1, channel=94 * u.angstrom) == 94 * u.angstrom
+    assert f(_extra=2, channel=94 * u.angstrom, _other=1) == 94 * u.angstrom
+    with pytest.raises(ValueError, match="not in list of valid channels"):
+        f(1, channel=195 * u.angstrom)
 
 
 def test_custom_valid_channels() -> None:

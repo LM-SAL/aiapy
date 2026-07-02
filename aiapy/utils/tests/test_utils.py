@@ -2,7 +2,8 @@ import pytest
 
 from astropy.tests.helper import assert_quantity_allclose
 
-from aiapy.utils.utils import _QUALITY_FLAG_MESSAGES, check_quality_flag, sdo_location
+from aiapy.utils import check_quality_flag, sdo_location
+from aiapy.utils.utils import _QUALITY_FLAG_MESSAGES
 
 
 @pytest.mark.remote_data

@@ -46,8 +46,8 @@ def validate_channel(argument, *, valid_channels="all"):
             all_args = sig.bind(*args, **kwargs)
             channel = all_args.arguments[argument]
             try:
-                is_valid = any(u.isclose(channel, c) for c in valid_channels)
-            except (u.UnitsError, TypeError, ValueError):
+                is_valid = isinstance(channel, u.Quantity) and any(u.isclose(channel, c) for c in valid_channels)
+            except u.UnitsError:
                 is_valid = False
             if not is_valid:
                 msg = f'channel "{channel}" not in list of valid channels: {valid_channels}.'
