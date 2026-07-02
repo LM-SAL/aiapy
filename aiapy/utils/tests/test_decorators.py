@@ -1,0 +1,56 @@
+import pytest
+
+import astropy.units as u
+
+from aiapy.utils.decorators import _all_channels, validate_channel
+
+
+@validate_channel("channel")
+def identity(channel):
+    return channel
+
+
+@pytest.mark.parametrize("channel", _all_channels)
+def test_valid_channel(channel) -> None:
+    assert identity(channel) == channel
+
+
+@pytest.mark.parametrize("channel", [c.to(u.nm) for c in _all_channels])
+def test_valid_channel_equivalent_unit(channel) -> None:
+    assert identity(channel) == channel
+
+
+@pytest.mark.parametrize("channel", [1 * u.angstrom, 195 * u.angstrom, 94 * u.s, 94, "94", None])
+def test_invalid_channel_raises_error(channel) -> None:
+    with pytest.raises(ValueError, match="not in list of valid channels"):
+        identity(channel)
+
+
+def test_channel_as_keyword_or_later_positional_argument() -> None:
+    @validate_channel("channel")
+    def f(_other, channel, _extra=None):
+        return channel
+
+    assert f(1, 94 * u.angstrom) == 94 * u.angstrom
+    assert f(1, channel=94 * u.angstrom) == 94 * u.angstrom
+    assert f(_extra=2, channel=94 * u.angstrom, _other=1) == 94 * u.angstrom
+    with pytest.raises(ValueError, match="not in list of valid channels"):
+        f(1, channel=195 * u.angstrom)
+
+
+def test_custom_valid_channels() -> None:
+    @validate_channel("channel", valid_channels=[94 * u.angstrom])
+    def f(channel):
+        return channel
+
+    assert f(94 * u.angstrom) == 94 * u.angstrom
+    with pytest.raises(ValueError, match="not in list of valid channels"):
+        f(171 * u.angstrom)
+
+
+def test_missing_argument_raises_error() -> None:
+    with pytest.raises(ValueError, match="Did not find channel in function signature"):
+
+        @validate_channel("channel")
+        def f(not_channel):
+            return not_channel
