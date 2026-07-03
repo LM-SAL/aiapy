@@ -17,7 +17,7 @@ authors = [
 ]
 dependencies = [
   'astropy>=7.1.1',
-  "numpy>=2.1.0",
+  "numpy>=2.2.0",
   "matplotlib>=3.10.0",
   'sunpy[net,image,map]>=7.0',
 ]
@@ -48,8 +48,8 @@ classifiers = [
 
 [project.optional-dependencies]
 all = ["aiapy"]
-performance = ["jax>=0.4.30"]
-performance_nvidia = ["jax[cuda13]>=0.4.30"]
+performance = ["jax>=0.4.31"]
+performance_nvidia = ["jax[cuda13]>=0.4.31"]
 performance_mac = ["jax-metal>=0.1.1; sys_platform == 'darwin'"]
 tests = [
   "pytest>=8.3.0",
