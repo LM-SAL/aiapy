@@ -1,12 +1,12 @@
 exclude: "(.*/)?CITATION.rst$|.*(.fits|.fts|.fit|.header|.txt|tca.*|extern.*|aiapy/extern)$"
 repos:
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.25.2
+    rev: v1.26.1
     hooks:
       - id: zizmor
     # This should be before any formatting hooks like isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.15"
+    rev: "v0.15.20"
     hooks:
       - id: ruff
         args: ["--fix", "--unsafe-fixes"]
@@ -48,7 +48,7 @@ repos:
       - id: mixed-line-ending
   # See https://github.com/python-trio/trio/pull/3255
   -   repo: https://github.com/adhtruong/mirrors-typos
-      rev: v1.46.2
+      rev: v1.48.0
       hooks:
       - id: typos
         exclude: *exclude_dirs
