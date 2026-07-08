@@ -29,7 +29,7 @@ from ._sample import _SAMPLE_DATA, _get_sample_files
 
 # Add a table row to the module docstring for each sample file
 for _keyname, _filename in sorted(_SAMPLE_DATA.items()):
-    __doc__ += f"   * - ``{_keyname}``\n     - {_filename}\n"  # NOQA: A001
+    __doc__ += f"   * - ``{_keyname}``\n     - {_filename}\n"
 
 
 # file_dict and file_list are not normal variables; see __getattr__() below
@@ -57,8 +57,8 @@ def __getattr__(name):
                     _SAMPLE_DATA.keys(),
                     _get_sample_files(_SAMPLE_DATA.values(), no_download=True),
                     strict=False,
-                )
-            )
+                ),
+            ),
         )
     if name == "file_list":
         return [v for v in __getattr__("file_dict").values() if v]
@@ -66,7 +66,7 @@ def __getattr__(name):
     raise AttributeError(msg)
 
 
-def download_all(*, force_download=False):
+def download_all(*, force_download=False) -> None:
     """
     Download all sample data at once that has not already been downloaded.
 

@@ -1,0 +1,40 @@
+{
+  "template": "https://github.com/sunpy/package-template",
+  "commit": "fb26c9794c872939b7e72bc7f30b943628384a8e",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "package_name": "aiapy",
+      "module_name": "aiapy",
+      "short_description": "``aiapy`` is a Python package for analyzing data from the Atmospheric Imaging Assembly (AIA) instrument onboard NASA's Solar Dynamics Observatory (SDO) spacecraft.",
+      "author_name": "AIA Instrument Team @ LMSAL",
+      "author_email": "nfreij@seti.org",
+      "project_url": "https://aia.lmsal.com/",
+      "github_repo": "LM-SAL/aiapy",
+      "sourcecode_url": "https://github.com/LM-SAL/aiapy",
+      "download_url": "https://pypi.org/project/aiapy",
+      "documentation_url": "https://aiapy.readthedocs.io/en/stable/",
+      "changelog_url": "https://aiapy.readthedocs.io/en/stable/changelog.html",
+      "issue_tracker_url": "https://github.com/LM-SAL/aiapy/issues/",
+      "license": "BSD 3-Clause",
+      "minimum_python_version": "3.12",
+      "use_compiled_extensions": "n",
+      "enable_dynamic_dev_versions": "y",
+      "include_example_code": "y",
+      "include_cruft_update_github_workflow": "y",
+      "use_extended_ruff_linting": "y",
+      "matrix_room_id": "",
+      "_sphinx_theme": "sunpy",
+      "_parent_project": "",
+      "_install_requires": "",
+      "_copy_without_render": [
+        "docs/_templates",
+        "docs/_static",
+        ".github/workflows/sub_package_update.yml"
+      ],
+      "_template": "https://github.com/sunpy/package-template",
+      "_commit": "fb26c9794c872939b7e72bc7f30b943628384a8e"
+    }
+  },
+  "directory": null
+}

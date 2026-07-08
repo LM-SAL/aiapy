@@ -9,10 +9,12 @@ well as explore the different properties of the
 telescope channels.
 """
 
-import astropy.time
-import astropy.units as u
 import matplotlib.pyplot as plt
 
+import astropy.time
+import astropy.units as u
+
+from aiapy.calibrate.utils import get_correction_table
 from aiapy.response import Channel
 
 ###############################################################################
@@ -93,7 +95,8 @@ plt.tight_layout()
 # Additionally, `aiapy.response.Channel` provides a method for calculating
 # the wavelength response function using the equation above,
 
-wavelength_response_335 = aia_335_channel.wavelength_response()
+correction_table = get_correction_table("jsoc")
+wavelength_response_335 = aia_335_channel.wavelength_response(correction_table=correction_table)
 print(wavelength_response_335)
 
 ###############################################################################
@@ -107,7 +110,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335)
 ax.set_xlim((aia_335_channel.channel + [-10, 10] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 
 ###############################################################################
 # On telescopes 1, 3, and 4, both channels are always illuminated.
@@ -117,7 +120,9 @@ ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}
 # by default in the wavelength response calculation. To exclude this
 # effect,
 
-wavelength_response_335_no_cross = aia_335_channel.wavelength_response(include_crosstalk=False)
+wavelength_response_335_no_cross = aia_335_channel.wavelength_response(
+    include_crosstalk=False, correction_table=correction_table
+)
 
 ###############################################################################
 # If we look at the response around 131 Å (the channel with which 335 Å shares
@@ -131,7 +136,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335, label="crosstalk")
 ax.plot(aia_335_channel.wavelength, wavelength_response_335_no_cross, label="no crosstalk")
 ax.set_xlim(50, 350)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 ax.legend(loc=1, frameon=False)
 
 ###############################################################################
@@ -144,8 +149,10 @@ ax.legend(loc=1, frameon=False)
 # of 1 January 2019,
 
 obstime = astropy.time.Time("2019-01-01T00:00:00")
-wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime)
-wavelength_response_335_eve = aia_335_channel.wavelength_response(obstime=obstime, include_eve_correction=True)
+wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime, correction_table=correction_table)
+wavelength_response_335_eve = aia_335_channel.wavelength_response(
+    obstime=obstime, include_eve_correction=True, correction_table=correction_table
+)
 
 ###############################################################################
 # We can then compare the two corrected response
@@ -159,7 +166,7 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335_eve, label="EVE corr
 ax.set_xlim((aia_335_channel.channel + [-20, 20] * u.angstrom).value)
 ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
-ax.set_ylabel(f'$R(\\lambda)$ [{wavelength_response_335.unit.to_string("latex")}]')
+ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 ax.legend(loc=2, frameon=False)
 
 plt.show()

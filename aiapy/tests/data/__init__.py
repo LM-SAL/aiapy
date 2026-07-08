@@ -22,4 +22,4 @@ def get_test_filepath(filename, **kwargs):
     if isinstance(filename, Path):
         # NOTE: get_pkg_data_filename does not accept Path objects
         filename = filename.as_posix()
-    return get_pkg_data_filename(filename, package="aiapy.tests.data", **kwargs)
+    return Path(get_pkg_data_filename(filename, package="aiapy.tests.data", **kwargs))

@@ -6,14 +6,17 @@ Correcting for instrument degradation
 This example demonstrates the degradation of the filters on AIA and how to correct it.
 """
 
+import matplotlib.pyplot as plt
+
 import astropy.time
 import astropy.units as u
-import matplotlib.pyplot as plt
 from astropy.visualization import time_support
+
 from sunpy.net import Fido
 from sunpy.net import attrs as a
 
 from aiapy.calibrate import degradation
+from aiapy.calibrate.utils import get_correction_table
 
 # This lets you pass `astropy.time.Time` objects directly to matplotlib
 time_support(format="jyear")
@@ -49,7 +52,7 @@ print(table)
 # For more details on how the correction factor is calculated, see the documentation for the
 # `aiapy.calibrate.degradation` function.
 
-correction_factor = degradation(335 * u.angstrom, table["DATE_OBS"])
+correction_factor = degradation(335 * u.angstrom, table["DATE_OBS"], correction_table=get_correction_table("jsoc"))
 table["DATAMEAN_DEG"] = table["DATAMEAN"] / correction_factor
 
 ###############################################################################
@@ -62,7 +65,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(table["DATE_OBS"], table["DATAMEAN"], label="mean", marker="o")
 ax.plot(table["DATE_OBS"], table["DATAMEAN_DEG"], label="corrected mean", marker="+")
-ax.set_title(f'{(335*u.angstrom).to_string(format="latex")} Channel Degradation')
+ax.set_title(f"{(335 * u.angstrom).to_string(format='latex')} Channel Degradation")
 ax.legend(frameon=False)
 
 plt.show()

@@ -10,15 +10,17 @@ We will be filtering the data we require by keywords and requesting short exposu
 
 import os
 
-import astropy.units as u
 import matplotlib.pyplot as plt
-import sunpy.map
+
+import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize
+
+import sunpy.map
 from sunpy.net import Fido, attrs
 
 from aiapy.calibrate import correct_degradation, register, update_pointing
-from aiapy.calibrate.util import get_correction_table, get_pointing_table
+from aiapy.calibrate.utils import get_correction_table, get_pointing_table
 
 ###############################################################################
 # Exporting data from the JSOC requires registering your
@@ -56,9 +58,11 @@ files = Fido.fetch(query)
 level_1_maps = sunpy.map.Map(files)
 # We get the pointing table outside of the loop for the relevant time range.
 # Otherwise you're making a call to the JSOC every single time.
-pointing_table = get_pointing_table(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
+pointing_table = get_pointing_table(
+    "JSOC", time_range=(level_1_maps[0].date - 3 * u.h, level_1_maps[-1].date + 3 * u.h)
+)
 # The same applies for the correction table.
-correction_table = get_correction_table()
+correction_table = get_correction_table(source="JSOC")
 
 level_15_maps = []
 for a_map in level_1_maps:
@@ -72,7 +76,7 @@ for a_map in level_1_maps:
     level_15_maps.append(map_cropped)
 
 ###############################################################################
-# Finally, we create a sequence of maps and animate it:
+# Finally, we create a sequence of maps and animate them.
 
 sequence = sunpy.map.Map(level_15_maps, sequence=True)
 

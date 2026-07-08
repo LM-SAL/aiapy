@@ -2,13 +2,13 @@
 Estimate uncertainty on intensities.
 """
 
-import astropy.units as u
 import numpy as np
 
-from aiapy.util import telescope_number
-from aiapy.util.decorators import validate_channel
+import astropy.units as u
 
-from .util import get_error_table
+from aiapy.calibrate.utils import get_error_table
+from aiapy.utils import telescope_number
+from aiapy.utils.decorators import validate_channel
 
 __all__ = ["estimate_error"]
 
@@ -34,9 +34,11 @@ def estimate_error(
     onboard compression. The calculation can also optionally include
     contributions from the photometric calibration and errors in the atomic data.
 
-    .. note:: This function is adapted directly from the
-              `aia_bp_estimate_error.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_estimate_error.pro>`_
-              routine in SolarSoft.
+    .. note::
+
+        This function is adapted directly from the
+        `aia_bp_estimate_error.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_estimate_error.pro>`__
+        routine in SolarSoft.
 
     Parameters
     ----------
@@ -53,11 +55,9 @@ def estimate_error(
         Use the EVE photometric calibration. If True, ``include_preflight`` must be False.
     include_chianti : `bool`, optional
         If True, include the atomic data errors from CHIANTI in the uncertainty.
-    error_table : `~astropy.table.QTable` or path-like, optional
-        Error table to use. Can be an existing table or a path to a file. If an error table
-        is not specified, the latest version will be downloaded from SolarSoft. Once you've
-        downloaded this once, you won't need to download it again unless the remote version
-        changes.
+    error_table : `~astropy.table.QTable`
+        Error table to use. Use `~aiapy.calibrate.utils.get_error_table` to get the
+        appropriate error table.
 
     Returns
     -------
@@ -65,24 +65,22 @@ def estimate_error(
 
     See Also
     --------
-    aiapy.calibrate.util.get_error_table
+    aiapy.calibrate.utils.get_error_table
     """
     counts = np.atleast_1d(counts)
-    error_table = get_error_table(error_table=error_table)
+    if error_table is None:
+        error_table = get_error_table()
     error_table = error_table[error_table["WAVELNTH"] == channel]
-
     # Shot noise
     # NOTE: pixel and photon are "unitless" so we multiply/divide by these
     # units such that the shot noise has the same units as counts
     pix_per_photon = 1 * u.pixel / u.photon  # use this to get units right
     n_photon = counts / error_table["DNPERPHT"] * pix_per_photon
     shot = np.sqrt(n_photon) * error_table["DNPERPHT"] / np.sqrt(n_sample) / pix_per_photon
-
     # Dark noise
     # NOTE: The dark error of 0.18 is from an analysis of long-term trends in the residual
     # dark error from 2015.
     dark = 0.18 * u.DN / u.pix
-
     # Read noise
     if kwargs.get("compare_idl", False):
         # The IDL version hardcodes the read noise as 1.15 DN / pixel so we
@@ -101,7 +99,6 @@ def estimate_error(
             4: 1.14 * u.DN / u.pix,
         }[telescope_number(channel)]
     read = read_noise / np.sqrt(n_sample)
-
     # Quantization
     # NOTE: The 1/sqrt(12) factor is the RMS error due to quantization. Under the assumption that the
     # signal is much larger than the least significant bit (LSB), the quantization is not correlated
@@ -110,13 +107,11 @@ def estimate_error(
     # See https://en.wikipedia.org/wiki/Quantization_(signal_processing)
     quant_rms = (1 / np.sqrt(12)) * u.DN / u.pix
     quant = quant_rms / np.sqrt(n_sample)
-
     # Onboard compression
     compress = shot / error_table["COMPRESS"]
     compress[compress < quant_rms] = quant_rms
     compress[counts < 25 * counts.unit] = 0 * counts.unit
     compress /= np.sqrt(n_sample)
-
     # Photometric calibration
     if include_eve and include_preflight:
         msg = "Cannot include both EVE and pre-flight correction."
@@ -127,9 +122,7 @@ def estimate_error(
     elif include_preflight:
         calib = error_table["CALERR"]
     calib = calib * counts
-
     # CHIANTI atomic errors
     chianti = error_table["CHIANTI"] if include_chianti else 0
     chianti = chianti * counts
-
     return np.sqrt(shot**2 + dark**2 + read**2 + quant**2 + compress**2 + chianti**2 + calib**2)

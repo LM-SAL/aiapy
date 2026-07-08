@@ -5,25 +5,28 @@ Class for accessing response function data from each channel.
 import collections
 from urllib.parse import urljoin
 
-import astropy.units as u
 import numpy as np
-from sunkit_instruments.response.abstractions import AbstractChannel
-from sunpy.data import manager
+
+import astropy.constants as const
+import astropy.units as u
+
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
 import aiapy.calibrate
 from aiapy import _SSW_MIRRORS
-from aiapy.calibrate.util import _select_epoch_from_correction_table, get_correction_table
-from aiapy.util import telescope_number
-from aiapy.util.decorators import validate_channel
+from aiapy.calibrate import degradation
+from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
+from aiapy.data._manager import manager
+from aiapy.utils import telescope_number
+from aiapy.utils.decorators import validate_channel
+from sunkit_instruments.response.abstractions import AbstractChannel
 
 __all__ = ["Channel"]
 
-# TODO: Work out what changes with version.
 AIA_INSTRUMENT_FILE = "sdo/aia/response/aia_V{}_{}_fullinst.genx"
-VERSION_NUMBER = 8  # Most recent version number for instrument response data
-# URLs and SHA-256 hashes for each version for the EUV and FUV files
+# Most recent version number for instrument response data, there is 9 but its the same as V8.
+VERSION_NUMBER = 8
 URL_HASH = {
     8: {
         "fuv": (
@@ -91,14 +94,15 @@ class Channel(AbstractChannel):
         instrument_file=None,
         include_eve_correction=False,
         include_crosstalk=True,
-        **kwargs,
+        correction_table=None,
+        calibration_version=None,
     ):
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
         self.include_eve_correction = include_eve_correction
         self.include_crosstalk = include_crosstalk
-        self.correction_table = kwargs.get("correction_table", None)
-        self.calibration_version = kwargs.get("calibration_version", None)
+        self.correction_table = correction_table
+        self.calibration_version = calibration_version
 
     @property
     def is_fuv(self):
@@ -148,7 +152,7 @@ class Channel(AbstractChannel):
     @property
     def name(
         self,
-    ):
+    ) -> str:
         return f"{self.channel.to(u.angstrom).value:.0f}"
 
     @property

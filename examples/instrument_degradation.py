@@ -8,14 +8,15 @@ of the AIA channels as a function of time over the entire
 lifetime of the instrument.
 """
 
-import astropy.time
-import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
+
+import astropy.time
+import astropy.units as u
 from astropy.visualization import time_support
 
 from aiapy.calibrate import degradation
-from aiapy.calibrate.util import get_correction_table
+from aiapy.calibrate.utils import get_correction_table
 
 # This lets you pass `astropy.time.Time` objects directly to matplotlib
 time_support(format="jyear")
@@ -37,9 +38,12 @@ time_support(format="jyear")
 # the table of correction parameters is publicly available via the
 # `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
 #
-# First, fetch this correction table. It is not strictly necessary to do this explicitly,
-# but will significantly speed up the calculation by only fetching the table
-# once.
+# First, fetch this correction table. We have to specify the source of the
+# correction table. This can be either a local file or a version number of a
+# file hosted in SSW or "jsoc" to fetch the latest version from JSOC.
+# If the input is None/empty, the function will query the latest version from JSOC.
+# We do this once here, so we don't have to do it repeatedly in the loop below.
+# This will avoid unnecessary network calls to the JSOC server.
 
 correction_table = get_correction_table()
 

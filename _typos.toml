@@ -1,0 +1,14 @@
+default.extend-ignore-identifiers-re = [
+    "alog",
+    "nd",
+    "nin",
+    "observ",
+    "ot",
+    "te",
+    "upto",
+    "afile",
+    "precessed",
+    "precess",
+    "emiss",
+    "hsi_",
+]

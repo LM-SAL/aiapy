@@ -1,0 +1,1 @@
+Functions that validate their ``channel`` argument (e.g., `~aiapy.calibrate.correct_degradation`, `aiapy.psf.psf`) now accept any unit equivalent to Angstrom (e.g., nanometers).

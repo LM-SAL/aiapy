@@ -10,6 +10,14 @@ if "%SPHINXBUILD%" == "" (
 set SOURCEDIR=.
 set BUILDDIR=_build
 
+if "%1" == "clean" (
+	rmdir /s /q %BUILDDIR% 2>nul
+	rmdir /s /q api 2>nul
+	rmdir /s /q generated 2>nul
+	del /f sg_execution_times.rst 2>nul
+	goto end
+)
+
 if "%1" == "" goto help
 
 %SPHINXBUILD% >NUL 2>NUL

@@ -71,5 +71,5 @@ Capabilities include converting AIA images from level 1 to level 1.5, deconvolvi
     generated/gallery/index
     reference/index
     citation
-    changelog
+    whatsnew/index
     develop

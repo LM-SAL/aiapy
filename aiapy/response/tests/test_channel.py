@@ -1,12 +1,16 @@
 import collections
 from pathlib import Path
 
+import numpy as np
+import pytest
+
 import astropy.time
 import astropy.units as u
-import pytest
+from astropy.tests.helper import assert_quantity_allclose
+
 from sunpy.util.metadata import MetaDict
 
-from aiapy.calibrate.util import get_correction_table
+from aiapy.calibrate.utils import get_correction_table
 from aiapy.response import Channel
 from aiapy.response.channel import VERSION_NUMBER
 from aiapy.tests.data import get_test_filepath
@@ -22,7 +26,7 @@ def channel(request, ssw_home):  # NOQA: ARG001
     return Channel(94 * u.angstrom, instrument_file=instrument_file)
 
 
-@pytest.fixture()
+@pytest.fixture
 def channel_properties():
     # Properties that we need, but are not checked by the ABC
     return [
@@ -34,7 +38,7 @@ def channel_properties():
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def required_keys():
     return [
         "wave",
@@ -50,39 +54,39 @@ def required_keys():
     ]
 
 
-def test_has_instrument_data(channel):
+def test_has_instrument_data(channel) -> None:
     assert hasattr(channel, "_instrument_data")
-    assert isinstance(channel._instrument_data, collections.OrderedDict)  # NOQA: SLF001
+    assert isinstance(channel._instrument_data, collections.OrderedDict)
 
 
-def test_has_channel_data(channel):
+def test_has_channel_data(channel) -> None:
     assert hasattr(channel, "_data")
-    assert isinstance(channel._data, MetaDict)  # NOQA: SLF001
+    assert isinstance(channel._data, MetaDict)
 
 
-def test_channel_data_has_keys(channel, required_keys):
-    assert all(k in channel._data for k in required_keys)  # NOQA: SLF001
+def test_channel_data_has_keys(channel, required_keys) -> None:
+    assert all(k in channel._data for k in required_keys)
 
 
-def test_has_wavelength(channel):
+def test_has_wavelength(channel) -> None:
     assert hasattr(channel, "wavelength")
 
 
-def test_channel_wavelength(channel):
+def test_channel_wavelength(channel) -> None:
     assert channel.channel == 94 * u.angstrom
     assert channel.name == "94"
 
 
-def test_telescope_number(channel):
+def test_telescope_number(channel) -> None:
     assert channel.telescope_number == 4
 
 
-def test_invalid_channel():
-    with pytest.raises(ValueError, match='channel "1.0 Angstrom" not in ' "list of valid channels"):
+def test_invalid_channel() -> None:
+    with pytest.raises(ValueError, match=r'channel "1.0 Angstrom" not in list of valid channels'):
         Channel(1 * u.angstrom)
 
 
-def test_channel_properties(channel, channel_properties):
+def test_channel_properties(channel, channel_properties) -> None:
     # Test that expected properties are present and are quantities.
     # This does not test correctness
     for p in channel_properties:
@@ -102,33 +106,25 @@ def test_nominal_effective_area(channel):
 
 
 @pytest.mark.parametrize(
-    ("correction_table", "version", "eve_correction_truth"),
+    ("source", "eve_correction_truth"),
     [
         pytest.param(
-            None,
-            9,
-            0.9494731307817633 * u.dimensionless_unscaled,
+            "SSW",
+            0.9548415 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         pytest.param(
-            None,
-            8,
-            1.0140518082508945 * u.dimensionless_unscaled,
+            "JSOC",
+            0.954845 * u.dimensionless_unscaled,
             marks=pytest.mark.remote_data,
         ),
         (
             get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
-            8,
-            1.0140386988603103 * u.dimensionless_unscaled,
-        ),
-        (
-            get_correction_table(correction_table=get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
-            8,
-            1.0140386988603103 * u.dimensionless_unscaled,
+            1.01403862 * u.dimensionless_unscaled,
         ),
     ],
 )
-def test_eve_correction(channel, correction_table, version, eve_correction_truth):
+def test_eve_correction(channel, source, eve_correction_truth) -> None:
     # NOTE: this just tests an expected result from aiapy, not necessarily an
     # absolutely correct result. It was calculated for the above time and
     # the correction parameters in JSOC at the time this code was committed/
@@ -169,8 +165,9 @@ def test_effective_area(
     assert channel.effective_area(obstime=obstime).shape == channel.wavelength.shape
 
 
-def test_wavelength_response_uncorrected(channel, idl_environment):
-    r = channel.wavelength_response()
+def test_wavelength_response_uncorrected(channel, idl_environment) -> None:
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+    r = channel.wavelength_response(correction_table=correction_table)
     ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
     r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
     r_ssw *= channel.pixel_solid_angle
@@ -191,7 +188,7 @@ def test_wavelength_response_no_crosstalk(channel, idl_environment):
 
 
 @pytest.mark.parametrize("include_eve_correction", [False, True])
-def test_wavelength_response_time(channel, idl_environment, include_eve_correction):
+def test_wavelength_response_time(channel, idl_environment, include_eve_correction) -> None:
     now = astropy.time.Time.now()
     correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
     calibration_version = 8
@@ -208,9 +205,9 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
         save_vars=["r"],
         args={
             "obstime": now.tai.isot,
-            "version": calibration_version,
             "evenorm": int(include_eve_correction),
-            "respversion": "20171210_050627",
+            "version": 8,
+            "respversion": "8",
         },
         verbose=False,
     )
@@ -219,9 +216,9 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
     assert u.allclose(r, r_ssw, rtol=1e-4, atol=None)
 
 
-@pytest.mark.remote_data()
+@pytest.mark.remote_data
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
-def test_fuv_channel(channel_wavelength, channel_properties, required_keys):
+def test_fuv_channel(channel_wavelength, channel_properties, required_keys) -> None:
     # There are a few corner cases for the 1600, 1700, and 4500 channels
     channel = Channel(channel_wavelength, include_eve_correction=False)
     assert all(k in channel._data for k in required_keys)  # NOQA: SLF001

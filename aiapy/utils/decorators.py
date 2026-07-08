@@ -1,5 +1,10 @@
-import functools
+"""
+This module contains decorators for validating arguments related to AIA
+channels.
+"""
+
 import inspect
+import functools
 
 import astropy.units as u
 
@@ -23,8 +28,9 @@ def validate_channel(argument, *, valid_channels="all"):
     ----------
     argument : str
         Argument name to validate.
-    valid_channels : {'all'}, list
-        List of valid channels. If ``'all'``, validate against the list of all AIA channels.
+    valid_channels : list or str, optional
+        List of valid channels.
+        Defaults to "all", which will validate against the list of all AIA channels.
     """
     if valid_channels == "all":
         valid_channels = _all_channels
@@ -39,8 +45,12 @@ def validate_channel(argument, *, valid_channels="all"):
         def inner(*args, **kwargs):
             all_args = sig.bind(*args, **kwargs)
             channel = all_args.arguments[argument]
-            if channel not in valid_channels:
-                msg = f'channel "{channel}" not in ' f"list of valid channels: {valid_channels}."
+            try:
+                is_valid = isinstance(channel, u.Quantity) and any(u.isclose(channel, c) for c in valid_channels)
+            except u.UnitsError:
+                is_valid = False
+            if not is_valid:
+                msg = f'channel "{channel}" not in list of valid channels: {valid_channels}.'
                 raise ValueError(msg)
             return function(*args, **kwargs)
 
