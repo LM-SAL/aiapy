@@ -2,7 +2,6 @@
 Class for accessing response function data from each channel.
 """
 
-import collections
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -52,8 +51,9 @@ class Channel(AbstractChannel):
     ----------
     channel : `~astropy.units.Quantity`
         Wavelength of AIA channel.
-    instrument_file : `str`, optional
-        Path to AIA instrument file.
+    instrument_file : `str` or `dict`, optional
+        Path to AIA instrument file or the already-parsed contents of one
+        (as returned by `~sunpy.io.special.read_genx`).
         If not specified, the latest version will be downloaded from SolarSoft.
     include_eve_correction : `bool`, optional
         If true, include correction to EVE calibration in effective area.
@@ -61,10 +61,7 @@ class Channel(AbstractChannel):
         If true, include the effect of crosstalk between channels that share a telescope
     correction_table : `~astropy.table.Table` or `str`, optional
         Table of correction parameters or path to correction table file.
-        If not specified, it will be queried from JSOC.
-        If you are calling this function repeatedly, it is recommended to
-        read the correction table once and pass it with this argument to avoid
-        multiple redundant network calls.
+        If not specified, the latest version is fetched from SSW.
     calibration_version : `int`, optional
         The version of the calibration to use when calculating the
         degradation. By default, this is the most recent version available
@@ -115,7 +112,7 @@ class Channel(AbstractChannel):
         Read the raw instrument data for all channels from the ``.genx`` files
         in SSW.
         """
-        if isinstance(instrument_file, collections.OrderedDict):
+        if isinstance(instrument_file, dict):
             return instrument_file
         if instrument_file is None:
             instrument_file = self._get_fuv_instrument_file() if self.is_fuv else self._get_euv_instrument_file()
@@ -255,16 +252,33 @@ class Channel(AbstractChannel):
         return u.Quantity(self._data["platescale"], u.steradian / u.pixel)
 
     @property
+    def correction_table(self):
+        """
+        Correction table as provided: a table, a path, or `None`.
+        """
+        return self._correction_table_input
+
+    @correction_table.setter
+    def correction_table(self, value):
+        self._correction_table_input = value
+        self._resolved_correction_table = None
+
+    @property
     def _correction_table(self):
         """
-        The correction table resolved to a table: read/queried when the
-        ``correction_table`` attribute is a path or `None`.
+        The correction table resolved to a table: read/fetched when the
+        ``correction_table`` attribute is a path or `None` and cached until
+        ``correction_table`` is set again.
         """
-        if self.correction_table is None:
-            return get_correction_table()
-        if isinstance(self.correction_table, str | Path):
-            return get_correction_table(source=self.correction_table)
-        return self.correction_table
+        if self._resolved_correction_table is None:
+            source = self.correction_table
+            if source is None:
+                self._resolved_correction_table = get_correction_table()
+            elif isinstance(source, str | Path):
+                self._resolved_correction_table = get_correction_table(source=source)
+            else:
+                self._resolved_correction_table = source
+        return self._resolved_correction_table
 
     @property
     def _calibration_version(self):
@@ -285,9 +299,11 @@ class Channel(AbstractChannel):
             self._correction_table,
             calibration_version=self._calibration_version,
         )
-        # NOTE: Explicitly interpolating to the pristine (time-independent)
-        # effective area since this correction is part of the degradation.
-        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.at(None).effective_area())
+        # NOTE: Explicitly interpolating to the pristine (time-independent,
+        # crosstalk-free) effective area since this correction is part of the
+        # degradation. This matches aia_bp_corrections.pro, which uses the
+        # effective area as stored in the instrument file.
+        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self._pristine_effective_area)
         return table["EFF_AREA"][0] / effective_area_interp
 
     @u.quantity_input
@@ -349,10 +365,26 @@ class Channel(AbstractChannel):
             degradation = degradation * self._get_eve_correction(obstime)
         return degradation
 
+    @property
     @u.quantity_input
-    def _get_crosstalk(self, obstime) -> u.cm**2:
+    def _pristine_effective_area(self) -> u.cm**2:
         """
-        Compute cross-talk component of effective area.
+        Nominal effective area with no crosstalk or time-dependent
+        degradation.
+        """
+        return (
+            self.geometrical_area
+            * self.mirror_reflectance
+            * self.filter_transmittance
+            * self.effective_quantum_efficiency
+            * self._preflight_contamination
+        )
+
+    @property
+    @u.quantity_input
+    def _crosstalk(self) -> u.cm**2:
+        """
+        Pristine cross-talk component of the effective area.
         """
         crosstalk_lookup = {
             94 * u.angstrom: 304 * u.angstrom,
@@ -363,7 +395,7 @@ class Channel(AbstractChannel):
         if self.channel not in crosstalk_lookup:
             return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
         cross = type(self)(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
-        effective_area = (
+        return (
             cross.geometrical_area
             * cross.mirror_reflectance
             * self.focal_plane_filter_transmittance
@@ -371,13 +403,6 @@ class Channel(AbstractChannel):
             * cross.effective_quantum_efficiency
             * cross._preflight_contamination
         )
-        # NOTE: This applies the time-dependent degradation of the nominal
-        # channel. The logic here is that the nominal time-dependent correction
-        # should be applied to the total (nominal + crosstalk) effective area since the
-        # cross-calibration is done on the whole channel postflight which includes the crosstalk
-        if obstime is not None:
-            effective_area *= self.degradation(obstime=obstime)
-        return effective_area
 
     @u.quantity_input
     def effective_area(self) -> u.cm**2:
@@ -420,7 +445,12 @@ class Channel(AbstractChannel):
         ----------
         .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
-        effective_area = super().effective_area() * self._preflight_contamination
+        effective_area = self._pristine_effective_area
         if self.include_crosstalk:
-            effective_area += self._get_crosstalk(self._obstime)
+            effective_area = effective_area + self._crosstalk
+        # NOTE: The nominal channel's time-dependent degradation is applied to
+        # the total (nominal + crosstalk) effective area since the postflight
+        # cross-calibration is done on the whole channel including crosstalk.
+        if self._obstime is not None:
+            effective_area = effective_area * self.degradation(obstime=self._obstime)
         return effective_area

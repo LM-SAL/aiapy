@@ -149,6 +149,7 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
         (None, None, None, False, True),
         (None, None, None, False, False),
         ("2020-01-01", get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, False, True),
+        ("2020-01-01", get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, False, False),
         (astropy.time.Time.now(), get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, True, True),
     ],
 )
@@ -165,6 +166,29 @@ def test_effective_area(
     channel.correction_table = correction_table
     bound = channel if obstime is None else channel.at(obstime)
     assert bound.effective_area().shape == channel.wavelength.shape
+
+
+def test_at_returns_bound_copy(channel) -> None:
+    channel.correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
+    channel.calibration_version = 8
+    obstime = astropy.time.Time("2020-01-01T00:00:00")
+    bound = channel.at(obstime)
+    # Binding a time returns a copy and does not mutate the original
+    assert bound is not channel
+    assert bound._obstime == obstime
+    assert channel._obstime is None
+    # The bound effective area is the pristine effective area scaled by the
+    # time-dependent degradation
+    assert u.allclose(
+        bound.effective_area(),
+        channel.effective_area() * channel.degradation(obstime),
+        rtol=1e-10,
+        atol=None,
+    )
+    # at(None) unbinds back to the pristine instrument
+    unbound = bound.at(None)
+    assert unbound._obstime is None
+    assert u.allclose(unbound.effective_area(), channel.effective_area(), rtol=1e-10, atol=None)
 
 
 def test_wavelength_response_uncorrected(channel, idl_environment) -> None:
@@ -224,8 +248,10 @@ def test_wavelength_response_time(channel, idl_environment, include_eve_correcti
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys) -> None:
     # There are a few corner cases for the 1600, 1700, and 4500 channels
-    channel = Channel(channel_wavelength, include_eve_correction=False)
+    channel = Channel(channel_wavelength)
     assert all(k in channel._data for k in required_keys)
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
-    assert u.allclose(channel.degradation(), 1, rtol=0.0, atol=None)
+    # The preflight contamination data is missing for the FUV channels and
+    # should fall back to 1 across the whole wavelength array
+    assert u.allclose(channel._preflight_contamination, np.ones(channel.wavelength.shape), rtol=0.0, atol=None)
