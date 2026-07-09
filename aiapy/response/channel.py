@@ -4,6 +4,7 @@ Class for accessing response function data from each channel.
 
 from pathlib import Path
 from urllib.parse import urljoin
+from collections.abc import Mapping
 
 import numpy as np
 from sunkit_instruments.response.abstractions import AbstractChannel
@@ -112,7 +113,7 @@ class Channel(AbstractChannel):
         Read the raw instrument data for all channels from the ``.genx`` files
         in SSW.
         """
-        if isinstance(instrument_file, dict):
+        if isinstance(instrument_file, Mapping):
             return instrument_file
         if instrument_file is None:
             instrument_file = self._get_fuv_instrument_file() if self.is_fuv else self._get_euv_instrument_file()
@@ -419,7 +420,7 @@ class Channel(AbstractChannel):
 
         - :math:`A_{geo}`: geometrical collecting area
         - :math:`R_P`, :math:`R_S`: reflectance of primary and secondary mirrors, respectively
-        - :math:`T_E`, :math:`T_F`: transmissitance of the entrance and focal-plane filters, respectively
+        - :math:`T_E`, :math:`T_F`: transmittance of the entrance and focal-plane filters, respectively
         - :math:`Q`: effective quantum efficiency of the CCD
         - :math:`D_c`: preflight contaminant transmittance of the optics
         - :math:`D`: time-dependent degradation, evaluated at the time bound
