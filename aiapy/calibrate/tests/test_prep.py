@@ -11,7 +11,7 @@ from astropy.tests.helper import assert_quantity_allclose
 import sunpy.data.test
 from sunpy.map import Map
 
-from aiapy.calibrate import correct_degradation, degradation, register
+from aiapy.calibrate import correct_degradation, degradation, normalize_exposure, register
 from aiapy.calibrate.utils import get_correction_table
 from aiapy.tests.data import get_test_filepath
 from aiapy.utils import AIApyUserWarning
@@ -258,6 +258,60 @@ def test_degradation_time_array() -> None:
     assert time_correction.shape == obstime.shape
     for o, tc in zip(obstime, time_correction, strict=True):
         assert tc == degradation(94 * u.angstrom, o, correction_table=correction_table, calibration_version=8)
+
+
+def test_normalize_exposure(aia_171_map) -> None:
+    normalized = normalize_exposure(aia_171_map)
+    exptime_s = aia_171_map.exposure_time.to_value(u.s)
+    assert np.allclose(normalized.data, aia_171_map.data / exptime_s)
+    assert normalized.unit == u.DN / u.s
+    # EXPTIME is a measurement of the original observation and must not change
+    assert normalized.exposure_time == aia_171_map.exposure_time
+    # The divisor is recorded for provenance and reversibility
+    assert normalized.meta["expnorm"] == exptime_s
+
+
+def test_normalize_exposure_updates_pixlunit(aia_171_map) -> None:
+    """
+    Check pixel units are updated corrrectly
+    """
+    smap = Map(aia_171_map.data, copy.deepcopy(aia_171_map.meta))
+    smap.meta["pixlunit"] = "DN"
+    normalized = normalize_exposure(smap)
+    assert normalized.meta["pixlunit"] == "DN / s"
+
+
+def test_normalize_exposure_twice(aia_171_map) -> None:
+    """
+    Check warning raised if exposure-correcting twice
+    """
+    normalized = normalize_exposure(aia_171_map)
+    with pytest.warns(AIApyUserWarning, match="already been normalized"):
+        normalized_twice = normalize_exposure(normalized)
+    assert np.allclose(normalized_twice.data, normalized.data)
+    assert normalized_twice.exposure_time == aia_171_map.exposure_time
+
+
+def test_normalize_exposure_manually_normalized(aia_171_map) -> None:
+    """
+    Check equivalence to manual normalization
+    """
+    manually_normalized = aia_171_map / aia_171_map.exposure_time
+    assert "expnorm" not in manually_normalized.meta
+    with pytest.warns(AIApyUserWarning, match="already been normalized"):
+        normalized = normalize_exposure(manually_normalized)
+    assert np.allclose(normalized.data, manually_normalized.data)
+
+
+def test_normalize_exposure_zero(aia_171_map) -> None:
+    smap = Map(aia_171_map.data, copy.deepcopy(aia_171_map.meta))
+    smap.meta["exptime"] = 0.0
+    with pytest.warns(AIApyUserWarning, match="Exposure time"):
+        normalized = normalize_exposure(smap)
+    # The division is still performed; bad frames yield non-finite values
+    # rather than fabricated ones and remain identifiable via EXPTIME <= 0.
+    assert not np.any(np.isfinite(normalized.data))
+    assert normalized.meta["exptime"] == 0.0
 
 
 def test_register_cupy(aia_171_map) -> None:
