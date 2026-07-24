@@ -284,7 +284,7 @@ def normalize_exposure(smap):
         )
         return smap
 
-    # Warn if the exposure time is not positive 
+    # Warn if the exposure time is not positive
     exposure_time = smap.exposure_time
     if exposure_time <= 0 * u.s:
         warnings.warn(
@@ -293,14 +293,14 @@ def normalize_exposure(smap):
             stacklevel=3,
         )
 
-    # Divide by exposure time 
+    # Divide by exposure time
     with np.errstate(divide="ignore", invalid="ignore"):
         new_map = smap / exposure_time
 
-    # Make a record of the initial value of exposure, the "normalization value"
+    # Make a record of the initial value of exposure, the "normalization value"
     new_map.meta["expnorm"] = exposure_time.to_value(u.s)
 
-    # Set the new units of the pixels
+    # Set the new units of the pixels
     if "pixlunit" in new_map.meta:
         new_map.meta["pixlunit"] = "DN / s"
 
