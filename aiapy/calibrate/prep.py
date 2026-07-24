@@ -232,7 +232,7 @@ def degradation(
     return u.Quantity(poly * ratio)
 
 
-def normalize_exposure(smap):
+def normalize_exposure(smap: AIAMap) -> AIAMap:
     """
     Normalize an AIA map by its exposure time, converting DN to DN / s.
 
