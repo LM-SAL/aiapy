@@ -211,7 +211,7 @@ def degradation(
     --------
     aiapy.calibrate.utils.get_correction_table
     aiapy.response.Channel.wavelength_response
-    aiapy.response.Channel.eve_correction
+    aiapy.response.Channel.degradation
     """
     if correction_table is None:
         correction_table = get_correction_table()

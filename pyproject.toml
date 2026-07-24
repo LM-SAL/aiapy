@@ -20,6 +20,8 @@ dependencies = [
   "numpy>=2.2.0",
   "matplotlib>=3.10.0",
   'sunpy[net,image,map]>=7.0',
+  # FIXME: Change to just sunkit-instruments once released or to main when merged
+  'sunkit-instruments@git+https://github.com/nabobalis/sunkit-instruments@channel-obstime-snapshot',
 ]
 dynamic = ["version"]
 keywords = [
