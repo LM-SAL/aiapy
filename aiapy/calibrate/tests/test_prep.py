@@ -273,7 +273,7 @@ def test_normalize_exposure(aia_171_map) -> None:
 
 def test_normalize_exposure_updates_pixlunit(aia_171_map) -> None:
     """
-    Check pixel units are updated corrrectly
+    Check pixel units are updated correctly
     """
     smap = Map(aia_171_map.data, copy.deepcopy(aia_171_map.meta))
     smap.meta["pixlunit"] = "DN"
