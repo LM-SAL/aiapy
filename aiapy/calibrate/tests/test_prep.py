@@ -273,12 +273,23 @@ def test_normalize_exposure(aia_171_map) -> None:
 
 def test_normalize_exposure_updates_pixlunit(aia_171_map) -> None:
     """
-    Check pixel units are updated correctly
+    Check pixel units are updated corrrectly
     """
     smap = Map(aia_171_map.data, copy.deepcopy(aia_171_map.meta))
     smap.meta["pixlunit"] = "DN"
     normalized = normalize_exposure(smap)
     assert normalized.meta["pixlunit"] == "DN / s"
+
+
+def test_normalize_exposure_leaves_pixlunit_absent(aia_171_map) -> None:
+    """
+    Check pixel units key is not added when it is absent from the input metadata
+    """
+    smap = Map(aia_171_map.data, copy.deepcopy(aia_171_map.meta))
+    # Ensure the pixlunit key is not present
+    smap.meta.pop("pixlunit", None)
+    normalized = normalize_exposure(smap)
+    assert "pixlunit" not in normalized.meta
 
 
 def test_normalize_exposure_twice(aia_171_map) -> None:
