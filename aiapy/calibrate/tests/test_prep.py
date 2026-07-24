@@ -290,17 +290,22 @@ def test_normalize_exposure_twice(aia_171_map) -> None:
         normalized_twice = normalize_exposure(normalized)
     assert np.allclose(normalized_twice.data, normalized.data)
     assert normalized_twice.exposure_time == aia_171_map.exposure_time
+    # The no-op second normalization must not alter provenance or unit metadata
+    assert normalized_twice.meta.get("expnorm") == normalized.meta.get("expnorm")
+    assert normalized_twice.meta.get("pixlunit") == normalized.meta.get("pixlunit")
 
 
 def test_normalize_exposure_manually_normalized(aia_171_map) -> None:
     """
-    Check equivalence to manual normalization
+    Check equivalence to manual normalization, and that the expnorm
+    provenance keyword is not added.
     """
     manually_normalized = aia_171_map / aia_171_map.exposure_time
     assert "expnorm" not in manually_normalized.meta
     with pytest.warns(AIApyUserWarning, match="already been normalized"):
         normalized = normalize_exposure(manually_normalized)
     assert np.allclose(normalized.data, manually_normalized.data)
+    assert "expnorm" not in normalized.meta
 
 
 def test_normalize_exposure_zero(aia_171_map) -> None:
