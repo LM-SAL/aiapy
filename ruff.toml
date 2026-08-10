@@ -11,7 +11,6 @@ lint.extend-select = [
     "ALL",
 ]
 lint.extend-ignore = [
-    "I", # Ignore isort
     "ANN001", # Missing type annotation for function argument
     "ANN002", # Missing type annotation for variable
     "ANN003", # Missing type annotation for keyword
@@ -20,6 +19,7 @@ lint.extend-ignore = [
     "ANN205", # Missing return type annotation for staticmethod
     "ANN206", # Missing return type annotation for classmethod
     "COM812", # May cause conflicts when used with the formatter
+    "CPY001", # Missing copyright notice at top of file
     "D200", # One-line docstring should fit on one line
     "D205", # 1 blank line required between summary line and description
     "D400", # First line should end with a period
@@ -29,8 +29,10 @@ lint.extend-ignore = [
     "F403", # unable to detect undefined names,
     "FIX001", # Line contains FIXME, consider resolving the issue
     "FIX002", # Line contains TODO, consider resolving the issue
+    "I", # Ignore isort
     "ISC001", # May cause conflicts when used with the formatter
     "PLR0913", # Too many arguments in function definition
+    "PLR0917", # Too many positional arguments
     "PLR2004", # Magic value used in comparison
     "SLF001", # Private member accessed
     "TD001", # Invalid TODO tag: `FIXME`
