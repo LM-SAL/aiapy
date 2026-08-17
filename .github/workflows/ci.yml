@@ -92,7 +92,9 @@ jobs:
   online:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
     needs: [docs]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v3.0.1 # zizmor: ignore[unpinned-uses]
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8c8bb6c6c962542921f993d47d26df38dccd50b1  # v3.0.2
+    permissions:
+      id-token: write
     with:
       default_python: '3.13'
       submodules: false
