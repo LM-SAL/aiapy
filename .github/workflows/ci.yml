@@ -98,7 +98,7 @@ jobs:
     with:
       default_python: '3.13'
       submodules: false
-      coverage: codecov
+      coverage: codecov-oidc
       toxdeps: tox-pypi-filter
       envs: |
         - linux: build_docs-gallery
