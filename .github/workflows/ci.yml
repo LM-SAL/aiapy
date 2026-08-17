@@ -39,13 +39,9 @@ jobs:
       coverage: codecov-oidc
       toxdeps: tox-pypi-filter
       envs: |
-<<<<<<<
         - linux: py314
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-=======
-        - linux: py313
->>>>>>>
 
   sdist_verify:
     runs-on: ubuntu-latest
