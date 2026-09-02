@@ -1,0 +1,4 @@
+`aiapy.response.Channel` has been rewritten on top of `sunkit_instruments.response.abstractions.AbstractChannel` and its API has changed.
+``effective_area`` and ``wavelength_response`` are now methods that take no arguments.
+The options previously passed to ``wavelength_response`` (``include_eve_correction``, ``include_crosstalk``, ``correction_table`` and ``calibration_version``) are now given when constructing the ``Channel`` (or set as attributes afterwards), and time-dependent corrections are applied by binding an observation time with ``Channel.at``.
+For example, ``channel.wavelength_response(obstime=obstime, include_eve_correction=True, correction_table=table)`` is now written as ``Channel(94 * u.angstrom, include_eve_correction=True, correction_table=table).at(obstime).wavelength_response()``.

@@ -1,0 +1,2 @@
+The ``gain``, ``crosstalk``, ``eve_correction`` and ``contamination`` attributes of `aiapy.response.Channel` have been removed.
+The camera gain is available through the new ``camera_gain`` and ``energy_per_electron`` properties, the crosstalk and preflight contamination contributions are folded into ``effective_area``, and the EVE cross-calibration correction is included in the new ``degradation`` method when ``include_eve_correction=True``.

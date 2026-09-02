@@ -2,19 +2,20 @@
 Class for accessing response function data from each channel.
 """
 
-import collections
+from pathlib import Path
 from urllib.parse import urljoin
+from collections.abc import Mapping
 
 import numpy as np
+from sunkit_instruments.response.abstractions import AbstractChannel
 
-import astropy.constants as const
 import astropy.units as u
 
 from sunpy.io.special import read_genx
 from sunpy.util.metadata import MetaDict
 
+import aiapy.calibrate
 from aiapy import _SSW_MIRRORS
-from aiapy.calibrate import degradation
 from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
 from aiapy.data._manager import manager
 from aiapy.utils import telescope_number
@@ -39,7 +40,7 @@ URL_HASH = {
 }
 
 
-class Channel:
+class Channel(AbstractChannel):
     """
     Interface to AIA channel properties and response functions.
 
@@ -51,9 +52,22 @@ class Channel:
     ----------
     channel : `~astropy.units.Quantity`
         Wavelength of AIA channel.
-    instrument_file : `str`, optional
-        Path to AIA instrument file.
+    instrument_file : `str` or `dict`, optional
+        Path to AIA instrument file or the already-parsed contents of one
+        (as returned by `~sunpy.io.special.read_genx`).
         If not specified, the latest version will be downloaded from SolarSoft.
+    include_eve_correction : `bool`, optional
+        If true, include correction to EVE calibration in effective area.
+    include_crosstalk : `bool`, optional
+        If true, include the effect of crosstalk between channels that share a telescope
+    correction_table : `~astropy.table.Table` or `str`, optional
+        Table of correction parameters or path to correction table file.
+        If not specified, the latest version is fetched from SSW.
+    calibration_version : `int`, optional
+        The version of the calibration to use when calculating the
+        degradation. By default, this is the most recent version available
+        from JSOC. If you are using a specific calibration response file,
+        you may need to specify this according to the version in that file.
 
     Examples
     --------
@@ -70,9 +84,22 @@ class Channel:
 
     @u.quantity_input
     @validate_channel("channel")
-    def __init__(self, channel: u.angstrom, *, instrument_file=None) -> None:
+    def __init__(
+        self,
+        channel: u.angstrom,
+        *,
+        instrument_file=None,
+        include_eve_correction=False,
+        include_crosstalk=True,
+        correction_table=None,
+        calibration_version=None,
+    ) -> None:
         self._channel = channel
         self._instrument_data = self._get_instrument_data(instrument_file)
+        self.include_eve_correction = include_eve_correction
+        self.include_crosstalk = include_crosstalk
+        self.correction_table = correction_table
+        self.calibration_version = calibration_version
 
     @property
     def is_fuv(self):
@@ -86,7 +113,7 @@ class Channel:
         Read the raw instrument data for all channels from the ``.genx`` files
         in SSW.
         """
-        if isinstance(instrument_file, collections.OrderedDict):
+        if isinstance(instrument_file, Mapping):
             return instrument_file
         if instrument_file is None:
             instrument_file = self._get_fuv_instrument_file() if self.is_fuv else self._get_euv_instrument_file()
@@ -148,150 +175,160 @@ class Channel:
 
     @property
     @u.quantity_input
-    def primary_reflectance(
+    def primary_mirror_reflectance(
         self,
     ) -> u.dimensionless_unscaled:
         return u.Quantity(self._data["primary"])
 
     @property
     @u.quantity_input
-    def secondary_reflectance(
+    def secondary_mirror_reflectance(
         self,
     ) -> u.dimensionless_unscaled:
         return u.Quantity(self._data["secondary"])
 
     @property
     @u.quantity_input
-    def focal_plane_filter_efficiency(
+    def mirror_reflectance(self):
+        """
+        Combined reflectance of the primary and secondary mirrors.
+        """
+        return self.primary_mirror_reflectance * self.secondary_mirror_reflectance
+
+    @property
+    @u.quantity_input
+    def focal_plane_filter_transmittance(
         self,
     ) -> u.dimensionless_unscaled:
         return u.Quantity(self._data["fp_filter"])
 
     @property
     @u.quantity_input
-    def entrance_filter_efficiency(
+    def entrance_filter_transmittance(
         self,
     ) -> u.dimensionless_unscaled:
         return u.Quantity(self._data["ent_filter"])
 
     @property
     @u.quantity_input
-    def geometrical_collecting_area(
+    def filter_transmittance(self):
+        """Combined transmittance of the focal plane and entrance filters"""
+        return self.entrance_filter_transmittance * self.focal_plane_filter_transmittance
+
+    @property
+    @u.quantity_input
+    def geometrical_area(
         self,
     ) -> u.cm**2:
         return u.Quantity(self._data["geoarea"], u.cm**2)
 
     @property
     @u.quantity_input
-    def quantum_efficiency(
+    def effective_quantum_efficiency(
         self,
     ) -> u.dimensionless_unscaled:
         return u.Quantity(self._data["ccd"])
 
     @property
     @u.quantity_input
-    def contamination(
-        self,
-    ) -> u.dimensionless_unscaled:
-        # Contamination missing for FUV channels
-        if "contam" in self._data:
-            return u.Quantity(self._data["contam"])
-        return u.Quantity([1])
+    def _preflight_contamination(self):
+        # NOTE: Preflight contamination calibration data missing for FUV channels
+        return u.Quantity(self._data.get("contam", np.ones(self.wavelength.shape)))
 
     @property
     @u.quantity_input
-    def plate_scale(
+    def energy_per_electron(self) -> u.eV / u.electron:
+        return 1 / self._data["elecperev"] * u.eV / u.electron
+
+    @property
+    @u.quantity_input
+    def camera_gain(self) -> u.DN / u.electron:
+        return 1 / self._data["elecperdn"] * u.DN / u.electron
+
+    @property
+    @u.quantity_input
+    def pixel_solid_angle(
         self,
     ) -> u.steradian / u.pixel:
         return u.Quantity(self._data["platescale"], u.steradian / u.pixel)
 
     @property
-    @u.quantity_input
-    def effective_area(
-        self,
-    ) -> u.cm**2:
-        r"""
-        Uncorrected effective area as a function of wavelength.
+    def correction_table(self):
+        """
+        Correction table as provided: a table, a path, or `None`.
+        """
+        return self._correction_table_input
 
-        According to Section 2 of [boerner]_, the effective area is given by,
+    @correction_table.setter
+    def correction_table(self, value):
+        self._correction_table_input = value
+        self._resolved_correction_table = None
+
+    @property
+    def _correction_table(self):
+        """
+        The correction table resolved to a table: read/fetched when the
+        ``correction_table`` attribute is a path or `None` and cached until
+        ``correction_table`` is set again.
+        """
+        if self._resolved_correction_table is None:
+            source = self.correction_table
+            if source is None:
+                self._resolved_correction_table = get_correction_table()
+            elif isinstance(source, str | Path):
+                self._resolved_correction_table = get_correction_table(source=source)
+            else:
+                self._resolved_correction_table = source
+        return self._resolved_correction_table
+
+    @property
+    def _calibration_version(self):
+        return LATEST_CORRECTION_VERSION if self.calibration_version is None else self.calibration_version
+
+    @u.quantity_input
+    def _get_eve_correction(self, obstime) -> u.dimensionless_unscaled:
+        """
+        Calculate degradation factor from EVE rocket flight cross-calibration.
+
+        This function is adapted directly from the
+        `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`__
+        routine in SolarSoft.
+        """
+        table = _select_epoch_from_correction_table(
+            self.channel,
+            obstime,
+            self._correction_table,
+            calibration_version=self._calibration_version,
+        )
+        # NOTE: Explicitly interpolating to the pristine (time-independent,
+        # crosstalk-free) effective area since this correction is part of the
+        # degradation. This matches aia_bp_corrections.pro, which uses the
+        # effective area as stored in the instrument file.
+        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self._pristine_effective_area)
+        return table["EFF_AREA"][0] / effective_area_interp
+
+    @u.quantity_input
+    def degradation(self, obstime=None) -> u.dimensionless_unscaled:
+        r"""
+        Time-dependent degradation factor.
+
+        The AIA time-dependent degradation is modeled as,
 
         .. math::
 
-            A_{eff}(\lambda) = A_{geo}R_P(\lambda)R_S(\lambda)T_E(\lambda)T_F(\lambda)D(\lambda)Q(\lambda),
+            D(t) = C_e(t)C_d(t)
 
-        where,
-
-        - :math:`A_{geo}`: geometrical collecting area
-        - :math:`R_P`, :math:`R_S`: reflectances of primary and secondary mirrors, respectively
-        - :math:`T_E`, :math:`T_F`: transmission efficiency of the entrance and focal-plane filters, respectively
-        - :math:`D`: contaminant transmittance of optics
-        - :math:`Q`: quantum efficiency of the CCD
-
-        The effective area contains information about the efficiency of the telescope optics and its sensitivity as a function of wavelength.
-        All of the telescope properties are read from the AIA instrument files available in SolarSoft.
-
-        References
-        ----------
-        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
-        """
-        return (
-            self.primary_reflectance
-            * self.secondary_reflectance
-            * self.focal_plane_filter_efficiency
-            * self.entrance_filter_efficiency
-            * self.geometrical_collecting_area
-            * self.quantum_efficiency
-            * self.contamination
-        )
-
-    @property
-    @u.quantity_input
-    def crosstalk(
-        self,
-    ) -> u.cm**2:
-        """
-        Contamination of effective area from crosstalk  between channels.
-
-        On telescopes 1, 3, and 4, both channels are always illuminated.
-        This can lead to contamination in a channel from the channel with which it shares a telescope.
-        This impacts the 94 and 304 Å channels as well as 131 and 335 Å.
-        See Section 2.2.1 of [1]_ for more details.
-
-        References
-        ----------
-        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
-        """
-        crosstalk_lookup = {
-            94 * u.angstrom: 304 * u.angstrom,
-            304 * u.angstrom: 94 * u.angstrom,
-            131 * u.angstrom: 335 * u.angstrom,
-            335 * u.angstrom: 131 * u.angstrom,
-        }
-        if self.channel in crosstalk_lookup:
-            cross = Channel(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
-            return (
-                cross.primary_reflectance
-                * cross.secondary_reflectance
-                * self.focal_plane_filter_efficiency
-                * cross.entrance_filter_efficiency
-                * cross.geometrical_collecting_area
-                * cross.quantum_efficiency
-                * cross.contamination
-            )
-        return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
-
-    @u.quantity_input
-    def eve_correction(
-        self, obstime, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION
-    ) -> u.dimensionless_unscaled:
-        r"""
-        Correct effective area to give good agreement with full-disk EVE data.
+        where :math:`C_e(t)` is the EVE cross-calibration correction factor
+        and :math:`C_d(t)` is the time-varying telescope degradation computed
+        by `aiapy.calibrate.degradation`. The time-independent pre-flight
+        contamination model :math:`D_c(\lambda)` (Section 2.1.6 of [boerner])
+        is part of the static effective area, see `effective_area`.
 
         The EVE correction factor is given by,
 
         .. math::
 
-            \frac{A_{eff}(\lambda_n,t_0)}{A_{eff}(\lambda_E,t_e)}
+            C_e(t) = \frac{A_{eff}(\lambda_n,t_0)}{A_{eff}(\lambda_E,t_e)}
 
         where :math:`A_{eff}(\lambda_n,t_0)` is the effective area at the
         nominal wavelength of the channel (:math:`\lambda_n`) at the first
@@ -299,118 +336,11 @@ class Channel:
         area at the ```obstime``` calibration epoch interpolated to the effective
         wavelength (:math:`\lambda_E`).
 
-        .. note::
-
-            This function is adapted directly from the
-            `aia_bp_corrections.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/response/aia_bp_corrections.pro>`__
-            routine in SolarSoft.
-
-        Parameters
-        ----------
-        obstime : `~astropy.time.Time`
-            The time of the observation.
-        correction_table : `astropy.table.QTable`, optional
-            Table of correction parameters.
-            Defaults to None, which will use the table returned by
-            `aiapy.calibrate.utils.get_correction_table`.
-        calibration_version : `int`, optional
-            The version of the correction table to use.
-            Defaults to the latest version defined in this module.
-
-        Returns
-        -------
-        `~astropy.units.Quantity`
-
-        See Also
-        --------
-        aiapy.calibrate.utils.get_correction_table
-        """
-        if correction_table is None:
-            correction_table = get_correction_table()
-        table = _select_epoch_from_correction_table(
-            self.channel,
-            obstime,
-            correction_table=correction_table,
-            calibration_version=calibration_version,
-        )
-        effective_area_interp = np.interp(table["EFF_WVLN"][-1], self.wavelength, self.effective_area)
-        return table["EFF_AREA"][0] / effective_area_interp
-
-    @property
-    @u.quantity_input
-    def gain(
-        self,
-    ) -> u.DN / u.ph:
-        r"""
-        Gain of the CCD camera system.
-
-        According to Section 2 of [boerner1]_, the gain of the CCD-camera system, in
-        DN per photon, is given by,
-
-        .. math::
-
-            G(\lambda) = \frac{hc}{\lambda}\frac{g}{a}
-
-        where :math:`g` is the camera gain in DN per electron
-        and :math:`\approx 3.65` eV per electron is a conversion factor.
-
-        References
-        ----------
-        .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
-        """
-        _e = u.electron  # Avoid rewriting u.electron a lot
-        electron_per_ev = self._data["elecperev"] * _e / u.eV
-        energy_per_photon = const.h * const.c / self.wavelength / u.ph
-        electron_per_photon = (electron_per_ev * energy_per_photon).to(_e / u.ph)
-        return electron_per_photon / (self._data["elecperdn"] * _e / u.DN)
-
-    @u.quantity_input
-    def wavelength_response(
-        self,
-        *,
-        obstime=None,
-        include_eve_correction=False,
-        include_crosstalk=True,
-        correction_table=None,
-        calibration_version=LATEST_CORRECTION_VERSION,
-    ) -> u.DN / u.ph * u.cm**2:
-        r"""
-        The wavelength response function is the product of the gain and the
-        effective area.
-
-        The wavelength response as a function of time and wavelength is given
-        by,
-
-        .. math::
-
-            R(\lambda,t) = (A_{eff}(\lambda) + A_{cross}(\lambda))G(\lambda)C_T(t)C_E(t)
-
-        where,
-
-        - :math:`A_{eff}(\lambda)` is the effective area as a function of
-          wavelength
-        - :math:`A_{cross}(\lambda)` is the effective area of the crosstalk
-          channel
-        - :math:`G(\lambda)` is the gain of the telescope
-        - :math:`C_T(t)` is the time-dependent correction factor for the
-          instrument degradation
-        - :math:`C_E(t)` is the time-dependent EVE correction factor
-
         Parameters
         ----------
         obstime : `~astropy.time.Time`, optional
-            If specified, a time-dependent correction is applied to account for degradation.
-        include_eve_correction : `bool`, optional
-            If true and ``obstime`` is not `None`, include correction to EVE calibration.
-            The time-dependent correction is also included.
-        include_crosstalk : `bool`, optional
-            If true, include the effect of crosstalk between channels that share a telescope
-        correction_table : `~astropy.table.Table`
-            Table of correction parameters.
-            See `aiapy.calibrate.utils.get_correction_table` for more information.
-        calibration_version : `int`, optional
-                The version of the correction table to use.
-                Defaults to the latest version defined in this module.
+            The time of the observation. If `None` (the default), no
+            degradation is applied.
 
         Returns
         -------
@@ -418,20 +348,110 @@ class Channel:
 
         See Also
         --------
-        effective_area
-        gain
-        crosstalk
-        eve_correction
         aiapy.calibrate.degradation
+
+        References
+        ----------
+        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
-        eve_correction, time_correction = 1, 1
-        if obstime is not None:
-            time_correction = degradation(
-                self.channel, obstime, correction_table=correction_table, calibration_version=calibration_version
-            )
-            if include_eve_correction:
-                eve_correction = self.eve_correction(
-                    obstime, correction_table=correction_table, calibration_version=calibration_version
-                )
-        crosstalk = self.crosstalk if include_crosstalk else 0 * u.cm**2
-        return (self.effective_area + crosstalk) * self.gain * time_correction * eve_correction
+        if obstime is None:
+            return u.Quantity(1.0)
+        degradation = aiapy.calibrate.degradation(
+            self.channel,
+            obstime,
+            correction_table=self._correction_table,
+            calibration_version=self._calibration_version,
+        )
+        if self.include_eve_correction:
+            degradation = degradation * self._get_eve_correction(obstime)
+        return degradation
+
+    @property
+    @u.quantity_input
+    def _pristine_effective_area(self) -> u.cm**2:
+        """
+        Nominal effective area with no crosstalk or time-dependent
+        degradation.
+        """
+        return (
+            self.geometrical_area
+            * self.mirror_reflectance
+            * self.filter_transmittance
+            * self.effective_quantum_efficiency
+            * self._preflight_contamination
+        )
+
+    @property
+    @u.quantity_input
+    def _crosstalk(self) -> u.cm**2:
+        """
+        Pristine cross-talk component of the effective area.
+        """
+        crosstalk_lookup = {
+            94 * u.angstrom: 304 * u.angstrom,
+            304 * u.angstrom: 94 * u.angstrom,
+            131 * u.angstrom: 335 * u.angstrom,
+            335 * u.angstrom: 131 * u.angstrom,
+        }
+        if self.channel not in crosstalk_lookup:
+            return u.Quantity(np.zeros(self.wavelength.shape), u.cm**2)
+        cross = type(self)(crosstalk_lookup[self.channel], instrument_file=self._instrument_data)
+        return (
+            cross.geometrical_area
+            * cross.mirror_reflectance
+            * self.focal_plane_filter_transmittance
+            * cross.entrance_filter_transmittance
+            * cross.effective_quantum_efficiency
+            * cross._preflight_contamination
+        )
+
+    @u.quantity_input
+    def effective_area(self) -> u.cm**2:
+        r"""
+        Effective area as a function of wavelength.
+
+        According to Section 2 of [boerner]_, the effective area is given by,
+
+        .. math::
+
+            A_{eff}(\lambda) = A_{geo}R_P(\lambda)R_S(\lambda)T_E(\lambda)T_F(\lambda)Q(\lambda)D_c(\lambda)D(t),
+
+        where,
+
+        - :math:`A_{geo}`: geometrical collecting area
+        - :math:`R_P`, :math:`R_S`: reflectance of primary and secondary mirrors, respectively
+        - :math:`T_E`, :math:`T_F`: transmittance of the entrance and focal-plane filters, respectively
+        - :math:`Q`: effective quantum efficiency of the CCD
+        - :math:`D_c`: preflight contaminant transmittance of the optics
+        - :math:`D`: time-dependent degradation, evaluated at the time bound
+          with `~sunkit_instruments.response.abstractions.AbstractChannel.at`
+          (no time-dependent degradation for an unbound channel)
+
+        The effective area contains information about the efficiency of the telescope optics and its sensitivity
+        as a function of wavelength.
+        All of the telescope properties are read from the AIA instrument files available in SolarSoft.
+
+        On telescopes 1, 3, and 4, both channels are always illuminated.
+        This can lead to contamination in a channel from the channel with which it shares a telescope.
+        This impacts the 94 and 304 Å channels as well as 131 and 335 Å.
+        For these channels, an additional component is added to the effective area to model the cross-talk
+        between these channels.
+        See Section 2.2.1 of [boerner]_ for more details.
+
+        See Also
+        --------
+        degradation
+
+        References
+        ----------
+        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
+        """
+        effective_area = self._pristine_effective_area
+        if self.include_crosstalk:
+            effective_area = effective_area + self._crosstalk
+        # NOTE: The nominal channel's time-dependent degradation is applied to
+        # the total (nominal + crosstalk) effective area since the postflight
+        # cross-calibration is done on the whole channel including crosstalk.
+        if self._obstime is not None:
+            effective_area = effective_area * self.degradation(obstime=self._obstime)
+        return effective_area
