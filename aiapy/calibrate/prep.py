@@ -17,7 +17,7 @@ from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_
 from aiapy.utils import AIApyUserWarning
 from aiapy.utils.decorators import validate_channel
 
-__all__ = ["correct_degradation", "degradation", "register"]
+__all__ = ["correct_degradation", "degradation", "normalize_exposure", "register"]
 
 
 @add_common_docstring(rotation_function_names=_rotation_function_names)
@@ -230,3 +230,78 @@ def degradation(
         # Polynomial correction to interpolate within epoch
         poly[idx] = table["EFFA_P1"][-1] * dt + table["EFFA_P2"][-1] * dt**2 + table["EFFA_P3"][-1] * dt**3 + 1.0
     return u.Quantity(poly * ratio)
+
+
+def normalize_exposure(smap: AIAMap) -> AIAMap:
+    """
+    Normalize an AIA map by its exposure time, converting DN to DN / s.
+
+    This is a wrapper around dividing a map simply by its exposure time,
+    ``smap / smap.exposure_time``. In addition to that division, this
+    function warns if the exposure time is not a physical value, refuses to
+    normalize a map twice, and keeps the AIA-specific ``PIXLUNIT`` keyword
+    consistent with ``BUNIT``.
+
+    .. note::
+
+        The ``EXPTIME`` keyword is a measured property of the original
+        observation and is deliberately left unchanged. The exposure time
+        that the data are divided by is instead recorded in the ``EXPNORM``
+        keyword, which makes the normalization reversible and allows frames
+        with pathological exposure times to be identified after
+        normalization by querying ``EXPTIME <= 0``.
+
+    .. note::
+
+        If the exposure time is zero or negative, the division is still
+        performed and the resulting non-finite or sign-flipped values are
+        left as-is. A `~aiapy.utils.AIApyUserWarning` is given in this case.
+
+    Parameters
+    ----------
+    smap : `~sunpy.map.sources.AIAMap`
+        Map to be normalized.
+
+    Returns
+    -------
+    `~sunpy.map.sources.AIAMap`
+        Exposure-normalized map, in units of DN / s. If ``smap`` is already
+        exposure-normalized, it is returned unchanged.
+    """
+    if not isinstance(smap, AIAMap):
+        msg = "Input must be an AIAMap."
+        raise TypeError(msg)
+
+    # Check if the map has already been normalized
+    already_normalized = smap.unit is not None and (
+        smap.unit.is_equivalent(u.DN / u.s) or smap.unit.is_equivalent(u.ct / u.s)
+    )
+    if already_normalized or "expnorm" in smap.meta:
+        warnings.warn(
+            "Input map has already been normalized by its exposure time. Returning the input map unchanged.",
+            AIApyUserWarning,
+            stacklevel=3,
+        )
+        return smap
+
+    # Warn if the exposure time is not positive
+    exposure_time = smap.exposure_time
+    if exposure_time <= 0 * u.s:
+        warnings.warn(
+            f"Exposure time is less than zero: EXPTIME={exposure_time}. The normalized values will not be finite.",
+            AIApyUserWarning,
+            stacklevel=3,
+        )
+
+    # Divide by exposure time
+    with np.errstate(divide="ignore", invalid="ignore"):
+        new_map = smap / exposure_time
+
+    # Make a record of the initial value of exposure, the "normalization value"
+    new_map.meta["expnorm"] = exposure_time.to_value(u.s)
+
+    # Set the new units of the pixels
+    if "pixlunit" in new_map.meta:
+        new_map.meta["pixlunit"] = "DN / s"
+
+    return new_map
