@@ -131,7 +131,6 @@ copybutton_prompt_is_regexp = True
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
-    "cupy": ("https://docs.cupy.dev/en/stable/", None),
     "drms": ("https://docs.sunpy.org/projects/drms/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable", None),
     "numpy": ("https://numpy.org/doc/stable/", (None, "http://www.astropy.org/astropy-data/intersphinx/numpy.inv")),

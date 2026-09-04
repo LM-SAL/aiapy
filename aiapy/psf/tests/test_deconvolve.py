@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 
-import sunpy.data.test
 import sunpy.map
 
 import aiapy.psf
@@ -9,7 +8,7 @@ from aiapy.utils import AIApyUserWarning
 
 
 def test_deconvolve(aia_171_map) -> None:
-    pytest.importorskip(modname="cupy", reason="Cannot import cupy. Skipping deconvolution test with full PSF")
+    pytest.importorskip(modname="jax", reason="Cannot import jax. Skipping deconvolution test with full PSF")
     map_decon = aiapy.psf.deconvolve(aia_171_map)
     assert isinstance(map_decon, sunpy.map.GenericMap)
     assert map_decon.data.shape == aia_171_map.data.shape

@@ -13,7 +13,7 @@ from sunpy.time import parse_time
 from aiapy.utils.decorators import validate_channel
 from aiapy.utils.net import _get_data_from_jsoc
 
-__all__ = ["check_quality_flag", "sdo_location", "telescope_number"]
+__all__ = ["check_quality_flag", "detector_dimensions", "sdo_location", "telescope_number"]
 
 # This comes from Table 2 in Section 7.7.6 of the SDO User Guide
 _QUALITY_FLAG_MESSAGES = {
@@ -143,3 +143,10 @@ def telescope_number(channel: u.angstrom):
         1700 * u.angstrom: 3,
         4500 * u.angstrom: 3,
     }[channel]
+
+
+def detector_dimensions():
+    """
+    Dimensions of the detector in row-major order.
+    """
+    return u.Quantity((4096, 4096), "pixel", dtype=int)
