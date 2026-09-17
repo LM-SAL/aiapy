@@ -4,13 +4,8 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.16.5"
     hooks:
-<<<<<<<
-      - id: ruff
-        args: ["--fix", "--unsafe-fixes"]
-=======
       - id: ruff-check
-        args: ["--fix", "--show-fixes"]
->>>>>>>
+        args: ["--fix", "--show-fixes", "--unsafe-fixes"]
         types: [python]
         # Define here once and then reference using YAML anchor
         exclude: &exclude_dirs ^aiapy/(data|extern)/
