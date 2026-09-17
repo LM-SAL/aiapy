@@ -10,7 +10,7 @@ extend-exclude=[
 lint.extend-select = [
     "ALL",
 ]
-lint.extend-ignore = [
+lint.ignore = [
     "ANN001", # Missing type annotation for function argument
     "ANN002", # Missing type annotation for variable
     "ANN003", # Missing type annotation for keyword
