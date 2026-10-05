@@ -1,0 +1,2 @@
+Increased the minimum supported versions of Python and dependencies to follow `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`__.
+The new minimum versions are: Python 3.13, ``numpy`` 2.3.0, ``matplotlib`` 3.11.0 and ``jax`` 0.4.34 (optional).
