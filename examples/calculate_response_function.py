@@ -40,17 +40,18 @@ aia_335_channel = Channel(335 * u.angstrom)
 #
 # .. math::
 #   R(\lambda) = A_{geo}R_P(\lambda)R_S(\lambda)T_E(\lambda)T_F(\lambda)
-#   D(\lambda)Q(\lambda)G(\lambda),
+#   D(\lambda)Q(\lambda)G(\lambda)\Omega_{pix},
 #
 # where
 #
 # - :math:`A_{geo}` geometrical collecting area
 # - :math:`R_P,R_S` reflectances of primary and secondary mirrors, respectively
-# - :math:`T_E, T_F` transmission efficiency of the entrance and focal-plane
+# - :math:`T_E, T_F` transmittances of the entrance and focal-plane
 #   filters, respectively
 # - :math:`D` contaminant transmittance of optics
-# - :math:`Q` quantum efficiency of the CCD
+# - :math:`Q` effective quantum efficiency of the CCD
 # - :math:`G` gain of the CCD camera system
+# - :math:`\Omega_{pix}` solid angle of a single pixel
 #
 # The `aiapy.response.Channel` object provides an interface to all of these
 # properties of the telescope. Below, we show how to plot several of these
@@ -59,8 +60,8 @@ aia_335_channel = Channel(335 * u.angstrom)
 # Reflectance
 fig = plt.figure()
 ax = fig.add_subplot(221)
-ax.plot(aia_335_channel.wavelength, aia_335_channel.primary_reflectance, label=r"$R_P$")
-ax.plot(aia_335_channel.wavelength, aia_335_channel.secondary_reflectance, label=r"$R_S$")
+ax.plot(aia_335_channel.wavelength, aia_335_channel.primary_mirror_reflectance, label=r"$R_P$")
+ax.plot(aia_335_channel.wavelength, aia_335_channel.secondary_mirror_reflectance, label=r"$R_S$")
 ax.set_ylabel(r"Reflectance")
 ax.set_xlim(50, 400)
 ax.set_xlabel(r"$\lambda$ [Å]")
@@ -68,25 +69,25 @@ ax.legend(frameon=False)
 
 # Transmittance
 ax = fig.add_subplot(222)
-ax.plot(aia_335_channel.wavelength, aia_335_channel.entrance_filter_efficiency, label=r"$T_E$")
-ax.plot(aia_335_channel.wavelength, aia_335_channel.focal_plane_filter_efficiency, label=r"$T_F$")
+ax.plot(aia_335_channel.wavelength, aia_335_channel.entrance_filter_transmittance, label=r"$T_E$")
+ax.plot(aia_335_channel.wavelength, aia_335_channel.focal_plane_filter_transmittance, label=r"$T_F$")
 ax.set_ylabel(r"Transmittance")
 ax.set_xlim(50, 400)
 ax.set_xlabel(r"$\lambda$ [Å]")
 ax.legend(frameon=False)
 
-# Contamination
+# Quantum efficiency
 ax = fig.add_subplot(223)
-ax.plot(aia_335_channel.wavelength, aia_335_channel.contamination)
-ax.set_ylabel(r"Contamination, $D(\lambda)$")
-ax.set_xlim(50, 400)
-ax.set_xlabel(r"$\lambda$ [Å]")
-
-# Quantumn efficiency
-ax = fig.add_subplot(224)
-ax.plot(aia_335_channel.wavelength, aia_335_channel.quantum_efficiency)
+ax.plot(aia_335_channel.wavelength, aia_335_channel.effective_quantum_efficiency)
 ax.set_ylabel(r"Quantum Efficiency, $Q(\lambda)$")
 ax.set_xlim(50, 800)
+ax.set_xlabel(r"$\lambda$ [Å]")
+
+# Effective area
+ax = fig.add_subplot(224)
+ax.plot(aia_335_channel.wavelength, aia_335_channel.effective_area())
+ax.set_ylabel(r"Effective Area, $A_{eff}(\lambda)$ [cm$^2$]")
+ax.set_xlim(50, 400)
 ax.set_xlabel(r"$\lambda$ [Å]")
 
 plt.tight_layout()
@@ -96,7 +97,8 @@ plt.tight_layout()
 # the wavelength response function using the equation above,
 
 correction_table = get_correction_table("jsoc")
-wavelength_response_335 = aia_335_channel.wavelength_response(correction_table=correction_table)
+aia_335_channel.correction_table = correction_table
+wavelength_response_335 = aia_335_channel.wavelength_response()
 print(wavelength_response_335)
 
 ###############################################################################
@@ -108,7 +110,6 @@ fig = plt.figure()
 ax = fig.gca()
 ax.plot(aia_335_channel.wavelength, wavelength_response_335)
 ax.set_xlim((aia_335_channel.channel + [-10, 10] * u.angstrom).value)
-ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
 ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 
@@ -118,11 +119,10 @@ ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}
 # which it shares a telescope. This impacts the 94 Å and 304 Å channels
 # as well as the 131 Å and 335 Å channels. This effect is included
 # by default in the wavelength response calculation. To exclude this
-# effect,
+# effect, create a channel with ``include_crosstalk=False``,
 
-wavelength_response_335_no_cross = aia_335_channel.wavelength_response(
-    include_crosstalk=False, correction_table=correction_table
-)
+aia_335_channel_no_cross = Channel(335 * u.angstrom, include_crosstalk=False, correction_table=correction_table)
+wavelength_response_335_no_cross = aia_335_channel_no_cross.wavelength_response()
 
 ###############################################################################
 # If we look at the response around 131 Å (the channel with which 335 Å shares
@@ -144,15 +144,16 @@ ax.legend(loc=1, frameon=False)
 # response functions, including a time-dependent
 # degradation correction as well as a correction based
 # on the EVE calibration. The latter also includes the
-# time-dependent correction. As an example, to apply the
-# two aforementioned corrections given the degradation as
-# of 1 January 2019,
+# time-dependent correction. Time-dependent corrections are applied by
+# binding an observation time to the channel with
+# `~sunkit_instruments.response.abstractions.AbstractChannel.at`.
+# As an example, to apply the two aforementioned corrections given the
+# degradation as of 1 January 2019,
 
 obstime = astropy.time.Time("2019-01-01T00:00:00")
-wavelength_response_335_time = aia_335_channel.wavelength_response(obstime=obstime, correction_table=correction_table)
-wavelength_response_335_eve = aia_335_channel.wavelength_response(
-    obstime=obstime, include_eve_correction=True, correction_table=correction_table
-)
+wavelength_response_335_time = aia_335_channel.at(obstime).wavelength_response()
+aia_335_channel_eve = Channel(335 * u.angstrom, include_eve_correction=True, correction_table=correction_table)
+wavelength_response_335_eve = aia_335_channel_eve.at(obstime).wavelength_response()
 
 ###############################################################################
 # We can then compare the two corrected response
@@ -164,7 +165,6 @@ ax.plot(aia_335_channel.wavelength, wavelength_response_335, label="uncorrected"
 ax.plot(aia_335_channel.wavelength, wavelength_response_335_time, label="degradation correction")
 ax.plot(aia_335_channel.wavelength, wavelength_response_335_eve, label="EVE correction")
 ax.set_xlim((aia_335_channel.channel + [-20, 20] * u.angstrom).value)
-ax.set_ylim(0, 0.03)
 ax.set_xlabel(r"$\lambda$ [Å]")
 ax.set_ylabel(f"$R(\\lambda)$ [{wavelength_response_335.unit.to_string('latex')}]")
 ax.legend(loc=2, frameon=False)
