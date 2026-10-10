@@ -1,0 +1,2 @@
+Added :func:`aiapy.calibrate.normalize_exposure`, a checked wrapper around dividing a map by its exposure time (``my_map / my_map.exposure_time``).
+In addition to the division, it warns on non-physical exposure times, guards against normalizing a map twice, keeps ``PIXLUNIT`` consistent with ``BUNIT``, and records the divisor in a new ``EXPNORM`` keyword while leaving the measured ``EXPTIME`` unchanged.

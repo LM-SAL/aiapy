@@ -22,7 +22,7 @@ If you want to do any additional data processing steps (e.g., PSF deconvolution)
 3. PSF deconvolution (`aiapy.psf.deconvolve`)
 4. Registration (`aiapy.calibrate.register`)
 5. Degradation correction (`aiapy.calibrate.correct_degradation`)
-6. Exposure normalization
+6. Exposure normalization (`aiapy.calibrate.normalize_exposure`)
 
 .. note::
 
@@ -33,3 +33,4 @@ If you want to do any additional data processing steps (e.g., PSF deconvolution)
    * The pointing update should be done prior to image registration as the updated keywords, namely ``CRPIX1`` and ``CRPIX2``, are used in the image registration step.
    * The exposure time normalization and degradation correction (`aiapy.calibrate.correct_degradation`) operations are just scalar multiplication and are thus linear such that their ordering is inconsequential.
    * Exposure time normalization can be performed by simply dividing a map by the exposure time property, ``my_map / my_map.exposure_time``.
+     Alternatively, `aiapy.calibrate.normalize_exposure` wraps this same division with additional validation and provenance: it warns on non-physical exposure times, will not normalize a map twice, and records the divisor in the ``EXPNORM`` keyword while leaving the measured ``EXPTIME`` unchanged.
