@@ -53,6 +53,6 @@ Standards
 
 All contributors to the ``aiapy`` codebase should follow the `SunPy developer's guide`_.
 This guide lays out a set of best practices for contributing, reviewing, testing, and documenting code.
-All contributions to ``aiapy`` must adhere to the `Python in Heliophysics Community Standards <https://doi.org/10.5281/zenodo.2529130>`__.
+All contributions to ``aiapy`` must adhere to the Python in Heliophysics Community Standards :cite:p:`pyhc_standards`.
 
 .. _`SunPy developer's guide`: https://docs.sunpy.org/en/latest/dev_guide/contents/newcomers.html

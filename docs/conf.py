@@ -81,7 +81,16 @@ extensions = [
     "sphinx_automodapi.smart_resolver",
     "sphinx_changelog",
     "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.bibtex",
 ]
+
+# -- Options for sphinxcontrib-bibtex ------------------------------------------
+
+# All bibliographic references live in this file and are cited with the
+# ``:cite:`` role, rendering as author-year citations linked to the
+# central bibliography on the references page.
+bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ["_templates"]

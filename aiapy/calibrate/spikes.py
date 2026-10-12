@@ -29,7 +29,7 @@ def respike(smap, *, spikes=None):
     ray hits. This function re-inserts these "spikes" back into the
     image using spike location and intensity values either provided
     by the user or obtained automatically from
-    `JSOC <http://jsoc.stanford.edu/>`_.
+    `JSOC <http://jsoc.stanford.edu/>`__.
 
     .. note::
 

@@ -35,7 +35,7 @@ from aiapy.response import Channel
 aia_335_channel = Channel(335 * u.angstrom)
 
 ###############################################################################
-# From `Boerner et al. (2012) <https://doi.org/10.1007/s11207-011-9804-8>`_,
+# From :cite:t:`boerner2012`,
 # the wavelength response function is given by,
 #
 # .. math::

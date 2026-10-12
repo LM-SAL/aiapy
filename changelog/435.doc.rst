@@ -1,0 +1,1 @@
+Move all documentation references into a central ``docs/references.bib`` and render them as author-year citations linked to a central references page using ``sphinxcontrib-bibtex`` and the ``:cite:`` role.

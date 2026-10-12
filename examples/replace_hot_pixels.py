@@ -26,13 +26,13 @@ from aiapy.calibrate import fetch_spikes, respike
 # this removal by putting back all the removed pixel values with the
 # `aiapy.calibrate.respike` in function. This corresponds to the
 # ``aia_respike.pro`` IDL procedure as described in the
-# `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`_.
+# `SDO Analysis Guide <https://www.lmsal.com/sdodocs/doc/dcur/SDOD0060.zip/zip/entry/index.html>`__.
 #
 # The header keywords ``LVL_NUM`` and ``NSPIKES`` describe the level number of the
 # AIA data (e.g. level 1) and how many hot pixels were removed from the image
 # (i.e. the "spikes"). The data containing the information of the pixel
 # position and the intensities of the removed hot pixels are available from the
-# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ as a
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`__ as a
 # separate segment of the ``aia.lev1_euv_12s`` and ``aia.lev1_uv_24s`` data series
 
 ###############################################################################

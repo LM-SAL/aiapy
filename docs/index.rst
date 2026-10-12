@@ -70,6 +70,7 @@ Capabilities include converting AIA images from level 1 to level 1.5, deconvolvi
     getting_started
     generated/gallery/index
     reference/index
+    references
     citation
     whatsnew/index
     develop

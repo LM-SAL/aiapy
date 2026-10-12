@@ -26,7 +26,7 @@ from aiapy.calibrate.utils import get_pointing_table
 # angles. Furthermore, the estimates of the pointing keywords (``CDELT1``, ``CDELT2``, ``CRPIX1``,
 # ``CRPIX2``, ``CROTA2``) may have been improved due to limb fitting procedures after
 # the level 1 file has been created.
-# The `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_ stores
+# The `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`__ stores
 # AIA image data and metadata separately; when users download AIA data, these
 # two data types are combined to produce a FITS file. While metadata are
 # continuously updated at the JSOC, previously downloaded FITS files will not

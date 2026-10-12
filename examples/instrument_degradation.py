@@ -30,13 +30,13 @@ time_support(format="jyear")
 # measured intensity. For monitoring brightness changes over months and years,
 # degradation correction is an important step in the data normalization process.
 # For instance, the SDO Machine Learning Dataset
-# (`Galvez et al., 2019 <https://ui.adsabs.harvard.edu/abs/2019ApJS..242....7G/abstract>`_)
+# :cite:p:`galvez2019`
 # includes this correction.
 #
 # The AIA team models the change in transmission as a function of time (see
-# `Boerner et al., 2012 <https://doi.org/10.1007/s11207-011-9804-8>`_) and
+# :cite:alp:`boerner2012`) and
 # the table of correction parameters is publicly available via the
-# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`_.
+# `Joint Science Operations Center (JSOC) <http://jsoc.stanford.edu/>`__.
 #
 # First, fetch this correction table. We have to specify the source of the
 # correction table. This can be either a local file or a version number of a
