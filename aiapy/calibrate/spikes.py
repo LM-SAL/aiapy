@@ -14,7 +14,7 @@ from astropy.wcs.utils import pixel_to_pixel
 from sunpy.map.mapbase import PixelPair
 from sunpy.map.sources.sdo import AIAMap
 
-from aiapy.utils import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning, detector_dimensions
 from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = ["fetch_spikes", "respike"]
@@ -156,7 +156,7 @@ def fetch_spikes(smap, *, as_coords=False):
     spikes = fits.getdata(f"http://jsoc.stanford.edu{file['spikes'][0]}")
     # Loaded as floats, but they are actually integers
     spikes = spikes.astype(np.int32)
-    shape_full_frame = (4096, 4096)
+    shape_full_frame = detector_dimensions().value
     values = spikes[1, :]
     y_coords, x_coords = np.unravel_index(spikes[0, :], shape=shape_full_frame)
     # If this is a cutout, need to transform the full-frame pixel

@@ -227,8 +227,4 @@ def test_fuv_channel(channel_wavelength, channel_properties, required_keys) -> N
     assert all(k in channel._data for k in required_keys)
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
-    assert channel.contamination == u.Quantity(
-        [
-            1,
-        ],
-    )
+    assert_quantity_allclose(channel.contamination, u.Quantity([1]))
