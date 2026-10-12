@@ -1,4 +1,7 @@
-import contextlib
+import matplotlib as mpl
+
+# Force MPL to use non-gui backends for testing.
+mpl.use("Agg")
 
 import pytest
 from numpy.random import default_rng
@@ -10,22 +13,18 @@ import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.utils import detector_dimensions
+
 RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
-
-with contextlib.suppress(ImportError):
-    import matplotlib as mpl
-
-    # Force MPL to use non-gui backends for testing.
-    mpl.use("Agg")
 
 
 @pytest.fixture
 def aia_171_map():
     m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
     # For testing purposes, need the map to be 4K-by-4K
-    return m.resample((4096, 4096) * u.pixel)
+    return m.resample(detector_dimensions())
 
 
 @pytest.fixture
