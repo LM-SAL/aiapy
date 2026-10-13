@@ -49,7 +49,7 @@ aia_map = sunpy.map.Map(files[0])
 # Next, we'll calculate the PSF using `aiapy.psf.calculate_psf` for the 171 Å channel.
 # The PSF model accounts for several different effects, including diffraction
 # from the mesh grating of the filters, charge spreading, and jitter. See
-# `Grigis et al (2012) <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
+# :cite:t:`grigis2012`
 # for more details. Currently, this only works for  :math:`4096\times4096` full frame images.
 #
 # Note that this will be significantly faster if you have installed `jax <https://docs.jax.dev/en/latest/>`__.
@@ -78,7 +78,7 @@ plt.colorbar(ax.images[0], ax=ax, label="Normalized Intensity")
 ###############################################################################
 # Now that we've downloaded our image and computed the PSF, we can deconvolve
 # the image with the PSF using the
-# `Richardson-Lucy deconvolution algorithm <https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution>`_.
+# Richardson-Lucy deconvolution algorithm :cite:p:`richardson1972,lucy1974`.
 # Note that passing in the PSF is optional. If you exclude it, it will be
 # calculated automatically. However, when deconvolving many images of the same
 # wavelength, it is most efficient to only calculate the PSF once.

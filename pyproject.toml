@@ -67,6 +67,7 @@ docs = [
   "sphinx-copybutton",
   "sphinx-design>=0.7.0",
   "sphinx-gallery>=0.18.0",
+  "sphinxcontrib-bibtex>=2.6.0",
   "sphinxext-opengraph>=0.10.0",
   "sunpy-sphinx-theme>=2.0.17",
 ]

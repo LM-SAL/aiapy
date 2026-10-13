@@ -23,7 +23,7 @@ def filter_mesh_parameters(*, use_preflightcore=False):
         Dictionary with filter mesh information for each channel. Each channel
         entry then contains another dictionary with the following keys
         describing filter mesh properties of that channel
-        (see Table 2 of [1]_):
+        (see Table 2 of :cite:t:`grigis2012`):
 
         * ``angle_arm``: Angles of the four entrance filter arms
         * ``error_angle_arm``: Error in angle of the four entrance filter arms
@@ -34,12 +34,6 @@ def filter_mesh_parameters(*, use_preflightcore=False):
         * ``width``: Width applied to the Gaussian such that *after*
           convolution we have the proper width
           (:math:`4/3` at :math:`1/e` of max)
-
-    References
-    ----------
-    .. [1] `Grigis, P., Su, Y., Weber M., et al., 2012,
-            AIA PSF Characterization and Deconvolution
-            <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`_
 
     See Also
     --------

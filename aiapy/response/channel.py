@@ -213,7 +213,7 @@ class Channel:
         r"""
         Uncorrected effective area as a function of wavelength.
 
-        According to Section 2 of [boerner]_, the effective area is given by,
+        According to Section 2 of :cite:t:`boerner2012`, the effective area is given by,
 
         .. math::
 
@@ -229,10 +229,6 @@ class Channel:
 
         The effective area contains information about the efficiency of the telescope optics and its sensitivity as a function of wavelength.
         All of the telescope properties are read from the AIA instrument files available in SolarSoft.
-
-        References
-        ----------
-        .. [boerner] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         return (
             self.primary_reflectance
@@ -255,11 +251,7 @@ class Channel:
         On telescopes 1, 3, and 4, both channels are always illuminated.
         This can lead to contamination in a channel from the channel with which it shares a telescope.
         This impacts the 94 and 304 Å channels as well as 131 and 335 Å.
-        See Section 2.2.1 of [1]_ for more details.
-
-        References
-        ----------
-        .. [1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
+        See Section 2.2.1 of :cite:t:`boerner2012` for more details.
         """
         crosstalk_lookup = {
             94 * u.angstrom: 304 * u.angstrom,
@@ -344,7 +336,7 @@ class Channel:
         r"""
         Gain of the CCD camera system.
 
-        According to Section 2 of [boerner1]_, the gain of the CCD-camera system, in
+        According to Section 2 of :cite:t:`boerner2012`, the gain of the CCD-camera system, in
         DN per photon, is given by,
 
         .. math::
@@ -353,10 +345,6 @@ class Channel:
 
         where :math:`g` is the camera gain in DN per electron
         and :math:`\approx 3.65` eV per electron is a conversion factor.
-
-        References
-        ----------
-        .. [boerner1] Boerner et al., 2012, Sol. Phys., `275, 41 <http://adsabs.harvard.edu/abs/2012SoPh..275...41B>`__
         """
         _e = u.electron  # Avoid rewriting u.electron a lot
         electron_per_ev = self._data["elecperev"] * _e / u.eV

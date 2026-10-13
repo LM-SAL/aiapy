@@ -36,13 +36,13 @@ def deconvolve(
     Deconvolve an AIA image with the point spread function.
 
     Perform image deconvolution on an AIA image with the instrument
-    point spread function using the Richardson-Lucy deconvolution algorithm [1]_.
+    point spread function using the Richardson-Lucy deconvolution algorithm :cite:p:`richardson1972,lucy1974`.
 
     .. note::
 
         If the jax package is installed it will be used to accelerate the computation.
         jax can use CPUs or GPUs, `see their documentation for instructions <https://docs.jax.dev/en/latest/installation.html>`__.
-        For more information on PSF deconvolution on a GPU, see [2]_.
+        For more information on PSF deconvolution on a GPU, see :cite:t:`cheung2015`.
 
     Parameters
     ----------
@@ -65,11 +65,6 @@ def deconvolve(
     See Also
     --------
     calculate_psf
-
-    References
-    ----------
-    .. [1] https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
-    .. [2] Cheung, M., 2015, *GPU Technology Conference Silicon Valley*, `GPU-Accelerated Image Processing for NASA's Solar Dynamics Observatory <https://on-demand.gputechconf.com/gtc/2015/presentation/S5209-Mark-Cheung.pdf>`__
     """
     # TODO: Should check to make sure this is a full-frame image?
     # We need to promote to float64 for JAX only

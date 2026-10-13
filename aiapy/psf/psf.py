@@ -26,7 +26,7 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     .. note::
 
         This function has been adapted from
-        `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`_.
+        `aia_calc_psf.pro <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/PRO/aia_calc_psf.pro>`__.
 
     .. note::
 
@@ -83,7 +83,7 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     where :math:`\mathcal{F}` denotes the Fourier transform,
     :math:`\mathrm{PSF}_f` is the PSF of the focal plane filter, and
     :math:`\mathrm{PSF}_e` is the PSF of the entrance filter. For a more
-    detailed explanation of the PSF and the above calculation, see [1]_.
+    detailed explanation of the PSF and the above calculation, see :cite:t:`grigis2012`.
 
     Parameters
     ----------
@@ -104,12 +104,6 @@ def calculate_psf(channel: u.angstrom, *, use_preflightcore=False, diffraction_o
     --------
     filter_mesh_parameters
     deconvolve
-
-    References
-    ----------
-    .. [1] `Grigis, P., Su, Y., Weber M., et al., 2012,
-            AIA PSF Characterization and Deconvolution
-            <https://sohoftp.nascom.nasa.gov/solarsoft/sdo/aia/idl/psf/DOC/psfreport.pdf>`__
     """
     mesh_info = filter_mesh_parameters(use_preflightcore=use_preflightcore)[channel]
     diffraction_orders = np.arange(-100, 101, 1) if diffraction_orders is None else np.asarray(diffraction_orders)
