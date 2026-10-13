@@ -98,19 +98,23 @@ warm_map = sunpy.map.Map(m_94.data - fe18_map.data, m_94.meta)
 #
 # Subtracting the estimated warm emission highlights the compact core of
 # high-temperature emission.
+# All panels use the same intensity scale. Values outside the displayed range
+# are clipped only for display; the maps retain their original values.
 
-fig = plt.figure(figsize=(12, 5))
-norm = ImageNormalize(m_94.data, interval=PercentileInterval(99.5), stretch=AsinhStretch(0.05))
+fig = plt.figure(figsize=(12, 4), layout="compressed")
+fig.get_layout_engine().set(w_pad=0, wspace=0)
+norm = ImageNormalize(m_94.data, vmin=0, interval=PercentileInterval(99.5), stretch=AsinhStretch(0.05), clip=True)
+axes = []
 for i, (smap, title) in enumerate(
     zip((m_94, warm_map, fe18_map), ("AIA 94 Å", "Warm 94 Å", "Fe XVIII 93.9 Å"), strict=True),
 ):
     ax = fig.add_subplot(1, 3, i + 1, projection=smap)
-    smap.plot(axes=ax, annotate=False, norm=norm, cmap="sdoaia94")
+    image = smap.plot(axes=ax, annotate=False, norm=norm, cmap="sdoaia94")
     ax.set_title(title)
-    ax.coords[0].set_axislabel("HPC Longitude")
-    ax.coords[1].set_axislabel("HPC Latitude" if i == 0 else " ")
-    ax.coords[1].set_ticklabel_visible(visible=i == 0)
+    ax.set_axis_off()
+    axes.append(ax)
 
+fig.colorbar(image, ax=axes, location="bottom", shrink=0.7, pad=0.03, label="Intensity [DN/s]", extend="both")
 plt.show()
 
 ###############################################################################
