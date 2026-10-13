@@ -77,8 +77,7 @@ warm_map = sunpy.map.Map(m_94.data - fe18_map.data, m_94.meta, mask=fe18_map.mas
 ###############################################################################
 # Compare the observed 94 Å, estimated warm, and Fe XVIII images.
 #
-# The subtraction highlights the compact hot core. All panels share an
-# intensity scale
+# The subtraction highlights the compact hot core.
 
 fig = plt.figure(figsize=(12, 4), layout="compressed")
 fig.get_layout_engine().set(w_pad=0, wspace=0)
