@@ -14,13 +14,13 @@ from a mixture of the 171 Å and 193 Å channels and subtract it from the 94 Å 
 """
 
 import matplotlib.pyplot as plt
+import pooch
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 
 import sunpy.map
-from sunpy.data import manager
 
 from aiapy.analysis import isolate_fe18_intensity
 from aiapy.calibrate import correct_degradation, register, update_pointing
@@ -29,35 +29,26 @@ from aiapy.calibrate.utils import get_correction_table, get_pointing_table
 ###############################################################################
 # The 94, 171, and 193 Å level 1 images are hosted in
 # `aiapy-data <https://github.com/LM-SAL/aiapy-data>`__.
-# SunPy's data manager downloads them once, verifies their SHA-256 hashes,
+# Pooch downloads them once, verifies their SHA-256 hashes,
 # and reuses the local cache on later runs.
 
 base_url = "https://github.com/LM-SAL/aiapy-data/releases/download/v1/"
 
 
-@manager.require(
-    "aia_094_fe18",
+file_94 = pooch.retrieve(
     base_url + "aia.lev1_euv_12s.2011-11-08T163404Z.94.image_lev1.fits",
-    "913aaa3b16fe74f524efffa40ab03df8a6d299243d974be32531c3b63f40e01e",
+    known_hash="913aaa3b16fe74f524efffa40ab03df8a6d299243d974be32531c3b63f40e01e",
 )
-@manager.require(
-    "aia_171_fe18",
+file_171 = pooch.retrieve(
     base_url + "aia.lev1_euv_12s.2011-11-08T163413Z.171.image_lev1.fits",
-    "41810a805a30507d16417a8ccd36758a1a268671124912b7260264e91a6960d3",
+    known_hash="41810a805a30507d16417a8ccd36758a1a268671124912b7260264e91a6960d3",
 )
-@manager.require(
-    "aia_193_fe18",
+file_193 = pooch.retrieve(
     base_url + "aia.lev1_euv_12s.2011-11-08T163409Z.193.image_lev1.fits",
-    "715b42cb8097de0c0003e5ff79eaef16d0fcbb3817f2920844b6a0abf36088cd",
+    known_hash="715b42cb8097de0c0003e5ff79eaef16d0fcbb3817f2920844b6a0abf36088cd",
 )
-def load_images():
-    """
-    Load the three level 1 sample images.
-    """
-    return sunpy.map.Map([manager.get(name) for name in ("aia_094_fe18", "aia_171_fe18", "aia_193_fe18")])
 
-
-map_94, map_171, map_193 = load_images()
+map_94, map_171, map_193 = sunpy.map.Map([file_94, file_171, file_193])
 
 ###############################################################################
 # We update pointing, register the images, correct degradation, and normalize
