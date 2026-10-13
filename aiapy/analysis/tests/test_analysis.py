@@ -1,6 +1,4 @@
-"""
-Tests for `aiapy.analysis`.
-"""
+from itertools import permutations
 
 import numpy as np
 import pytest
@@ -12,12 +10,10 @@ from aiapy.analysis import isolate_fe18_intensity
 from aiapy.tests.helpers import make_aia_map
 
 
-def test_isolate_fe18_intensity() -> None:
-    """
-    Check arithmetic reference values evaluated from the published coefficients.
-    """
-    # (I_171, I_193, I_94warm), in DN/s. Zero input checks the constant term;
-    # the single-channel cases check the mixture weights independently.
+@pytest.mark.parametrize("order", list(permutations(range(3))))
+def test_isolate_fe18_intensity(order) -> None:
+    """Check the published coefficients for every input order."""
+    # (I_171, I_193, I_94warm), in DN/s. Single-channel inputs test each weight.
     intensities = np.array(
         [
             (0.0, 0.0, -0.028509),
@@ -35,7 +31,7 @@ def test_isolate_fe18_intensity() -> None:
         make_aia_map(i_171, 171),
         make_aia_map(i_193, 193),
     )
-    result = isolate_fe18_intensity(*maps)
+    result = isolate_fe18_intensity(*(maps[index] for index in order))
     assert_quantity_allclose(
         maps[0].quantity - result.quantity,
         expected * u.DN / u.s,
@@ -48,10 +44,7 @@ def test_isolate_fe18_intensity() -> None:
 
 
 def test_composite_intensity_is_limited() -> None:
-    """
-    The scaled composite intensity is limited to 30, so all pixels at or above
-    this value should give the same warm intensity.
-    """
+    """Cap the scaled composite at 30."""
     intensity = 116.54 * np.array([[20.0, 30.0], [40.0, 1000.0]])
     result = isolate_fe18_intensity(
         make_aia_map(np.full((2, 2), 100.0), 94),
@@ -95,14 +88,6 @@ def test_output_combines_scalar_and_array_masks(scalar_mask) -> None:
 
 
 @pytest.mark.parametrize("index", [0, 1, 2])
-def test_inputs_must_be_maps(index) -> None:
-    maps = [make_aia_map(np.full((8, 8), 1.0), w) for w in (94, 171, 193)]
-    maps[index] = maps[index].data
-    with pytest.raises(TypeError, match="must be a sunpy Map"):
-        isolate_fe18_intensity(*maps)
-
-
-@pytest.mark.parametrize("index", [0, 1, 2])
 def test_inputs_must_be_normalized_by_exposure_time(index) -> None:
     wavelengths = (94, 171, 193)
     maps = [make_aia_map(np.full((8, 8), 1.0), w) for w in wavelengths]
@@ -117,3 +102,10 @@ def test_inputs_must_have_same_dimensions() -> None:
     m_193 = make_aia_map(np.full((8, 8), 1.0), 193)
     with pytest.raises(ValueError, match="must have the same dimensions"):
         isolate_fe18_intensity(m_94, m_171, m_193)
+
+
+@pytest.mark.parametrize("wavelengths", [(94, 171, 211), (94, 171, 171)])
+def test_inputs_must_include_each_wavelength_once(wavelengths) -> None:
+    maps = [make_aia_map(np.ones((2, 2)), wavelength) for wavelength in wavelengths]
+    with pytest.raises(ValueError, match="one map each at 94, 171, and 193 Å"):
+        isolate_fe18_intensity(*maps)

@@ -12,13 +12,7 @@ __all__ = ["make_aia_map"]
 
 
 def make_aia_map(data, wavelength, unit=u.DN / u.s):
-    """
-    Create a small synthetic AIA map with a minimal, but valid, FITS header.
-
-    Unlike the fixtures in `aiapy.conftest`, which provide realistic level 1
-    images, this lets tests control the values, dimensions, and units of the
-    input maps, for example to check arithmetic and input validation.
-    """
+    """Create a small AIA map with controllable data, wavelength, and units."""
     shape = np.shape(data)
     meta = {
         "telescop": "SDO/AIA",

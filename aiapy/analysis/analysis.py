@@ -6,49 +6,44 @@ import numpy as np
 
 import astropy.units as u
 
-import sunpy.map
-
-# Coefficients of the polynomial fit in Equation (A1) of the appendix in
-# Warren et al. (2012), in order of increasing power of the composite intensity.
-# Equation (A1) has inconsistent summation bounds; its four coefficients
-# are interpreted here as a cubic, with powers from 0 to 3.
+# Warren et al. (2012), Eq. A1, lists four coefficients but inconsistent bounds;
+# use a cubic with coefficients in ascending power order.
 _FE18_COEFFICIENTS = (-7.31e-2, 9.75e-1, 9.90e-2, -2.84e-3)
-# Weight of the 171 A image in the composite 171/193 A intensity.
+# 171 Å weight in the 171/193 Å composite.
 _FE18_MIXTURE_WEIGHT = 0.31
-# Scaling factors derived from the median intensities of the fit data,
-# in units of DN/s.
+# Median composite and 94 Å intensities of the fit data, in DN/s.
 _FE18_COMPOSITE_SCALE = 116.54
 _FE18_INTENSITY_SCALE = 0.39
-# Limit on the composite intensity, in units of the scaled composite intensity.
-# Higher intensities are poorly constrained by the fit data.
+# The fit poorly constrains scaled composite intensities above 30.
 _FE18_COMPOSITE_LIMIT = 30.0
 
 
-def isolate_fe18_intensity(m_94, m_171, m_193):
+def isolate_fe18_intensity(map_1, map_2, map_3):
     r"""
-    Isolate the Fe XVIII emission in AIA 94 Å observations.
+    Estimate Fe XVIII 93.9 Å emission in AIA 94 Å observations.
 
-    The 94 Å channel is contaminated by "warm" emission formed at temperatures
-    well below the roughly 7 MK at which Fe XVIII is formed. This function
-    estimates that warm contribution from an empirical polynomial fit to a
-    mixture of the 171 Å and 193 Å channels and subtracts it from the 94 Å
-    channel, following the appendix of :cite:t:`warren2012`.
+    Subtract the warm 94 Å contribution estimated from the 171 Å and 193 Å
+    channels using the empirical fit of :cite:t:`warren2012`.
+
+    .. warning::
+
+        These fixed coefficients were fitted to 2010 March 22 observations.
+        They may not suit other dates or calibrations; check the warm estimate
+        for your data.
 
     Parameters
     ----------
-    m_94 : `~sunpy.map.GenericMap`
-        Co-aligned level 1.5 image of the 94 Å channel in units of DN/s.
-    m_171 : `~sunpy.map.GenericMap`
-        Co-aligned level 1.5 image of the 171 Å channel in units of DN/s.
-    m_193 : `~sunpy.map.GenericMap`
-        Co-aligned level 1.5 image of the 193 Å channel in units of DN/s.
+    map_1, map_2, map_3 : `~sunpy.map.GenericMap`
+        Level 1.5 (degraded corrected optional but recommended) images at
+        94, 171, and 193 Å, in any order and in DN/s.
+        They must share a pixel grid and be close enough in time for the source.
+        Units, wavelengths, and dimensions are checked; alignment and times are not.
 
     Returns
     -------
     `~sunpy.map.GenericMap`
-        The 94 Å image with the estimated warm contribution subtracted,
-        providing an estimate of the Fe XVIII 93.9 Å line intensity.
-        Pixels masked in any input are masked in the output.
+        The 94 Å image minus the estimated warm contribution, with all input
+        masks combined.
 
     Notes
     -----
@@ -61,25 +56,18 @@ def isolate_fe18_intensity(m_94, m_171, m_193):
 
     where :math:`a = [-7.31\times10^{-2}, 9.75\times10^{-1}, 9.90\times10^{-2},
     -2.84\times10^{-3}]`, :math:`f = 0.31`, and 0.39 and 116.54 DN/s are the
-    median intensities of the 94 Å channel and of the composite 171/193 Å
-    image used for the fit. The scaled composite intensity is limited to 30,
-    beyond which the fit is poorly constrained by the data. The intensities of
-    the input images must be normalized by their exposure times, e.g. by
-    dividing them by ``smap.exposure_time``.
+    median intensities of the 94 Å and composite fit images. The scaled
+    composite intensity is capped at 30 because brighter fit data are sparse.
+    Normalize each input by its exposure time, e.g. ``smap / smap.exposure_time``.
 
-    Equation (A1) has inconsistent summation bounds in the published and
-    arXiv versions. Here, the four listed coefficients define a cubic with
-    powers from 0 to 3.
+    Equation (A1) has inconsistent bounds; its four coefficients define powers
+    0 to 3 here.
 
-    This procedure is not applicable to flare observations, where Fe XXIV
-    192.04 Å contributes to the 193 Å channel, or to regions of very bright
-    1 MK emission, such as moss.
-
+    This method does not apply to flares, where Fe XXIV 192.04 Å enters the
+    193 Å channel, and is unreliable for bright 1 MK emission such as moss.
     """
-    for name, smap in (("m_94", m_94), ("m_171", m_171), ("m_193", m_193)):
-        if not isinstance(smap, sunpy.map.GenericMap):
-            msg = f"{name} must be a sunpy Map, got {type(smap)}"
-            raise TypeError(msg)
+    maps = (map_1, map_2, map_3)
+    for name, smap in zip(("map_1", "map_2", "map_3"), maps, strict=True):
         if smap.unit != u.DN / u.s:
             msg = (
                 f"{name} must have units of DN/s, got {smap.unit}. "
@@ -87,6 +75,11 @@ def isolate_fe18_intensity(m_94, m_171, m_193):
                 "e.g. smap / smap.exposure_time."
             )
             raise ValueError(msg)
+    wavelengths = [smap.wavelength.to_value(u.angstrom) if smap.wavelength is not None else None for smap in maps]
+    if set(wavelengths) != {94, 171, 193}:
+        msg = f"Expected one map each at 94, 171, and 193 Å; got {wavelengths} Å"
+        raise ValueError(msg)
+    m_94, m_171, m_193 = (smap for _, smap in sorted(zip(wavelengths, maps, strict=True)))
     if not (m_94.data.shape == m_171.data.shape == m_193.data.shape):
         msg = (
             "All images must have the same dimensions, got "

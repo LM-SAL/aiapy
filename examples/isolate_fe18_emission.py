@@ -3,14 +3,14 @@
 Isolating Fe XVIII emission in the AIA 94 Å channel
 ===================================================
 
-This example demonstrates how to isolate the emission of the Fe XVIII 93.9 Å line
-in images from the AIA 94 Å channel.
+The AIA 94 Å channel mixes Fe XVIII 93.9 Å emission, formed near 7 MK, with
+cooler emission. Following :cite:t:`warren2012`, this example estimates and
+subtracts the warm contribution using 171 Å and 193 Å images.
 
-The 94 Å channel contains a significant contribution from "warm" emission formed
-at temperatures well below the roughly 7 MK at which Fe XVIII is formed.
+.. warning::
 
-Following the appendix of :cite:t:`warren2012`, we estimate the warm contribution
-from a mixture of the 171 Å and 193 Å channels and subtract it from the 94 Å channel.
+    These fixed coefficients were fitted to 2010 March 22 observations. They
+    may not suit other dates or calibrations; check the warm estimate for your data.
 """
 
 import matplotlib.pyplot as plt
@@ -27,14 +27,10 @@ from aiapy.calibrate import correct_degradation, register, update_pointing
 from aiapy.calibrate.utils import get_correction_table, get_pointing_table
 
 ###############################################################################
-# The 94, 171, and 193 Å level 1 images are hosted in
-# `aiapy-data <https://github.com/LM-SAL/aiapy-data>`__.
-# Pooch downloads them once, verifies their SHA-256 hashes,
-# and reuses the local cache on later runs.
+# We require some SDO/AIA data, for this examples we have hosted some sample data
+# but you will want to use SunPy's Fido.
 
 base_url = "https://github.com/LM-SAL/aiapy-data/releases/download/v1/"
-
-
 file_94 = pooch.retrieve(
     base_url + "aia.lev1_euv_12s.2011-11-08T163404Z.94.image_lev1.fits",
     known_hash="913aaa3b16fe74f524efffa40ab03df8a6d299243d974be32531c3b63f40e01e",
@@ -51,8 +47,7 @@ file_193 = pooch.retrieve(
 map_94, map_171, map_193 = sunpy.map.Map([file_94, file_171, file_193])
 
 ###############################################################################
-# We update pointing, register the images, correct degradation, and normalize
-# by exposure time.
+# Update pointing, register, correct degradation, and divide by exposure time.
 
 pointing_table = get_pointing_table("lmsal")
 correction_table = get_correction_table(source="SSW")
@@ -65,32 +60,25 @@ for level_1_map in (map_94, map_171, map_193):
     level_1_5_maps.append(map_corrected / map_corrected.exposure_time)
 
 ###############################################################################
-# The registered images can have slightly different dimensions, so we cut out
-# the same region of the Sun from each of them.
+# Registered images can have different shapes, so crop to the same solar region.
 #
-# Figure 12 of :cite:t:`warren2012` shows this active region with a bright
-# core of high-temperature emission.
+# The function does not check for alignment or different observation timing.
 
 bottom_left = SkyCoord(-285 * u.arcsec, 19 * u.arcsec, frame=level_1_5_maps[0].coordinate_frame)
 top_right = SkyCoord(265 * u.arcsec, 569 * u.arcsec, frame=level_1_5_maps[0].coordinate_frame)
 m_94, m_171, m_193 = [smap.submap(bottom_left, top_right=top_right) for smap in level_1_5_maps]
 
 ###############################################################################
-# Now we can estimate and remove the warm contribution to the 94 Å channel.
-# The difference between the observed 94 Å image and the estimated warm emission
-# gives an estimate of the Fe XVIII 93.9 Å emission.
+# Subtract the warm estimate to isolate Fe XVIII emission.
 
 fe18_map = isolate_fe18_intensity(m_94, m_171, m_193)
-warm_map = sunpy.map.Map(m_94.data - fe18_map.data, m_94.meta)
+warm_map = sunpy.map.Map(m_94.data - fe18_map.data, m_94.meta, mask=fe18_map.mask)
 
 ###############################################################################
-# Let's compare the observed 94 Å image with the estimated warm emission and
-# the isolated Fe XVIII emission.
+# Compare the observed 94 Å, estimated warm, and Fe XVIII images.
 #
-# Subtracting the estimated warm emission highlights the compact core of
-# high-temperature emission.
-# All panels use the same intensity scale. Values outside the displayed range
-# are clipped only for display; the maps retain their original values.
+# The subtraction highlights the compact hot core. All panels share an
+# intensity scale
 
 fig = plt.figure(figsize=(12, 4), layout="compressed")
 fig.get_layout_engine().set(w_pad=0, wspace=0)
@@ -109,10 +97,7 @@ fig.colorbar(image, ax=axes, location="bottom", shrink=0.7, pad=0.03, label="Int
 plt.show()
 
 ###############################################################################
-# Note that this procedure cannot be applied to flare observations, where
-# Fe XXIV 192.04 Å contributes to the 193 Å channel.
-# The method is also unreliable in regions of very bright 1 MK emission,
-# such as moss. The returned difference can be negative where the estimated
-# warm contribution exceeds the observed 94 Å intensity.
-# Averaging co-aligned images can improve the signal to noise; choose the
-# averaging interval according to how quickly the source evolves.
+# During flares, Fe XXIV 192.04 Å can enter the 193 Å channel and bright moss
+# makes the estimate unreliable. The residual can be negative where the warm
+# estimate exceeds the observed 94 Å intensity.
+# One can average aligned images to reduce noise.
