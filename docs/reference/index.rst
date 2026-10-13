@@ -8,6 +8,7 @@ API reference
    :maxdepth: 1
 
    aiapy
+   analysis
    calibrate
    psf
    response
