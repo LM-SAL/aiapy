@@ -1,0 +1,1 @@
+Added the new `aiapy.analysis` subpackage and the function `aiapy.analysis.isolate_fe18_intensity` for isolating the Fe XVIII 93.9 Å emission in AIA 94 Å images by subtracting the "warm" contribution estimated from the 171 Å and 193 Å channels, following the appendix of :cite:t:`warren2012`.
