@@ -44,7 +44,7 @@ _URL_HASH_ERROR_TABLE = {
     )
 }
 _POINTING_TABLE_URL = (
-    "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv"
+    "https://raw.githubusercontent.com/LM-SAL/backup-files/refs/heads/aia/generated/aia_pointing_table.csv"
 )
 LATEST_CORRECTION_VERSION = 10
 _URL_HASH_CORRECTION_TABLE = {
