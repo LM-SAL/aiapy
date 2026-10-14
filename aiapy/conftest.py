@@ -6,19 +6,21 @@ mpl.use("Agg")
 import numpy as np
 import pytest
 
+import astropy.units as u
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
 
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
-from aiapy.tests.helpers import CHANNELS
+from aiapy.tests.helpers import CHANNELS, make_aia_map
 from aiapy.utils import detector_dimensions
 
 
 @pytest.fixture
 def aia_171_test_map():
-    """The real AIA level-1 observation distributed by SunPy, resampled to 128 pixels."""
+    """SunPy's 128x128 copy of a real AIA level-1 observation."""
     return sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
 
 
@@ -26,6 +28,28 @@ def aia_171_test_map():
 def aia_171_map(aia_171_test_map):
     """Upsample the test observation for algorithms requiring the full detector shape."""
     return aia_171_test_map.resample(detector_dimensions())
+
+
+@pytest.fixture
+def aia_171_submap(aia_171_map):
+    top_right = SkyCoord(0 * u.arcsec, -200 * u.arcsec, frame=aia_171_map.coordinate_frame)
+    bottom_left = SkyCoord(-900 * u.arcsec, -900 * u.arcsec, frame=aia_171_map.coordinate_frame)
+    return aia_171_map.submap(bottom_left, top_right=top_right)
+
+
+@pytest.fixture
+def small_aia_map():
+    coordinate = SkyCoord(
+        600 * u.arcsec, -200 * u.arcsec, frame="helioprojective", observer="earth", obstime="2020-01-01"
+    )
+    return make_aia_map(
+        np.arange(32 * 40, dtype=np.int16).reshape(32, 40),
+        171,
+        unit=u.DN,
+        level=1,
+        rotation=23.0,
+        coordinate=coordinate,
+    )
 
 
 @pytest.fixture(params=["hmi_sharp_magnetogram.header", "hmi_bharp_vlos_mag.header"])
@@ -97,8 +121,3 @@ def idl_environment():
     pytest.skip(
         "A working IDL installation is not available. You will not be able to run portions of the test suite.",
     )
-
-
-@pytest.fixture(scope="session")
-def ssw_home(idl_environment):
-    return idl_environment.ssw_home if idl_available() else None

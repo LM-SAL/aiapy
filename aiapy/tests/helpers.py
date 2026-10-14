@@ -14,7 +14,6 @@ from aiapy.utils import telescope_number
 
 RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
-ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 
 
 def make_aia_map(
@@ -25,22 +24,24 @@ def make_aia_map(
     level=1.5,
     scale=0.6,
     rotation=0.0,
+    exptime=2.0,
     coordinate=None,
-    observer="earth",
-    obstime="2020-01-01",
     **overrides,
 ):
     """
     Build a synthetic AIA map with controlled intensities and geometry.
 
-    Channel metadata follows the AIA instrument conventions. ``coordinate.obstime``
-    is the exposure midpoint; ``DATE-OBS`` is the exposure start, using ``exptime``
-    from ``overrides`` or two seconds. Use real-file fixtures for instrument
-    calibration and file-metadata tests. Any keyword can be replaced via ``overrides``.
+    Channel metadata follows the AIA instrument conventions. ``coordinate`` defaults
+    to disk center seen from Earth on 2020-01-01; its ``obstime`` is the exposure
+    midpoint and ``DATE-OBS`` is the exposure start. Use real-file fixtures for
+    instrument calibration and file-metadata tests. Any other keyword can be replaced
+    via ``overrides``.
     """
     data = np.asarray(data)
     if coordinate is None:
-        coordinate = SkyCoord(0 * u.arcsec, 0 * u.arcsec, frame="helioprojective", observer=observer, obstime=obstime)
+        coordinate = SkyCoord(
+            0 * u.arcsec, 0 * u.arcsec, frame="helioprojective", observer="earth", obstime="2020-01-01"
+        )
     camera = telescope_number(wavelength * u.angstrom)
     header = make_fitswcs_header(
         data.shape,
@@ -52,7 +53,6 @@ def make_aia_map(
         wavelength=wavelength * u.angstrom,
     )
     obstime_t = Time(coordinate.obstime.utc, precision=9)
-    exptime = overrides.get("exptime", 2.0)
     rsun_obs = header["rsun_obs"] * u.arcsec
     header.update(
         {
