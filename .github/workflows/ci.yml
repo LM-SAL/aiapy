@@ -99,11 +99,6 @@ jobs:
       # Remote servers (JSOC) can hang; fail instead of waiting for the 6 hour default
       timeout-minutes: 20
       envs: |
-        - linux: build_docs-gallery
-          pytest: false
-          libraries:
-            apt:
-              - graphviz
         - linux: py313-online
           # Reuse remote test data (sunpy's URL cache and data manager) between runs
           cache-path: |
@@ -111,6 +106,24 @@ jobs:
             ~/sunpy/data_manager
           cache-key: remote-data-${{ github.run_id }}
           cache-restore-keys: remote-data-
+
+  gallery:
+    if: "!startsWith(github.event.ref, 'refs/tags/v')"
+    # After docs, so a docs warning fails in the quick build before the slow gallery build
+    needs: [docs]
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    with:
+      default_python: '3.13'
+      submodules: false
+      pytest: false
+      toxdeps: tox-pypi-filter
+      # Remote servers (JSOC) can hang; fail instead of waiting for the 6 hour default
+      timeout-minutes: 20
+      libraries: |
+        apt:
+          - graphviz
+      envs: |
+        - linux: build_docs-gallery
 
   build_dists:
     # Build wheels on PRs only when labelled. Releases will only be published if tagged ^v.*
