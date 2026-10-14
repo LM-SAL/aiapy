@@ -33,12 +33,12 @@ jsoc_email = os.environ.get("JSOC_EMAIL")
 ###############################################################################
 # Our goal is to request data of a recent X-class flare.
 # The X-class flare occurred on the 2021/07/03 at 14:30:00 UTC.
-# We will focus on the 5 minutes before and after this time.
+# We will focus on the minute before and after this time.
 # What we want to do is only get the shorter exposures,
 # which are going to be the flare related.
 
 query = Fido.search(
-    attrs.Time("2021-07-03 14:25:00", "2021-07-03 14:35:00"),
+    attrs.Time("2021-07-03 14:29:00", "2021-07-03 14:31:00"),
     attrs.jsoc.Series("aia.lev1_euv_12s"),
     attrs.Wavelength(211 * u.AA),
     attrs.jsoc.Notify(jsoc_email),

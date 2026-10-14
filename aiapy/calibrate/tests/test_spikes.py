@@ -19,12 +19,13 @@ def synthetic_map():
     return make_aia_map(np.zeros((8, 8)), 193, level=1, nspikes=2)
 
 
-@pytest.fixture
+# Module scoped so each JSOC query is made once
+@pytest.fixture(scope="module")
 def respiked_map(aia_193_level1_map):
     return respike(aia_193_level1_map)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def spikes(aia_193_level1_map):
     return fetch_spikes(aia_193_level1_map)
 
@@ -95,13 +96,13 @@ def test_resample_warning(synthetic_map) -> None:
 
 
 @pytest.mark.remote_data
-@pytest.mark.parametrize(("as_coords", "kind"), [(True, SkyCoord), (False, PixelPair)])
-def test_fetch_spikes(aia_193_level1_map, as_coords, kind) -> None:
+def test_fetch_spikes(aia_193_level1_map, spikes) -> None:
     n_spikes = aia_193_level1_map.meta["nspikes"]
-    coords, values = fetch_spikes(aia_193_level1_map, as_coords=as_coords)
-    assert isinstance(coords, kind)
+    pixels, values = spikes
+    assert isinstance(pixels, PixelPair)
+    assert all(c.size == n_spikes for c in pixels)
     assert values.size == n_spikes
-    if as_coords:
-        assert n_spikes == len(coords)
-    else:
-        assert all(c.size == n_spikes for c in coords)
+    coords, values = fetch_spikes(aia_193_level1_map, as_coords=True)
+    assert isinstance(coords, SkyCoord)
+    assert len(coords) == n_spikes
+    assert values.size == n_spikes

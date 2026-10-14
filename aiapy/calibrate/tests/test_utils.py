@@ -1,4 +1,9 @@
 import re
+import contextlib
+import http.client
+import urllib.error
+import urllib.request
+from types import SimpleNamespace
 
 import pytest
 
@@ -9,14 +14,16 @@ from astropy.time import Time
 
 from sunpy.time import TimeRange
 
-from aiapy.calibrate import degradation
+from aiapy.calibrate import degradation, utils
 from aiapy.calibrate.utils import (
+    _download_pointing_table,
     _select_epoch_from_correction_table,
     get_correction_table,
     get_error_table,
     get_pointing_table,
 )
 from aiapy.tests.data import get_test_filepath
+from aiapy.utils.exceptions import AIApyUserWarning
 
 # These are not fixtures so that they can be easily used in the parametrize mark
 obstime = Time("2015-01-01T00:00:00", scale="utc")
@@ -32,11 +39,6 @@ CORRECTION_TABLE_COLUMNS = [
     "EFF_AREA",
     "EFF_WVLN",
 ]
-
-
-@pytest.fixture(scope="module")
-def latest_jsoc_correction_table():
-    return get_correction_table("jsoc")
 
 
 @pytest.fixture(scope="module")
@@ -167,13 +169,74 @@ def test_invalid_error_table_input() -> None:
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
-def test_use_latest_version_in_correction_tables(
-    channel, latest_jsoc_correction_table, latest_ssw_correction_table
-) -> None:
+def test_use_latest_version_in_correction_tables(channel, jsoc_correction_table, latest_ssw_correction_table) -> None:
     # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
     # Issue is that we do not use the latest version of the correction table by default
     # if multiple versions are available for a given time
     time = Time("2010-11-03T12:15:00")
-    d_jsoc = degradation(channel, time, correction_table=latest_jsoc_correction_table)
+    d_jsoc = degradation(channel, time, correction_table=jsoc_correction_table)
     d_ssw = degradation(channel, time, correction_table=latest_ssw_correction_table)
     assert_quantity_allclose(d_jsoc, d_ssw)
+
+
+def _fake_urlopen(requests, *, body=b"", error=None):
+    def urlopen(request, timeout):  # NOQA: ARG001
+        requests.append(request)
+        if error is not None:
+            raise error
+        return contextlib.nullcontext(SimpleNamespace(read=lambda: body, headers={"ETag": '"v2"'}))
+
+    return urlopen
+
+
+def test_download_pointing_table(monkeypatch, tmp_path) -> None:
+    requests = []
+    monkeypatch.setattr(urllib.request, "urlopen", _fake_urlopen(requests, body=b"new"))
+    path = _download_pointing_table(tmp_path)
+    assert path.read_bytes() == b"new"
+    assert (tmp_path / "aia_pointing_table.etag").read_text() == '"v2"'
+    assert requests[0].get_header("If-none-match") is None
+    assert requests[0].get_header("Accept-encoding") == "gzip"
+
+
+def test_download_pointing_table_not_modified(monkeypatch, tmp_path) -> None:
+    (tmp_path / "aia_pointing_table.csv").write_bytes(b"old")
+    (tmp_path / "aia_pointing_table.etag").write_text('"v1"')
+    requests = []
+    not_modified = urllib.error.HTTPError(utils._POINTING_TABLE_URL, 304, "Not Modified", {}, None)
+    monkeypatch.setattr(urllib.request, "urlopen", _fake_urlopen(requests, error=not_modified))
+    assert _download_pointing_table(tmp_path).read_bytes() == b"old"
+    assert requests[0].get_header("If-none-match") == '"v1"'
+
+
+# Not only URLError: a dropped connection mid-download raises the other two
+@pytest.mark.parametrize(
+    "error", [urllib.error.URLError("offline"), TimeoutError("offline"), http.client.HTTPException("offline")]
+)
+def test_download_pointing_table_offline(monkeypatch, tmp_path, error) -> None:
+    monkeypatch.setattr(urllib.request, "urlopen", _fake_urlopen([], error=error))
+    with pytest.raises(type(error), match="offline"):
+        _download_pointing_table(tmp_path)
+    (tmp_path / "aia_pointing_table.csv").write_bytes(b"old")
+    with pytest.warns(AIApyUserWarning, match="Could not check for a newer pointing table"):
+        assert _download_pointing_table(tmp_path).read_bytes() == b"old"
+
+
+def test_lmsal_pointing_table_cached_per_session(monkeypatch, tmp_path) -> None:
+    table_file = tmp_path / "aia_pointing_table.csv"
+    table_file.write_text("T_START,T_STOP,A_094_X0\n2010-05-13T00:00:00Z,2010-05-13T03:00:00Z,2048.3\n")
+    downloads = []
+
+    def download():
+        downloads.append(table_file)
+        return table_file
+
+    monkeypatch.setattr(utils, "_download_pointing_table", download)
+    utils._lmsal_pointing_table.cache_clear()
+    try:
+        table = get_pointing_table("lmsal")
+        table["A_094_X0"][0] = 0 * u.pix
+        assert get_pointing_table("lmsal")["A_094_X0"][0] == 2048.3 * u.pix
+        assert len(downloads) == 1
+    finally:
+        utils._lmsal_pointing_table.cache_clear()
