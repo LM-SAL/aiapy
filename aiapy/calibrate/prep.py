@@ -6,6 +6,7 @@ import copy
 import warnings
 
 import numpy as np
+from scipy.ndimage import maximum_filter
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
@@ -84,11 +85,14 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
         Passed to `~sunpy.map.GenericMap.reproject_to`, with
         ``preserve_date_obs=True`` by default. Output timestamps retain the
         input header's time scale.
+        Use ``return_footprint=True`` to return coverage.
 
     Returns
     -------
     registered : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
         A registered map with processing level 1.5.
+    footprint : `~numpy.ndarray`
+        Reprojection coverage, returned only when ``return_footprint=True``.
     """
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
@@ -100,10 +104,28 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     kwargs.setdefault("auto_extent", None if full_frame else "edges")
     kwargs.setdefault("preserve_date_obs", True)
     missing = smap.min() if missing is None else missing
+    source = smap
+    nan_mask = None
     if algorithm == "interpolation":
+        order = {"nearest-neighbor": 0, "bilinear": 1, "biquadratic": 2, "bicubic": 3}.get(order, order)
         kwargs["order"] = order
-    smap_l15 = smap.reproject_to(header, algorithm=algorithm, **kwargs)
+        if order in (2, 3, 4, 5) and np.isnan(smap.data).any():
+            # Spline filtering needs finite input; restore invalid neighborhoods afterward.
+            # An order-k spline samples k+1 pixels per axis, so a NaN reaches 2 pixels
+            # for orders 2-3 and 3 pixels for orders 4-5.
+            nan_mask = maximum_filter(np.isnan(smap.data), size={2: 5, 3: 5, 4: 7, 5: 7}[order], mode="constant")
+            source = smap._new_instance(np.where(np.isnan(smap.data), np.nanmedian(smap.data), smap.data), smap.meta)
+    return_footprint = kwargs.pop("return_footprint", False)
+    result = source.reproject_to(header, algorithm=algorithm, return_footprint=return_footprint, **kwargs)
+    smap_l15, footprint = result if return_footprint else (result, None)
     data = smap_l15.data
+    if nan_mask is not None:
+        mask_map = smap._new_instance(nan_mask.astype(float), smap.meta)
+        mask_l15 = mask_map.reproject_to(smap_l15.wcs, order=1, shape_out=data.shape)
+        invalid = mask_l15.data > 0
+        data[invalid] = np.nan
+        if return_footprint:
+            footprint[invalid] = 0
     if algorithm == "interpolation":
         np.clip(data, smap.min(), smap.max(), out=data)
     # Fill after clipping to preserve custom missing values.
@@ -132,7 +154,8 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
             "bitpix": -8 * data.dtype.itemsize,
         }
     )
-    return smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
+    newmap = smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
+    return (newmap, footprint) if return_footprint else newmap
 
 
 def correct_degradation(smap, *, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION):

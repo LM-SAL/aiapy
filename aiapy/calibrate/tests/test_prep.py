@@ -86,7 +86,7 @@ def test_register_hmi_on_aia_grid(hmi_map) -> None:
     HMI registers onto the AIA 0.6 arcsec grid so HMI and AIA images overlay pixel for pixel.
     """
     with pytest.warns(AIApyUserWarning, match="Image registration should only be applied to level 1 data"):
-        registered = register(hmi_map, parallel=False)
+        registered, footprint = register(hmi_map, parallel=False, return_footprint=True)
     assert isinstance(registered, HMIMap)
     assert_quantity_allclose(registered.scale, [0.6, 0.6] * u.arcsec / u.pix)
     # Disk center falls on the same pixel grid as a registered full-disk AIA image.
@@ -96,6 +96,7 @@ def test_register_hmi_on_aia_grid(hmi_map) -> None:
     assert registered.date == hmi_map.date
     assert registered.reference_date == hmi_map.reference_date
     np.testing.assert_allclose(registered.rotation_matrix, np.identity(2))
+    assert np.count_nonzero(footprint) > 0
     assert_contains_input(hmi_map, registered)
 
 
@@ -255,6 +256,40 @@ def test_register_output_array(small_aia_map) -> None:
     assert np.shares_memory(registered.data, output_array)
     assert registered.meta["bitpix"] == -32
     np.testing.assert_allclose(registered.data, expected.data, rtol=1e-6)
+
+
+@pytest.mark.parametrize("algorithm", ["interpolation", "adaptive", "exact"])
+@pytest.mark.parametrize("missing", [None, -100])
+def test_register_footprint_and_missing(small_aia_map, algorithm, missing) -> None:
+    registered, footprint = register(small_aia_map, algorithm=algorithm, missing=missing, return_footprint=True)
+    assert footprint.shape == registered.data.shape
+    assert np.any(footprint > 0)
+    assert np.any(footprint == 0)
+    assert np.all(np.isfinite(registered.data))
+    np.testing.assert_array_equal(registered.data[footprint == 0], small_aia_map.min() if missing is None else missing)
+
+
+def test_register_no_overlap(small_aia_map) -> None:
+    # Keep a target extent far from the cutout instead of automatically expanding it.
+    registered, footprint = register(small_aia_map, auto_extent=None, shape_out=(32, 40), return_footprint=True)
+    np.testing.assert_array_equal(footprint, 0)
+    np.testing.assert_array_equal(registered.data, small_aia_map.min())
+
+
+@pytest.mark.parametrize("order", [1, 3, "bicubic"])
+@pytest.mark.parametrize("missing", [None, -100, np.nan])
+def test_register_nan_input(small_aia_map, order, missing) -> None:
+    data = small_aia_map.data.astype(float)
+    data[15, 20] = np.nan
+    original_data = data.copy()
+    smap = small_aia_map._new_instance(data, small_aia_map.meta)
+    registered, footprint = register(smap, order=order, missing=missing, return_footprint=True)
+    assert np.count_nonzero(footprint) > data.size / 2
+    np.testing.assert_array_equal(registered.data[footprint == 0], smap.min() if missing is None else missing)
+    assert np.all(np.isfinite(registered.data[footprint > 0]))
+    assert np.max(registered.data[footprint > 0]) <= smap.max()
+    assert np.min(registered.data[footprint > 0]) >= smap.min()
+    np.testing.assert_array_equal(smap.data, original_data)
 
 
 def test_register_submap(aia_171_submap) -> None:
