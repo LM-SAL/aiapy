@@ -42,11 +42,6 @@ CORRECTION_TABLE_COLUMNS = [
 
 
 @pytest.fixture(scope="module")
-def latest_jsoc_correction_table():
-    return get_correction_table("jsoc")
-
-
-@pytest.fixture(scope="module")
 def latest_ssw_correction_table():
     return get_correction_table("ssw")
 
@@ -174,14 +169,12 @@ def test_invalid_error_table_input() -> None:
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize("channel", [94, 131, 171, 193, 211, 335] * u.angstrom)
-def test_use_latest_version_in_correction_tables(
-    channel, latest_jsoc_correction_table, latest_ssw_correction_table
-) -> None:
+def test_use_latest_version_in_correction_tables(channel, jsoc_correction_table, latest_ssw_correction_table) -> None:
     # Check that https://github.com/LM-SAL/aiapy/issues/375 is fixed
     # Issue is that we do not use the latest version of the correction table by default
     # if multiple versions are available for a given time
     time = Time("2010-11-03T12:15:00")
-    d_jsoc = degradation(channel, time, correction_table=latest_jsoc_correction_table)
+    d_jsoc = degradation(channel, time, correction_table=jsoc_correction_table)
     d_ssw = degradation(channel, time, correction_table=latest_ssw_correction_table)
     assert_quantity_allclose(d_jsoc, d_ssw)
 

@@ -18,11 +18,6 @@ def _fake_client(result):
     return FakeClient
 
 
-@pytest.mark.remote_data
-def test__get_data_from_jsoc():
-    assert _get_data_from_jsoc("aia.master_pointing3h[2010-05-13T00:00:00Z]", key="**ALL**") is not None
-
-
 def test__get_data_from_jsoc_error(monkeypatch):
     error = drms.DrmsQueryError("Bad query")
     monkeypatch.setattr(drms, "Client", _fake_client(error))

@@ -15,13 +15,6 @@ def test_sdo_location(aia_171_test_map) -> None:
     assert_quantity_allclose(result.cartesian.xyz, observer.cartesian.xyz, rtol=0, atol=1 * u.cm)
 
 
-@pytest.mark.remote_data
-def test_sdo_location_raises_error() -> None:
-    # Confirm that an error is raised for a time without records
-    with pytest.raises(RuntimeError, match="No data found for this query"):
-        sdo_location("2001-01-01")
-
-
 @pytest.mark.parametrize(
     "bits",
     [

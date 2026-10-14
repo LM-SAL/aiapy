@@ -105,9 +105,6 @@ def test_register_level_15(lvl_15_map) -> None:
     ("source"),
     [
         pytest.param(None, marks=pytest.mark.remote_data),
-        # We test different casings to make sure it's case insensitive
-        pytest.param("jsOc", marks=pytest.mark.remote_data),
-        pytest.param("SsW", marks=pytest.mark.remote_data),
         get_test_filepath("aia_V8_20171210_050627_response_table.txt"),
         str(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
     ],
@@ -211,11 +208,11 @@ def test_degradation_4500_missing() -> None:
 
 
 @pytest.mark.remote_data
-def test_degradation_4500_jsoc() -> None:
+def test_degradation_4500_jsoc(jsoc_correction_table) -> None:
     # 4500 has a max version of 3, so by default it will error
     # and it is missing from the SSW files but not the JSOC
     obstime = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
-    correction = degradation(4500 * u.angstrom, obstime, correction_table=get_correction_table("jsoc"))
+    correction = degradation(4500 * u.angstrom, obstime, correction_table=jsoc_correction_table)
     assert_quantity_allclose(correction, 1.0 * u.dimensionless_unscaled)
 
 

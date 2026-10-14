@@ -14,7 +14,7 @@ import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
-from aiapy.calibrate.utils import get_pointing_table
+from aiapy.calibrate.utils import get_correction_table, get_pointing_table
 from aiapy.tests.helpers import CHANNELS, make_aia_map
 from aiapy.utils import detector_dimensions
 
@@ -70,12 +70,19 @@ def hmi_map(request):
     return sunpy.map.Map(hdu.data, hdu.header)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def aia_193_level1_map():
-    # Need an actual 4K-by-4K map to do the spike replacement
+    # Need an actual 4K-by-4K map to do the spike replacement.
+    # Shared between tests, so do not modify it in a test.
     return sunpy.map.Map(
         "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits",
     )
+
+
+@pytest.fixture(scope="session")
+def jsoc_correction_table():
+    # Shared between tests so the JSOC is queried once
+    return get_correction_table("jsoc")
 
 
 @pytest.fixture(scope="session")
