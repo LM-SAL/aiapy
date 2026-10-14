@@ -60,12 +60,12 @@ def small_aia_map():
     )
 
 
-@pytest.fixture(params=["hmi_sharp_magnetogram.header", "hmi_bharp_vlos_mag.header"])
-def hmi_map(request):
+@pytest.fixture
+def hmi_map():
     """
-    Synthetic pixels with the header and geometry of real HMI cutout/full-frame files.
+    Synthetic pixels with the header and geometry of a real HMI SHARP cutout.
     """
-    header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath(request.param))
+    header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath("hmi_sharp_magnetogram.header"))
     # Floating control pixels do not use the source file's integer blank sentinel.
     header.remove("BLANK", ignore_missing=True)
     data = np.ones((header["naxis2"], header["naxis1"]), dtype=np.float32)

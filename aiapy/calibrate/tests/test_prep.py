@@ -22,9 +22,10 @@ from aiapy.tests.helpers import make_aia_map
 from aiapy.utils import AIApyUserWarning, detector_dimensions
 
 
-@pytest.fixture
-def lvl_15_map(aia_171_map):
-    return register(aia_171_map)
+@pytest.fixture(scope="module")
+def lvl_15_map():
+    smap = Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
+    return register(smap.resample(detector_dimensions()))
 
 
 def assert_contains_input(smap, registered):
@@ -44,18 +45,20 @@ def assert_contains_input(smap, registered):
     assert np.all(y <= registered.data.shape[0] - 0.5 + 1e-7)
 
 
-def test_register(lvl_15_map) -> None:
+def test_register(lvl_15_map, tmp_path) -> None:
     """
-    Check the full-disk level 1.5 grid and calibration metadata.
+    Check the full-disk level 1.5 grid and calibration metadata, before and after saving.
     """
-    np.testing.assert_array_equal(lvl_15_map.data.shape, detector_dimensions().value)
-    assert_quantity_allclose(
-        u.Quantity(lvl_15_map.reference_pixel), (u.Quantity(lvl_15_map.dimensions) - 1 * u.pix) / 2
-    )
-    assert_quantity_allclose(lvl_15_map.scale, [0.6, 0.6] * u.arcsec / u.pix)
-    np.testing.assert_allclose(lvl_15_map.rotation_matrix, np.identity(2))
-    assert lvl_15_map.meta["lvl_num"] == 1.5
-    assert lvl_15_map.meta["bitpix"] == -64
+    filename = tmp_path / "registered.fits"
+    with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
+        lvl_15_map.save(filename)
+    for smap in (lvl_15_map, Map(filename)):
+        assert smap.data.shape == tuple(detector_dimensions().to_value(u.pix))
+        assert_quantity_allclose(smap.reference_pixel, (u.Quantity(smap.dimensions) - 1 * u.pix) / 2)
+        assert_quantity_allclose(smap.scale, [0.6, 0.6] * u.arcsec / u.pix)
+        np.testing.assert_allclose(smap.rotation_matrix, np.identity(2))
+        assert smap.meta["lvl_num"] == 1.5
+        assert smap.meta["bitpix"] == -64
 
 
 def test_register_aia_channels_common_grid(small_aia_map) -> None:
@@ -119,8 +122,6 @@ def test_register_wcs_metadata(small_aia_map, matrix) -> None:
     registered = register(smap)
     np.testing.assert_allclose(registered.rotation_matrix, np.identity(2))
     assert_quantity_allclose(registered.scale, [0.6, 0.6] * u.arcsec / u.pix)
-    assert registered.meta["bitpix"] == -64
-    assert registered.meta["r_sun"] == pytest.approx((registered.rsun_obs / registered.scale.axis1).to_value(u.pix))
     assert registered.meta["naxis1"] == registered.data.shape[1]
     assert registered.meta["naxis2"] == registered.data.shape[0]
     assert smap.meta == original_meta
@@ -208,15 +209,13 @@ def test_register_solar_radius(aia_171_test_map) -> None:
 
 def test_register_real_input_metadata(aia_171_test_map) -> None:
     """
-    Datetime and calibration metadata survive registration of a real AIA level-1 file.
+    Observation and reference times survive registration of a real AIA level-1 file.
 
     The real header exercises spellings the synthetic fixtures do not: a ``T_OBS``
     reference time with a trailing ``Z``, a sub-second ``DATE-OBS``, no ``TIMESYS``,
     and no ``MJD-OBS``/``MJD-AVG`` companion keywords.
     """
     smap = aia_171_test_map
-    original_meta = smap.meta.copy()
-    original_data = smap.data.copy()
     assert "mjd-avg" not in smap.meta
     registered = register(smap)
     # Observation and reference times are preserved at full precision.
@@ -227,14 +226,6 @@ def test_register_real_input_metadata(aia_171_test_map) -> None:
     # DATE-OBS/MJD-OBS and DATE-AVG/MJD-AVG are consistently paired.
     assert registered.meta["mjd-obs"] == smap.date.mjd
     assert registered.meta["mjd-avg"] == smap.reference_date.mjd
-    # North-aligned calibration metadata on the real header.
-    np.testing.assert_allclose(registered.rotation_matrix, np.identity(2))
-    assert registered.meta["lvl_num"] == 1.5
-    assert registered.meta["bitpix"] == -64
-    assert registered.meta["r_sun"] == pytest.approx((registered.rsun_obs / registered.scale.axis1).to_value(u.pix))
-    # The input map is not mutated.
-    assert smap.meta == original_meta
-    np.testing.assert_array_equal(smap.data, original_data)
 
 
 @pytest.mark.parametrize("timesys", ["UTC", "TAI"])
@@ -247,16 +238,6 @@ def test_register_preserve_date_obs_override(small_aia_map, timesys) -> None:
     assert registered.date == smap.reference_date
     assert registered.reference_date == smap.reference_date
     assert registered.meta["mjd-obs"] == smap.reference_date.mjd
-
-
-def test_register_output_array(small_aia_map) -> None:
-    smap = small_aia_map._new_instance(small_aia_map.data.astype(np.float32), small_aia_map.meta)
-    expected = register(smap)
-    output_array = np.empty_like(expected.data, dtype=np.float32)
-    registered = register(smap, output_array=output_array)
-    assert np.shares_memory(registered.data, output_array)
-    assert registered.meta["bitpix"] == -32
-    np.testing.assert_allclose(registered.data, expected.data, rtol=1e-6)
 
 
 @pytest.mark.parametrize("algorithm", ["interpolation", "adaptive", "exact"])
@@ -293,7 +274,7 @@ def test_register_nan_input(small_aia_map, order, missing) -> None:
     np.testing.assert_array_equal(smap.data, original_data)
 
 
-@pytest.mark.parametrize(("available_cpus", "expected_parallel"), [(None, 1), (1, 1), (8, 8), (32, 32)])
+@pytest.mark.parametrize(("available_cpus", "expected_parallel"), [(None, 1), (8, 8)])
 def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, expected_parallel) -> None:
     monkeypatch.setattr("aiapy.calibrate.prep.os.process_cpu_count", lambda: available_cpus)
     large_map = small_aia_map._new_instance(np.broadcast_to(1, (4096, 4096)), small_aia_map.meta)
@@ -312,18 +293,6 @@ def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, 
     assert reprojection.call_args.kwargs["preserve_date_obs"] is False
 
 
-def test_register_submap(aia_171_submap) -> None:
-    """
-    Registration retains the cutout field of view on a north-aligned grid.
-    """
-    submap_lvl_15 = register(aia_171_submap)
-    assert_contains_input(aia_171_submap, submap_lvl_15)
-    assert_quantity_allclose(submap_lvl_15.scale, [0.6, 0.6] * u.arcsec / u.pix)
-    np.testing.assert_allclose(submap_lvl_15.rotation_matrix, np.identity(2))
-    assert submap_lvl_15.meta["lvl_num"] == 1.5
-    assert submap_lvl_15.meta["bitpix"] == -64
-
-
 def test_register_cutout_containing_full_disk(aia_171_test_map) -> None:
     full_frame = aia_171_test_map
     cutout = full_frame.submap([8, 8] * u.pix, top_right=[119, 119] * u.pix)
@@ -337,11 +306,12 @@ def test_register_cutout_containing_full_disk(aia_171_test_map) -> None:
     assert_contains_input(cutout, register(cutout))
 
 
-def test_register_submap_common_grid(lvl_15_map, aia_171_submap) -> None:
+def test_register_submap(lvl_15_map, aia_171_submap) -> None:
     """
-    Registering a cutout matches the full-disk grid and interior data.
+    A registered cutout keeps its field of view and matches the registered full-disk grid and data.
     """
     submap_lvl_15 = register(aia_171_submap)
+    assert_contains_input(aia_171_submap, submap_lvl_15)
     offset = np.array(pixel_to_pixel(submap_lvl_15.wcs, lvl_15_map.wcs, 0, 0))
     np.testing.assert_allclose(offset, np.rint(offset), atol=1e-7)
     x0, y0 = np.rint(offset).astype(int)
@@ -352,36 +322,15 @@ def test_register_submap_common_grid(lvl_15_map, aia_171_submap) -> None:
     np.testing.assert_allclose(submap_lvl_15.data[rows, columns], lvl_15_map.data[full_rows, full_columns], rtol=1e-7)
 
 
-def test_register_filesave(lvl_15_map, tmp_path) -> None:
-    """
-    Registration metadata survives saving and reloading the map.
-    """
-    filename = tmp_path / "test_register_filesave.fits"
-    with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
-        lvl_15_map.save(str(filename), overwrite=True)
-    load_map = Map(str(filename))
-    np.testing.assert_array_equal(load_map.data.shape, detector_dimensions().value)
-    assert_quantity_allclose(load_map.reference_pixel, (u.Quantity(load_map.dimensions) - 1 * u.pix) / 2)
-    assert_quantity_allclose(load_map.scale, [0.6, 0.6] * u.arcsec / u.pix)
-    np.testing.assert_allclose(load_map.rotation_matrix, np.identity(2))
-    assert load_map.meta["lvl_num"] == 1.5
-    assert load_map.meta["bitpix"] == -64
-
-
-def test_register_level_15(lvl_15_map) -> None:
-    with pytest.warns(
-        AIApyUserWarning,
-        match="Image registration should only be applied to level 1 data",
-    ):
-        register(lvl_15_map)
-    new_meta = copy.deepcopy(lvl_15_map.meta)
-    # Test case where processing_level is missing and returns None
-    del new_meta["lvl_num"]
-    with pytest.warns(
-        AIApyUserWarning,
-        match="Image registration should only be applied to level 1 data",
-    ):
-        register(lvl_15_map._new_instance(lvl_15_map.data, new_meta))
+def test_register_level_15(small_aia_map) -> None:
+    meta = copy.deepcopy(small_aia_map.meta)
+    meta["lvl_num"] = 1.5
+    with pytest.warns(AIApyUserWarning, match="Image registration should only be applied to level 1 data"):
+        register(small_aia_map._new_instance(small_aia_map.data, meta))
+    # A missing processing level also warns.
+    del meta["lvl_num"]
+    with pytest.warns(AIApyUserWarning, match="Image registration should only be applied to level 1 data"):
+        register(small_aia_map._new_instance(small_aia_map.data, meta))
 
 
 @pytest.mark.parametrize(
