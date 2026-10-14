@@ -113,6 +113,12 @@ jobs:
             apt:
               - graphviz
         - linux: py313-online
+          # Reuse remote test data (sunpy's URL cache and data manager) between runs
+          cache-path: |
+            ~/.cache/sunpy
+            ~/sunpy/data_manager
+          cache-key: remote-data-${{ github.run_id }}
+          cache-restore-keys: remote-data-
 
   build_dists:
     # Build wheels on PRs only when labelled. Releases will only be published if tagged ^v.*
