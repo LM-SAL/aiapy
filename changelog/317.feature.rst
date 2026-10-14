@@ -1,0 +1,1 @@
+`aiapy.calibrate.register` can return the reprojection coverage with ``return_footprint=True`` and keeps valid data next to NaNs and missing pixels.
