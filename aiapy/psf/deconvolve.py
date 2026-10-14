@@ -18,7 +18,9 @@ __all__ = ["deconvolve"]
 def _rl_deconvolve(img, psf_fft, psf_conj, *, iterations: int):
     def body(_, current):
         est = np.fft.irfft2(np.fft.rfft2(current) * psf_fft)
-        ratio = img / est
+        # Where the estimate is zero (e.g. an all-zero image) use a zero ratio rather than 0/0,
+        # whose NaN the next FFT would spread to every pixel
+        ratio = img / np.where(est == 0, np.inf, est)
         update = np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
         return current * update
 

@@ -33,6 +33,13 @@ def test_deconvolve_matches_idl(aia_171_positive_map, psf_128) -> None:
     )
 
 
+@pytest.mark.parametrize("value", [0, -1])
+def test_deconvolve_non_positive_image(aia_171_test_map, psf_128, value) -> None:
+    # After clipping the image and every estimate are zero, which must not become NaN
+    smap = aia_171_test_map._new_instance(np.full((128, 128), value, dtype=float), aia_171_test_map.meta)
+    np.testing.assert_array_equal(aiapy.psf.deconvolve(smap, psf=psf_128, iterations=2).data, 0)
+
+
 def test_deconvolve_negative_pixels(aia_171_test_map, psf_128) -> None:
     negative = aia_171_test_map.data < 0
     assert negative.any()
