@@ -4,6 +4,9 @@ Utilities for computing intensity corrections.
 
 import pathlib
 import warnings
+import functools
+import urllib.error
+import urllib.request
 from urllib.parse import urljoin
 
 import numpy as np
@@ -19,8 +22,9 @@ from sunpy import log
 from sunpy.time import TimeRange, parse_time
 
 from aiapy import _SSW_MIRRORS
-from aiapy.data._manager import manager
+from aiapy.data._manager import _download_dir, manager
 from aiapy.utils.decorators import validate_channel
+from aiapy.utils.exceptions import AIApyUserWarning
 from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = [
@@ -37,9 +41,8 @@ _URL_HASH_ERROR_TABLE = {
         "66ff034923bb0fd1ad20e8f30c7d909e1a80745063957dd6010f81331acaf894",
     )
 }
-_URL_HASH_POINTING_TABLE = (
-    "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv",
-    None,
+_POINTING_TABLE_URL = (
+    "https://raw.githubusercontent.com/LM-SAL/backup_files/refs/heads/aia/generated/aia_pointing_table.csv"
 )
 LATEST_CORRECTION_VERSION = 10
 _URL_HASH_CORRECTION_TABLE = {
@@ -181,9 +184,67 @@ def _select_epoch_from_correction_table(
     return QTable(table[[0, i_epoch[-1]]])
 
 
-@manager.require("pointing_table", *_URL_HASH_POINTING_TABLE)
-def _fetch_pointing_table():
-    return manager.get("pointing_table")
+def _download_pointing_table(directory=_download_dir):
+    """
+    Return the path to an up-to-date copy of the LMSAL pointing table.
+
+    The table is republished on a schedule, so the cached copy is revalidated
+    with its ETag instead of a fixed hash: an unchanged table costs one small
+    request and only a new table is downloaded. If the check fails, an existing
+    copy is used with a warning.
+    """
+    path = pathlib.Path(directory) / "aia_pointing_table.csv"
+    etag_path = path.with_suffix(".etag")
+    request = urllib.request.Request(_POINTING_TABLE_URL)
+    if path.exists() and etag_path.exists():
+        request.add_header("If-None-Match", etag_path.read_text())
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:  # NOQA: S310 (fixed https URL)
+            # Write then rename so other processes never read a partial file
+            path.parent.mkdir(parents=True, exist_ok=True)
+            partial = path.with_suffix(".partial")
+            partial.write_bytes(response.read())
+            partial.replace(path)
+            etag_path.write_text(response.headers.get("ETag", ""))
+    except urllib.error.URLError as e:
+        if isinstance(e, urllib.error.HTTPError):
+            e.close()  # The error holds the open response
+            if e.code == 304:  # Not Modified: the cached copy is current
+                return path
+        if not path.exists():
+            raise
+        warnings.warn(
+            f"Could not check for a newer pointing table ({e}); using the copy at {path}.",
+            AIApyUserWarning,
+            stacklevel=4,
+        )
+    return path
+
+
+@functools.cache
+def _lmsal_pointing_table():
+    # NOTE: This checks for a newer table once per session; long-running sessions
+    # can call _lmsal_pointing_table.cache_clear() to check again.
+    return _format_pointing_table(QTable(astropy_ascii.read(_download_pointing_table())))
+
+
+def _format_pointing_table(table):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ErfaWarning)
+        table["T_START"] = parse_time(table["T_START"])
+        table["T_STOP"] = parse_time(table["T_STOP"])
+    for c in table.colnames:
+        if "X0" in c or "Y0" in c:
+            table[c].unit = "pixel"
+        if "IMSCALE" in c:
+            table[c].unit = "arcsecond / pixel"
+        if "INSTROT" in c:
+            table[c].unit = "degree"
+    for c in table.colnames:
+        # Remove masking on columns with pointing parameters
+        if any(n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]) and hasattr(table[c], "mask"):
+            table[c] = table[c].filled(np.nan)
+    return table
 
 
 def _get_time(time_range: Time | TimeRange | list | tuple):
@@ -228,8 +289,10 @@ def get_pointing_table(source="lmsal", time_range=None):
     .. note::
 
         This function can either fetch the pointing table from JSOC or from GitHub.
-        The LMSAL pointing table is a copy of the JSOC table, synced daily.
-        It is possible that the two tables may be out of sync by up to one day.
+        The LMSAL pointing table is a copy of the JSOC table, republished daily,
+        so it can lag the JSOC table by up to a day.
+        The LMSAL table is downloaded once and reused: each session checks
+        whether a newer table has been published and downloads it only then.
 
     Parameters
     ----------
@@ -257,29 +320,12 @@ def get_pointing_table(source="lmsal", time_range=None):
             raise ValueError(msg)
         start, end = _get_time(time_range)
         query = f"aia.master_pointing3h[{start.isot}Z-{end.isot}Z]"
-        table = QTable.from_pandas(_get_data_from_jsoc(query=f"{query}", key="**ALL**"))
-    elif source.lower() == "lmsal":
-        with manager.skip_hash_check():
-            table = QTable(astropy_ascii.read(_fetch_pointing_table()))
-    else:
-        msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
-        raise ValueError(msg)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=ErfaWarning)
-        table["T_START"] = parse_time(table["T_START"])
-        table["T_STOP"] = parse_time(table["T_STOP"])
-    for c in table.colnames:
-        if "X0" in c or "Y0" in c:
-            table[c].unit = "pixel"
-        if "IMSCALE" in c:
-            table[c].unit = "arcsecond / pixel"
-        if "INSTROT" in c:
-            table[c].unit = "degree"
-    for c in table.colnames:
-        # Remove masking on columns with pointing parameters
-        if any(n in c for n in ["X0", "Y0", "IMSCALE", "INSTROT"]) and hasattr(table[c], "mask"):
-            table[c] = table[c].filled(np.nan)
-    return table
+        return _format_pointing_table(QTable.from_pandas(_get_data_from_jsoc(query=f"{query}", key="**ALL**")))
+    if source.lower() == "lmsal":
+        # Copy so callers cannot modify the table cached for the session
+        return _lmsal_pointing_table().copy()
+    msg = f"Invalid source: {source}, must be one of 'jsoc' or 'lmsal'"
+    raise ValueError(msg)
 
 
 def get_error_table(source="SSW") -> QTable:

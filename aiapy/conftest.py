@@ -80,8 +80,7 @@ def aia_193_level1_map():
 
 @pytest.fixture(scope="session")
 def pointing_table():
-    # The LMSAL table (~22 MB) is downloaded again on every call, so fetch it once per run.
-    # Copy it before modifying it in a test.
+    # Shared between tests, so copy it before modifying it in a test.
     return get_pointing_table("lmsal")
 
 
