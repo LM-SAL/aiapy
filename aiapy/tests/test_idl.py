@@ -9,10 +9,11 @@ import pytest
 
 import astropy.units as u
 from astropy.io import fits
+from astropy.io.fits.verify import VerifyWarning
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.psf
-from aiapy.calibrate import estimate_error
+from aiapy.calibrate import estimate_error, register
 from aiapy.calibrate.utils import get_error_table
 from aiapy.tests.helpers import CHANNELS
 
@@ -110,3 +111,37 @@ def test_deconvolve_consistent(idl_environment, aia_171_positive_map, psf_128, t
     )
     map_decon = aiapy.psf.deconvolve(aia_171_positive_map, psf=psf_128, iterations=25)
     np.testing.assert_allclose(map_decon.data, ssw["out"], rtol=1e-10)
+
+
+@pytest.mark.remote_data
+def test_register_consistent(idl_environment, aia_193_level1_map, tmp_path) -> None:
+    """
+    `register` puts a full-resolution image on the same grid as SSW ``aia_prep``.
+
+    SSW interpolates with damped cubic convolution and stores integer DN, so pixels
+    differ by about 0.5% on disk; a 0.25 pixel misregistration doubles that.
+    """
+    filename = tmp_path / "aia_lev1.fits"
+    with pytest.warns(VerifyWarning, match="The 'BLANK' keyword is only applicable to integer data"):
+        aia_193_level1_map.save(filename)
+    ssw = idl_environment.run(
+        """
+        mreadfits, '{{ filename }}', index, data
+        aia_prep, index, data, oindex, odata, /no_mpo_update
+        crpix = [oindex.crpix1, oindex.crpix2]
+        cdelt = [oindex.cdelt1, oindex.cdelt2]
+        """,
+        save_vars=["odata", "crpix", "cdelt"],
+        args={"filename": filename.as_posix()},
+        verbose=False,
+    )
+    registered = register(aia_193_level1_map)
+    np.testing.assert_allclose([registered.meta["crpix1"], registered.meta["crpix2"]], ssw["crpix"])
+    assert_quantity_allclose(registered.scale, ssw["cdelt"] * u.arcsec / u.pix)
+    assert registered.data.shape == ssw["odata"].shape
+    y, x = np.indices(registered.data.shape)
+    disk = (
+        np.hypot(x - registered.meta["crpix1"] + 1, y - registered.meta["crpix2"] + 1) < 0.95 * registered.meta["r_sun"]
+    )
+    difference = np.abs(registered.data - ssw["odata"])[disk]
+    assert np.median(difference) / np.median(ssw["odata"][disk]) < 0.0075
