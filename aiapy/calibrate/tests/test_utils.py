@@ -21,6 +21,17 @@ from aiapy.tests.data import get_test_filepath
 # These are not fixtures so that they can be easily used in the parametrize mark
 obstime = Time("2015-01-01T00:00:00", scale="utc")
 correction_table_local = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+CORRECTION_TABLE_COLUMNS = [
+    "VER_NUM",
+    "WAVE_STR",
+    "T_START",
+    "T_STOP",
+    "EFFA_P1",
+    "EFFA_P2",
+    "EFFA_P3",
+    "EFF_AREA",
+    "EFF_WVLN",
+]
 
 
 @pytest.fixture(scope="module")
@@ -44,42 +55,23 @@ def latest_ssw_correction_table():
 def test_correction_table(source) -> None:
     table = get_correction_table(source=source)
     assert isinstance(table, QTable)
-    expected_columns = [
-        "VER_NUM",
-        "WAVE_STR",
-        "T_START",
-        "T_STOP",
-        "EFFA_P1",
-        "EFFA_P2",
-        "EFFA_P3",
-        "EFF_AREA",
-        "EFF_WVLN",
-    ]
-    for col in expected_columns:
+    for col in CORRECTION_TABLE_COLUMNS:
         assert col in table.colnames
     assert isinstance(table["T_START"], Time)
     assert isinstance(table["T_STOP"], Time)
 
 
-@pytest.mark.parametrize("wavelength", [94 * u.angstrom, 1600 * u.angstrom])
-def test_correction_table_selection(wavelength) -> None:
+@pytest.mark.parametrize(("wavelength", "wave_str"), [(94 * u.angstrom, "94_THIN"), (1600 * u.angstrom, "1600")])
+def test_correction_table_selection(wavelength, wave_str) -> None:
     table = _select_epoch_from_correction_table(wavelength, obstime, correction_table_local, 8)
     assert isinstance(table, QTable)
-    expected_columns = [
-        "VER_NUM",
-        "WAVE_STR",
-        "T_START",
-        "T_STOP",
-        "EFFA_P1",
-        "EFFA_P2",
-        "EFFA_P3",
-        "EFF_AREA",
-        "EFF_WVLN",
-    ]
-    for col in expected_columns:
-        assert col in table.colnames
-    assert isinstance(table["T_START"], Time)
-    assert isinstance(table["T_STOP"], Time)
+    assert table.colnames == correction_table_local.colnames
+    # The first epoch, then the epoch containing obstime, for one channel and version.
+    assert len(table) == 2
+    assert all(table["WAVE_STR"] == wave_str)
+    assert all(table["VER_NUM"] == 8)
+    assert table["T_START"][0] == table["T_START"].min()
+    assert table["T_START"][1] <= obstime < table["T_STOP"][1]
 
 
 def test_invalid_correction_table_input() -> None:
@@ -122,6 +114,19 @@ def test_pointing_table(pointing_table) -> None:
         # Ensure that none of the pointing parameters are masked columns
         for c in expected_columns[2:]:
             assert not hasattr(table[c], "mask")
+
+
+@pytest.mark.parametrize(
+    ("source", "time_range", "error", "match"),
+    [
+        ("jsoc", None, ValueError, "time_range must be provided when source is 'jsoc'"),
+        ("jsoc", "2011-01-01", TypeError, "time_range must be a Time"),
+        ("not a source", None, ValueError, "Invalid source: not a source"),
+    ],
+)
+def test_pointing_table_invalid_input(source, time_range, error, match) -> None:
+    with pytest.raises(error, match=match):
+        get_pointing_table(source, time_range=time_range)
 
 
 @pytest.mark.remote_data
