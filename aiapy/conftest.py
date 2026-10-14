@@ -3,28 +3,71 @@ import matplotlib as mpl
 # Force MPL to use non-gui backends for testing.
 mpl.use("Agg")
 
+import numpy as np
 import pytest
-from numpy.random import default_rng
 
 import astropy.units as u
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
 
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.calibrate.utils import get_pointing_table
+from aiapy.tests.helpers import CHANNELS, make_aia_map
 from aiapy.utils import detector_dimensions
-
-RANDOM_GENERATOR = default_rng()
-CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
-ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 
 
 @pytest.fixture
-def aia_171_map():
-    m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
-    # For testing purposes, need the map to be 4K-by-4K
-    return m.resample(detector_dimensions())
+def aia_171_test_map():
+    """
+    SunPy's 128x128 copy of a real AIA level-1 observation.
+    """
+    return sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
+
+
+@pytest.fixture
+def aia_171_map(aia_171_test_map):
+    """
+    Upsample the test observation for algorithms requiring the full detector shape.
+    """
+    return aia_171_test_map.resample(detector_dimensions())
+
+
+@pytest.fixture
+def aia_171_submap(aia_171_map):
+    top_right = SkyCoord(0 * u.arcsec, -200 * u.arcsec, frame=aia_171_map.coordinate_frame)
+    bottom_left = SkyCoord(-900 * u.arcsec, -900 * u.arcsec, frame=aia_171_map.coordinate_frame)
+    return aia_171_map.submap(bottom_left, top_right=top_right)
+
+
+@pytest.fixture
+def small_aia_map():
+    coordinate = SkyCoord(
+        600 * u.arcsec, -200 * u.arcsec, frame="helioprojective", observer="earth", obstime="2020-01-01"
+    )
+    return make_aia_map(
+        np.arange(32 * 40, dtype=np.int16).reshape(32, 40),
+        171,
+        unit=u.DN,
+        level=1,
+        rotation=23.0,
+        coordinate=coordinate,
+    )
+
+
+@pytest.fixture(params=["hmi_sharp_magnetogram.header", "hmi_bharp_vlos_mag.header"])
+def hmi_map(request):
+    """
+    Synthetic pixels with the header and geometry of real HMI cutout/full-frame files.
+    """
+    header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath(request.param))
+    # Floating control pixels do not use the source file's integer blank sentinel.
+    header.remove("BLANK", ignore_missing=True)
+    data = np.ones((header["naxis2"], header["naxis1"]), dtype=np.float32)
+    hdu = fits.PrimaryHDU(data, header=header)
+    return sunpy.map.Map(hdu.data, hdu.header)
 
 
 @pytest.fixture
@@ -35,24 +78,46 @@ def aia_193_level1_map():
     )
 
 
+@pytest.fixture(scope="session")
+def pointing_table():
+    # The LMSAL table (~22 MB) is downloaded again on every call, so fetch it once per run.
+    # Copy it before modifying it in a test.
+    return get_pointing_table("lmsal")
+
+
+@pytest.fixture
+def psf(aia_171_test_map):
+    import aiapy.psf  # NOQA: PLC0415
+
+    return aiapy.psf.calculate_psf(aia_171_test_map.wavelength, use_preflightcore=True, diffraction_orders=[-1, 0, 1])
+
+
+@pytest.fixture
+def psf_128(psf):
+    """
+    The center of ``psf``, renormalized to match the 128x128 test map.
+    """
+    center = psf[2048 - 64 : 2048 + 64, 2048 - 64 : 2048 + 64]
+    return center / center.sum()
+
+
+@pytest.fixture
+def aia_171_positive_map(aia_171_test_map):
+    """
+    The test map clipped to at least 1 DN.
+
+    SSW's Richardson-Lucy keeps negative pixels and returns the absolute value, while
+    aiapy clips them to zero, so the two are only comparable for positive images.
+    """
+    data = np.clip(aia_171_test_map.data, 1, None).astype(float)
+    return aia_171_test_map._new_instance(data, aia_171_test_map.meta)
+
+
 @pytest.fixture
 def psf_94():
     import aiapy.psf  # NOQA: PLC0415
 
     return aiapy.psf.calculate_psf(CHANNELS[0], use_preflightcore=True)
-
-
-@pytest.fixture
-def remote_131_map():
-    return sunpy.map.Map(
-        "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia.lev1_euv_12s.2024-05-08T014308Z.131.image_lev1.fits"
-    )
-
-
-@pytest.fixture
-def remote_131_idl_deconvolved_output():
-    # IDL was run with: aia_deconvolve_richardsonlucy(image,psf,niter=30)
-    return fits.getdata("https://github.com/sunpy/data/raw/refs/heads/main/aiapy/deconvolved_image_131.fits.fz")
 
 
 def idl_available() -> bool | None:
@@ -78,8 +143,3 @@ def idl_environment():
     pytest.skip(
         "A working IDL installation is not available. You will not be able to run portions of the test suite.",
     )
-
-
-@pytest.fixture(scope="session")
-def ssw_home(idl_environment):
-    return idl_environment.ssw_home if idl_available() else None

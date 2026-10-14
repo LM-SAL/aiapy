@@ -112,24 +112,24 @@ def test_register_level_15(lvl_15_map) -> None:
         str(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
     ],
 )
-def test_correct_degradation(aia_171_map, source) -> None:
+def test_correct_degradation(aia_171_test_map, source) -> None:
     correction_table = get_correction_table() if source is None else get_correction_table(source=source)
     calibration_version = np.max(correction_table["VER_NUM"])
     original_corrected = correct_degradation(
-        aia_171_map,
+        aia_171_test_map,
         correction_table=correction_table,
         calibration_version=calibration_version,
     )
     d = degradation(
-        aia_171_map.wavelength,
-        aia_171_map.date,
+        aia_171_test_map.wavelength,
+        aia_171_test_map.date,
         correction_table=correction_table,
         calibration_version=calibration_version,
     )
     with np.errstate(divide="ignore", invalid="ignore"):
-        uncorrected_over_corrected = aia_171_map.data / original_corrected.data
+        uncorrected_over_corrected = aia_171_test_map.data / original_corrected.data
     # If intensity is zero, ratio will be NaN/infinite
-    i_valid = aia_171_map.data > 0.0
+    i_valid = aia_171_test_map.data > 0.0
     np.testing.assert_allclose(np.mean(uncorrected_over_corrected[i_valid]), d.to_value())
 
 
@@ -175,49 +175,18 @@ def test_degradation(source, time_correction_truth, calibration_version) -> None
     assert_quantity_allclose(time_correction, time_correction_truth, atol=1e-3)
 
 
+@pytest.mark.remote_data
 @pytest.mark.parametrize(
     ("wavelength", "result"),
     [
-        pytest.param(
-            1600,
-            0.56048306 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            1700,
-            0.87895035 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            171,
-            0.78689527 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            304,
-            0.14925002 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            211,
-            0.82998772 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            193,
-            0.86181854 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            335,
-            0.32689207 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
-        pytest.param(
-            94,
-            0.90317732 * u.dimensionless_unscaled,
-            marks=pytest.mark.remote_data,
-        ),
+        (1600, 0.56048306),
+        (1700, 0.87895035),
+        (171, 0.78689527),
+        (304, 0.14925002),
+        (211, 0.82998772),
+        (193, 0.86181854),
+        (335, 0.32689207),
+        (94, 0.90317732),
     ],
 )
 def test_degradation_all_wavelengths(wavelength, result) -> None:
@@ -227,7 +196,7 @@ def test_degradation_all_wavelengths(wavelength, result) -> None:
         obstime,
         correction_table=get_correction_table("SSW"),
     )
-    assert_quantity_allclose(time_correction, result, atol=1e-3)
+    assert_quantity_allclose(time_correction, result * u.dimensionless_unscaled, atol=1e-3)
 
 
 @pytest.mark.remote_data

@@ -18,7 +18,9 @@ __all__ = ["deconvolve"]
 def _rl_deconvolve(img, psf_fft, psf_conj, *, iterations: int):
     def body(_, current):
         est = np.fft.irfft2(np.fft.rfft2(current) * psf_fft)
-        ratio = img / est
+        # Where the estimate is zero (e.g. an all-zero image) use a zero ratio rather than 0/0,
+        # whose NaN the next FFT would spread to every pixel
+        ratio = img / np.where(est == 0, np.inf, est)
         update = np.fft.irfft2(np.fft.rfft2(ratio) * psf_conj)
         return current * update
 
@@ -56,6 +58,11 @@ def deconvolve(
     clip_negative : `bool`, optional
         If the image has negative intensity values, set them to zero.
         Defaults to `True`.
+        Clipped pixels stay zero in the output because each Richardson-Lucy
+        iteration multiplies the current estimate. The SSW routine
+        ``aia_deconvolve_richardsonlucy`` does not clip; it keeps negative pixels
+        and returns the absolute value of the result, so the two differ at and
+        near negative pixels. For non-negative images they agree to numerical precision.
 
     Returns
     -------

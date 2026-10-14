@@ -12,6 +12,19 @@ repos:
       - id: ruff-format
         types: [python]
         exclude: *exclude_dirs
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.8
+    hooks:
+      # Start docstring text on the line after the opening quotes, including one-line
+      # docstrings, which no ruff rule covers. Wrapping is left to the author.
+      - id: docformatter
+        args:
+          - --in-place
+          - --pre-summary-newline
+          - --make-summary-multi-line
+          - --wrap-summaries=0
+          - --wrap-descriptions=0
+        exclude: *exclude_dirs
   - repo: https://github.com/PyCQA/isort
     rev: 9.0.2
     hooks:

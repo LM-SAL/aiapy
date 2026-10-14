@@ -1,6 +1,3 @@
-import collections
-from pathlib import Path
-
 import numpy as np
 import pytest
 
@@ -8,22 +5,15 @@ import astropy.time
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
 
-from sunpy.util.metadata import MetaDict
-
 from aiapy.calibrate.utils import get_correction_table
 from aiapy.response import Channel
-from aiapy.response.channel import VERSION_NUMBER
 from aiapy.tests.data import get_test_filepath
 
 
 # Mark all tests which use this fixture as online
 @pytest.fixture(params=[pytest.param(None, marks=pytest.mark.remote_data)])
-def channel(request, ssw_home):  # NOQA: ARG001
-    if ssw_home is not None:
-        instrument_file = Path(ssw_home) / "sdo" / "aia" / "response" / f"aia_V{VERSION_NUMBER}_all_fullinst.genx"
-    else:
-        instrument_file = None
-    return Channel(94 * u.angstrom, instrument_file=instrument_file)
+def channel(request):
+    return Channel(94 * u.angstrom, instrument_file=request.param)
 
 
 @pytest.fixture
@@ -60,22 +50,8 @@ def required_keys():
     ]
 
 
-def test_has_instrument_data(channel) -> None:
-    assert hasattr(channel, "_instrument_data")
-    assert isinstance(channel._instrument_data, collections.OrderedDict)
-
-
-def test_has_channel_data(channel) -> None:
-    assert hasattr(channel, "_data")
-    assert isinstance(channel._data, MetaDict)
-
-
 def test_channel_data_has_keys(channel, required_keys) -> None:
     assert all(k in channel._data for k in required_keys)
-
-
-def test_has_wavelength(channel) -> None:
-    assert hasattr(channel, "wavelength")
 
 
 def test_channel_wavelength(channel) -> None:
@@ -169,6 +145,22 @@ def test_wavelength_response_smoke_tests(channel) -> None:
         correction_table=correction_table,
         calibration_version=8,
     )
+
+
+@pytest.mark.parametrize(
+    ("include_crosstalk", "expected"),
+    # Reference values at 94 and 304 Å from SSW: aia_get_response(/area,/dn,evenorm=0)
+    # with /noblend for no crosstalk, see the IDL comparisons below
+    [
+        (True, [0.5724313855171204, 1.0914278902873775e-07]),
+        (False, [0.5724313855171204, 2.958600957948072e-15]),
+    ],
+)
+def test_wavelength_response_matches_idl(channel, include_crosstalk, expected) -> None:
+    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
+    r = channel.wavelength_response(include_crosstalk=include_crosstalk, correction_table=correction_table)
+    indices = [np.argmin(np.abs(channel.wavelength - w)) for w in [94, 304] * u.angstrom]
+    assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
 
 
 def test_wavelength_response_uncorrected(channel, idl_environment) -> None:

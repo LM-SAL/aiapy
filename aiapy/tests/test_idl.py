@@ -8,11 +8,13 @@ import numpy as np
 import pytest
 
 import astropy.units as u
+from astropy.io import fits
 from astropy.tests.helper import assert_quantity_allclose
 
+import aiapy.psf
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.utils import get_error_table
-from aiapy.conftest import CHANNELS
+from aiapy.tests.helpers import CHANNELS
 
 
 @pytest.mark.parametrize(
@@ -91,3 +93,20 @@ def test_psf_consistent(psf_94, psf_idl) -> None:
     # agree within 0.2% for all points along the PSF arms for
     # both the preflight and non-preflight cases.
     np.testing.assert_allclose(psf_94[i_valid], psf_idl[i_valid], rtol=2e-3)
+
+
+def test_deconvolve_consistent(idl_environment, aia_171_positive_map, psf_128, tmp_path) -> None:
+    fits.writeto(tmp_path / "image.fits", aia_171_positive_map.data)
+    fits.writeto(tmp_path / "psf.fits", psf_128)
+    ssw = idl_environment.run(
+        """
+        image = readfits('{{ path }}/image.fits')
+        psf = readfits('{{ path }}/psf.fits')
+        out = aia_deconvolve_richardsonlucy(image, psf, niter=25)
+        """,
+        args={"path": tmp_path.as_posix()},
+        save_vars=["out"],
+        verbose=False,
+    )
+    map_decon = aiapy.psf.deconvolve(aia_171_positive_map, psf=psf_128, iterations=25)
+    np.testing.assert_allclose(map_decon.data, ssw["out"], rtol=1e-10)

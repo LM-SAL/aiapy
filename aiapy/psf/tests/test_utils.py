@@ -1,7 +1,7 @@
 import pytest
 
 import aiapy.psf
-from aiapy.conftest import CHANNELS
+from aiapy.tests.helpers import CHANNELS
 
 MESH_PROPERTIES = [
     "angle_arm",
