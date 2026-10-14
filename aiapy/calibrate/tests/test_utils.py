@@ -1,5 +1,6 @@
 import re
 import contextlib
+import http.client
 import urllib.error
 import urllib.request
 from types import SimpleNamespace
@@ -202,6 +203,7 @@ def test_download_pointing_table(monkeypatch, tmp_path) -> None:
     assert path.read_bytes() == b"new"
     assert (tmp_path / "aia_pointing_table.etag").read_text() == '"v2"'
     assert requests[0].get_header("If-none-match") is None
+    assert requests[0].get_header("Accept-encoding") == "gzip"
 
 
 def test_download_pointing_table_not_modified(monkeypatch, tmp_path) -> None:
@@ -214,9 +216,13 @@ def test_download_pointing_table_not_modified(monkeypatch, tmp_path) -> None:
     assert requests[0].get_header("If-none-match") == '"v1"'
 
 
-def test_download_pointing_table_offline(monkeypatch, tmp_path) -> None:
-    monkeypatch.setattr(urllib.request, "urlopen", _fake_urlopen([], error=urllib.error.URLError("offline")))
-    with pytest.raises(urllib.error.URLError, match="offline"):
+# Not only URLError: a dropped connection mid-download raises the other two
+@pytest.mark.parametrize(
+    "error", [urllib.error.URLError("offline"), TimeoutError("offline"), http.client.HTTPException("offline")]
+)
+def test_download_pointing_table_offline(monkeypatch, tmp_path, error) -> None:
+    monkeypatch.setattr(urllib.request, "urlopen", _fake_urlopen([], error=error))
+    with pytest.raises(type(error), match="offline"):
         _download_pointing_table(tmp_path)
     (tmp_path / "aia_pointing_table.csv").write_bytes(b"old")
     with pytest.warns(AIApyUserWarning, match="Could not check for a newer pointing table"):

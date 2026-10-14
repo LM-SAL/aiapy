@@ -2,9 +2,11 @@
 Utilities for computing intensity corrections.
 """
 
+import os
 import pathlib
 import warnings
 import functools
+import http.client
 import urllib.error
 import urllib.request
 from urllib.parse import urljoin
@@ -190,23 +192,26 @@ def _download_pointing_table(directory=_download_dir):
 
     The table is republished on a schedule, so the cached copy is revalidated
     with its ETag instead of a fixed hash: an unchanged table costs one small
-    request and only a new table is downloaded. If the check fails, an existing
-    copy is used with a warning.
+    request and only a new table is downloaded. If the check or download fails,
+    an existing copy is used with a warning.
     """
     path = pathlib.Path(directory) / "aia_pointing_table.csv"
     etag_path = path.with_suffix(".etag")
-    request = urllib.request.Request(_POINTING_TABLE_URL)
+    # Gzip cuts the download from ~22 MB to ~5 MB. The body is saved as sent:
+    # astropy recognises gzipped content and decompresses it when reading.
+    request = urllib.request.Request(_POINTING_TABLE_URL, headers={"Accept-Encoding": "gzip"})
     if path.exists() and etag_path.exists():
         request.add_header("If-None-Match", etag_path.read_text())
     try:
         with urllib.request.urlopen(request, timeout=60) as response:  # NOQA: S310 (fixed https URL)
             # Write then rename so other processes never read a partial file
             path.parent.mkdir(parents=True, exist_ok=True)
-            partial = path.with_suffix(".partial")
+            partial = path.with_suffix(f".{os.getpid()}.partial")
             partial.write_bytes(response.read())
             partial.replace(path)
             etag_path.write_text(response.headers.get("ETag", ""))
-    except urllib.error.URLError as e:
+    # URLError only covers connecting; a dropped connection mid-download raises OSError or HTTPException
+    except (OSError, http.client.HTTPException) as e:
         if isinstance(e, urllib.error.HTTPError):
             e.close()  # The error holds the open response
             if e.code == 304:  # Not Modified: the cached copy is current
