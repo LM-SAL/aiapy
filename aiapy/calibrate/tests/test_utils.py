@@ -102,7 +102,7 @@ def test_obstime_out_of_range() -> None:
 
 
 @pytest.mark.remote_data
-def test_pointing_table() -> None:
+def test_pointing_table(pointing_table) -> None:
     expected_columns = ["T_START", "T_STOP"]
     for c in ["094", "131", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
         expected_columns += [
@@ -112,9 +112,8 @@ def test_pointing_table() -> None:
             f"A_{c}_IMSCALE",
         ]
     t = Time("2011-01-01T00:00:00", scale="utc")
-    table_lmsal = get_pointing_table("lmsal")
     table_jsoc = get_pointing_table("jsoc", time_range=(t - 3 * u.h, t + 3 * u.h))
-    for table in [table_lmsal, table_jsoc]:
+    for table in [pointing_table, table_jsoc]:
         assert isinstance(table, QTable)
         for col in expected_columns:
             assert col in table.colnames

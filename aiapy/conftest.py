@@ -14,6 +14,7 @@ import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.calibrate.utils import get_pointing_table
 from aiapy.tests.helpers import CHANNELS, make_aia_map
 from aiapy.utils import detector_dimensions
 
@@ -69,6 +70,13 @@ def aia_193_level1_map():
     return sunpy.map.Map(
         "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits",
     )
+
+
+@pytest.fixture(scope="session")
+def pointing_table():
+    # The LMSAL table (~22 MB) is downloaded again on every call, so fetch it once per run.
+    # Copy it before modifying it in a test.
+    return get_pointing_table("lmsal")
 
 
 @pytest.fixture

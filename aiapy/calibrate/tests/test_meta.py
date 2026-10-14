@@ -9,13 +9,7 @@ from astropy.tests.helper import assert_quantity_allclose
 from astropy.time import Time, TimeDelta
 
 from aiapy.calibrate import update_pointing
-from aiapy.calibrate.utils import get_pointing_table
 from aiapy.utils.exceptions import AIApyUserWarning
-
-
-@pytest.fixture
-def pointing_table():
-    return get_pointing_table("lmsal")
 
 
 @pytest.fixture
