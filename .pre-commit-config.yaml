@@ -12,15 +12,18 @@ repos:
       - id: ruff-format
         types: [python]
         exclude: *exclude_dirs
-  - repo: local
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.8
     hooks:
-      # ruff (D213) covers multi-line docstrings; this also catches one-line ones
-      - id: docstring-summary-second-line
-        name: docstring text starts on the line after the opening quotes
-        language: pygrep
-        # Closing quotes are followed by punctuation or nothing, so only opening ones match
-        entry: '^\s*[rRuU]?"""[\w`*]'
-        types: [python]
+      # Start docstring text on the line after the opening quotes, including one-line
+      # docstrings, which no ruff rule covers. Wrapping is left to the author.
+      - id: docformatter
+        args:
+          - --in-place
+          - --pre-summary-newline
+          - --make-summary-multi-line
+          - --wrap-summaries=0
+          - --wrap-descriptions=0
         exclude: *exclude_dirs
   - repo: https://github.com/PyCQA/isort
     rev: 9.0.2

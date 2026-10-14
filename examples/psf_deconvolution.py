@@ -6,6 +6,7 @@ Deconvolving images with the instrument Point Spread Function (PSF)
 This example demonstrates how to deconvolve an AIA image with
 the instrument point spread function (PSF).
 """
+
 # sphinx_gallery_thumbnail_number = 3
 
 import matplotlib.pyplot as plt
