@@ -1,4 +1,5 @@
 import copy
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -290,6 +291,25 @@ def test_register_nan_input(small_aia_map, order, missing) -> None:
     assert np.max(registered.data[footprint > 0]) <= smap.max()
     assert np.min(registered.data[footprint > 0]) >= smap.min()
     np.testing.assert_array_equal(smap.data, original_data)
+
+
+@pytest.mark.parametrize(("available_cpus", "expected_parallel"), [(None, 1), (1, 1), (8, 8), (32, 32)])
+def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, expected_parallel) -> None:
+    monkeypatch.setattr("aiapy.calibrate.prep.os.process_cpu_count", lambda: available_cpus)
+    large_map = small_aia_map._new_instance(np.broadcast_to(1, (4096, 4096)), small_aia_map.meta)
+    reprojection = Mock(return_value=small_aia_map)
+    monkeypatch.setattr(large_map, "reproject_to", reprojection)
+    register(large_map)
+    assert reprojection.call_args.kwargs["auto_extent"] is None
+    assert reprojection.call_args.kwargs["block_size"] == (1024, 1024)
+    assert reprojection.call_args.kwargs["parallel"] == expected_parallel
+    assert reprojection.call_args.kwargs["order"] == 3
+    assert reprojection.call_args.kwargs["preserve_date_obs"] is True
+    register(large_map, parallel=False, block_size=(512, 512), order=1, preserve_date_obs=False)
+    assert reprojection.call_args.kwargs["block_size"] == (512, 512)
+    assert reprojection.call_args.kwargs["parallel"] is False
+    assert reprojection.call_args.kwargs["order"] == 1
+    assert reprojection.call_args.kwargs["preserve_date_obs"] is False
 
 
 def test_register_submap(aia_171_submap) -> None:

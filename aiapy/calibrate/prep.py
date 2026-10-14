@@ -2,6 +2,7 @@
 Functions for calibrating AIA images.
 """
 
+import os
 import copy
 import warnings
 
@@ -84,7 +85,10 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     **kwargs
         Passed to `~sunpy.map.GenericMap.reproject_to`, with
         ``preserve_date_obs=True`` by default. Output timestamps retain the
-        input header's time scale.
+        input header's time scale. Large images use 1024 by 1024 pixel blocks
+        and a thread for every CPU available to the process by default.
+        Set ``parallel`` to an integer to choose the worker count, or ``False``
+        to run serially, e.g. when already registering many files in parallel.
         Use ``return_footprint=True`` to return coverage.
 
     Returns
@@ -103,6 +107,9 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     header, full_frame = _target_grid(smap)
     kwargs.setdefault("auto_extent", None if full_frame else "edges")
     kwargs.setdefault("preserve_date_obs", True)
+    # Parallelize only images larger than one 1024 by 1024 block.
+    kwargs.setdefault("parallel", (os.process_cpu_count() or 1) if smap.data.size > 1024**2 else False)
+    kwargs.setdefault("block_size", (1024, 1024) if kwargs["parallel"] else None)
     missing = smap.min() if missing is None else missing
     source = smap
     nan_mask = None
@@ -121,7 +128,13 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     data = smap_l15.data
     if nan_mask is not None:
         mask_map = smap._new_instance(nan_mask.astype(float), smap.meta)
-        mask_l15 = mask_map.reproject_to(smap_l15.wcs, order=1, shape_out=data.shape)
+        mask_l15 = mask_map.reproject_to(
+            smap_l15.wcs,
+            order=1,
+            shape_out=data.shape,
+            parallel=kwargs["parallel"],
+            block_size=kwargs["block_size"],
+        )
         invalid = mask_l15.data > 0
         data[invalid] = np.nan
         if return_footprint:
