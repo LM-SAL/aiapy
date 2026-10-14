@@ -48,10 +48,10 @@ Breaking Changes
 - Moved ``aiapy.psf.psf.filter_mesh_parameters`` to `aiapy.psf.filter_mesh_parameters`. (`#367 <https://github.com/LM-SAL/aiapy/pull/367>`__)
 - Make the ``source`` keyword for :func:`~aiapy.calibrate.utils.get_correction_table` and
   :func:`~aiapy.calibrate.utils.get_pointing_table` optional. The default source for
-  :func:`~aiapy.calibrate.utils.get_correction_table` "SSW" is and the default source for
-  :func:`~aiapy.calibrate.utils.get_pointing_table` is "jsoc". (`#369 <https://github.com/LM-SAL/aiapy/pull/369>`__)
+  :func:`~aiapy.calibrate.utils.get_correction_table` is "JSOC" and the default source for
+  :func:`~aiapy.calibrate.utils.get_pointing_table` is "lmsal". (`#369 <https://github.com/LM-SAL/aiapy/pull/369>`__)
 - Passing a correction table or pointing table explicitly is no longer required for functions that
-  use these tables. In cases where a table is not passed explicitly, the a table is created using
+  use these tables. In cases where a table is not passed explicitly, a table is created using
   the default source. (`#369 <https://github.com/LM-SAL/aiapy/pull/369>`__)
 - Increased minimum required version of Python to 3.12. (`#378 <https://github.com/LM-SAL/aiapy/pull/378>`__)
 - Increased minimum required version of sunpy to 7.0.0 (`#378 <https://github.com/LM-SAL/aiapy/pull/378>`__)
