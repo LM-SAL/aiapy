@@ -12,7 +12,7 @@ from astropy.tests.helper import assert_quantity_allclose
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.utils import get_error_table
-from aiapy.conftest import CHANNELS
+from aiapy.tests.helpers import CHANNELS
 
 
 @pytest.mark.parametrize(

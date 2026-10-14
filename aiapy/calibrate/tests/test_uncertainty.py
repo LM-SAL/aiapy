@@ -7,8 +7,8 @@ import astropy.units as u
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.utils import get_error_table
-from aiapy.conftest import CHANNELS, RANDOM_GENERATOR
 from aiapy.tests.data import get_test_filepath
+from aiapy.tests.helpers import CHANNELS, RANDOM_GENERATOR
 
 table_local = get_error_table(get_test_filepath("aia_V3_error_table.txt"))
 

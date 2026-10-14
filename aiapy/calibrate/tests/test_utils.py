@@ -104,11 +104,11 @@ def test_obstime_out_of_range() -> None:
 @pytest.mark.remote_data
 def test_pointing_table() -> None:
     expected_columns = ["T_START", "T_STOP"]
-    for c in ["094", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
+    for c in ["094", "131", "171", "193", "211", "304", "335", "1600", "1700", "4500"]:
         expected_columns += [
             f"A_{c}_X0",
             f"A_{c}_Y0",
-            f"A_{c}_IMSCALE",
+            f"A_{c}_INSTROT",
             f"A_{c}_IMSCALE",
         ]
     t = Time("2011-01-01T00:00:00", scale="utc")

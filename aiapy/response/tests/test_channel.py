@@ -1,5 +1,4 @@
 import collections
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -12,18 +11,13 @@ from sunpy.util.metadata import MetaDict
 
 from aiapy.calibrate.utils import get_correction_table
 from aiapy.response import Channel
-from aiapy.response.channel import VERSION_NUMBER
 from aiapy.tests.data import get_test_filepath
 
 
 # Mark all tests which use this fixture as online
 @pytest.fixture(params=[pytest.param(None, marks=pytest.mark.remote_data)])
-def channel(request, ssw_home):  # NOQA: ARG001
-    if ssw_home is not None:
-        instrument_file = Path(ssw_home) / "sdo" / "aia" / "response" / f"aia_V{VERSION_NUMBER}_all_fullinst.genx"
-    else:
-        instrument_file = None
-    return Channel(94 * u.angstrom, instrument_file=instrument_file)
+def channel(request):
+    return Channel(94 * u.angstrom, instrument_file=request.param)
 
 
 @pytest.fixture

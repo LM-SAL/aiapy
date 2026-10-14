@@ -3,28 +3,40 @@ import matplotlib as mpl
 # Force MPL to use non-gui backends for testing.
 mpl.use("Agg")
 
+import numpy as np
 import pytest
-from numpy.random import default_rng
 
-import astropy.units as u
 from astropy.io import fits
 
 import sunpy.data.test
 import sunpy.map
 from sunpy import log
 
+from aiapy.tests.helpers import CHANNELS
 from aiapy.utils import detector_dimensions
-
-RANDOM_GENERATOR = default_rng()
-CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
-ALL_CHANNELS = [94, 131, 171, 193, 211, 304, 335, 1600, 1700, 4500] * u.angstrom
 
 
 @pytest.fixture
-def aia_171_map():
-    m = sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
-    # For testing purposes, need the map to be 4K-by-4K
-    return m.resample(detector_dimensions())
+def aia_171_test_map():
+    """The real AIA level-1 observation distributed by SunPy, resampled to 128 pixels."""
+    return sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
+
+
+@pytest.fixture
+def aia_171_map(aia_171_test_map):
+    """Upsample the test observation for algorithms requiring the full detector shape."""
+    return aia_171_test_map.resample(detector_dimensions())
+
+
+@pytest.fixture(params=["hmi_sharp_magnetogram.header", "hmi_bharp_vlos_mag.header"])
+def hmi_map(request):
+    """Synthetic pixels with the header and geometry of real HMI cutout/full-frame files."""
+    header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath(request.param))
+    # Floating control pixels do not use the source file's integer blank sentinel.
+    header.remove("BLANK", ignore_missing=True)
+    data = np.ones((header["naxis2"], header["naxis1"]), dtype=np.float32)
+    hdu = fits.PrimaryHDU(data, header=header)
+    return sunpy.map.Map(hdu.data, hdu.header)
 
 
 @pytest.fixture
@@ -33,6 +45,13 @@ def aia_193_level1_map():
     return sunpy.map.Map(
         "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits",
     )
+
+
+@pytest.fixture
+def psf(aia_171_test_map):
+    import aiapy.psf  # NOQA: PLC0415
+
+    return aiapy.psf.calculate_psf(aia_171_test_map.wavelength, use_preflightcore=True, diffraction_orders=[-1, 0, 1])
 
 
 @pytest.fixture

@@ -19,15 +19,15 @@ def pointing_table():
 
 
 @pytest.fixture
-def mock_pointing_table():
+def mock_pointing_table(aia_193_level1_map):
     return QTable(
         [
             Time("2010-09-29 21:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
             Time("2010-09-30 00:00:00") + TimeDelta(3 * u.hour) * np.linspace(1, 8, 8),
             [np.nan * u.pix] * 8,
             [np.nan * u.pix] * 8,
-            [0.019327 * u.degree] * 8,
-            [0.019327 * u.arcsec / u.pix] * 8,
+            [aia_193_level1_map.meta["inst_rot"] * u.degree] * 8,
+            [aia_193_level1_map.scale.axis1] * 8,
         ],
         names=(
             "T_START",
