@@ -21,13 +21,17 @@ from aiapy.utils import detector_dimensions
 
 @pytest.fixture
 def aia_171_test_map():
-    """SunPy's 128x128 copy of a real AIA level-1 observation."""
+    """
+    SunPy's 128x128 copy of a real AIA level-1 observation.
+    """
     return sunpy.map.Map(sunpy.data.test.get_test_filepath("aia_171_level1.fits"))
 
 
 @pytest.fixture
 def aia_171_map(aia_171_test_map):
-    """Upsample the test observation for algorithms requiring the full detector shape."""
+    """
+    Upsample the test observation for algorithms requiring the full detector shape.
+    """
     return aia_171_test_map.resample(detector_dimensions())
 
 
@@ -55,7 +59,9 @@ def small_aia_map():
 
 @pytest.fixture(params=["hmi_sharp_magnetogram.header", "hmi_bharp_vlos_mag.header"])
 def hmi_map(request):
-    """Synthetic pixels with the header and geometry of real HMI cutout/full-frame files."""
+    """
+    Synthetic pixels with the header and geometry of real HMI cutout/full-frame files.
+    """
     header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath(request.param))
     # Floating control pixels do not use the source file's integer blank sentinel.
     header.remove("BLANK", ignore_missing=True)
@@ -88,7 +94,9 @@ def psf(aia_171_test_map):
 
 @pytest.fixture
 def psf_128(psf):
-    """The center of ``psf``, renormalized to match the 128x128 test map."""
+    """
+    The center of ``psf``, renormalized to match the 128x128 test map.
+    """
     center = psf[2048 - 64 : 2048 + 64, 2048 - 64 : 2048 + 64]
     return center / center.sum()
 

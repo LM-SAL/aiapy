@@ -12,7 +12,9 @@ from aiapy.tests.helpers import make_aia_map
 
 @pytest.mark.parametrize("order", list(permutations(range(3))))
 def test_isolate_fe18_intensity(order) -> None:
-    """Check the published coefficients for every input order."""
+    """
+    Check the published coefficients for every input order.
+    """
     # (I_171, I_193, I_94warm), in DN/s. Single-channel inputs test each weight.
     intensities = np.array(
         [
@@ -44,7 +46,9 @@ def test_isolate_fe18_intensity(order) -> None:
 
 
 def test_composite_intensity_is_limited() -> None:
-    """Cap the scaled composite at 30."""
+    """
+    Cap the scaled composite at 30.
+    """
     intensity = 116.54 * np.array([[20.0, 30.0], [40.0, 1000.0]])
     result = isolate_fe18_intensity(
         make_aia_map(np.full((2, 2), 100.0), 94),

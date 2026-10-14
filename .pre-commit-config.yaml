@@ -12,6 +12,16 @@ repos:
       - id: ruff-format
         types: [python]
         exclude: *exclude_dirs
+  - repo: local
+    hooks:
+      # ruff (D213) covers multi-line docstrings; this also catches one-line ones
+      - id: docstring-summary-second-line
+        name: docstring text starts on the line after the opening quotes
+        language: pygrep
+        # Closing quotes are followed by punctuation or nothing, so only opening ones match
+        entry: '^\s*[rRuU]?"""[\w`*]'
+        types: [python]
+        exclude: *exclude_dirs
   - repo: https://github.com/PyCQA/isort
     rev: 9.0.2
     hooks:

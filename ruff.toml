@@ -9,6 +9,7 @@ extend-exclude=[
 ]
 lint.extend-select = [
     "ALL",
+    "D213", # Multi-line docstring summary should start at the second line
 ]
 lint.ignore = [
     "ANN001", # Missing type annotation for function argument

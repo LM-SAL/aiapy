@@ -1,4 +1,6 @@
-"""Helpers shared by aiapy's tests."""
+"""
+Helpers shared by aiapy's tests.
+"""
 
 import numpy as np
 
