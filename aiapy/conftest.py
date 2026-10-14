@@ -87,23 +87,29 @@ def psf(aia_171_test_map):
 
 
 @pytest.fixture
+def psf_128(psf):
+    """The center of ``psf``, renormalized to match the 128x128 test map."""
+    center = psf[2048 - 64 : 2048 + 64, 2048 - 64 : 2048 + 64]
+    return center / center.sum()
+
+
+@pytest.fixture
+def aia_171_positive_map(aia_171_test_map):
+    """
+    The test map clipped to at least 1 DN.
+
+    SSW's Richardson-Lucy keeps negative pixels and returns the absolute value, while
+    aiapy clips them to zero, so the two are only comparable for positive images.
+    """
+    data = np.clip(aia_171_test_map.data, 1, None).astype(float)
+    return aia_171_test_map._new_instance(data, aia_171_test_map.meta)
+
+
+@pytest.fixture
 def psf_94():
     import aiapy.psf  # NOQA: PLC0415
 
     return aiapy.psf.calculate_psf(CHANNELS[0], use_preflightcore=True)
-
-
-@pytest.fixture
-def remote_131_map():
-    return sunpy.map.Map(
-        "https://github.com/sunpy/data/raw/refs/heads/main/aiapy/aia.lev1_euv_12s.2024-05-08T014308Z.131.image_lev1.fits"
-    )
-
-
-@pytest.fixture
-def remote_131_idl_deconvolved_output():
-    # IDL was run with: aia_deconvolve_richardsonlucy(image,psf,niter=30)
-    return fits.getdata("https://github.com/sunpy/data/raw/refs/heads/main/aiapy/deconvolved_image_131.fits.fz")
 
 
 def idl_available() -> bool | None:
