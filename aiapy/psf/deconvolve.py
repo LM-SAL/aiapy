@@ -56,6 +56,11 @@ def deconvolve(
     clip_negative : `bool`, optional
         If the image has negative intensity values, set them to zero.
         Defaults to `True`.
+        Clipped pixels stay zero in the output because each Richardson-Lucy
+        iteration multiplies the current estimate. The SSW routine
+        ``aia_deconvolve_richardsonlucy`` does not clip; it keeps negative pixels
+        and returns the absolute value of the result, so the two differ at and
+        near negative pixels. For non-negative images they agree to numerical precision.
 
     Returns
     -------
