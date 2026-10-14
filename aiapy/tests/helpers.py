@@ -1,7 +1,6 @@
 """Helpers shared by aiapy's tests."""
 
 import numpy as np
-from numpy.random import default_rng
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
@@ -12,7 +11,6 @@ from sunpy.map.header_helper import make_fitswcs_header
 
 from aiapy.utils import telescope_number
 
-RANDOM_GENERATOR = default_rng()
 CHANNELS = [94, 131, 171, 193, 211, 304, 335] * u.angstrom
 
 

@@ -4,57 +4,58 @@ import numpy as np
 import pytest
 
 import astropy.units as u
+from astropy.tests.helper import assert_quantity_allclose
 
 from aiapy.calibrate import estimate_error
 from aiapy.calibrate.utils import get_error_table
 from aiapy.tests.data import get_test_filepath
-from aiapy.tests.helpers import CHANNELS, RANDOM_GENERATOR
 
 table_local = get_error_table(get_test_filepath("aia_V3_error_table.txt"))
 
 
-@pytest.mark.parametrize("channel", CHANNELS)
-def test_error_all_channels(channel) -> None:
-    intensity = 10.0 * u.DN / u.pix
-    error = estimate_error(intensity, channel, error_table=table_local)
-    assert error.unit == intensity.unit
-
-
 @pytest.mark.parametrize(
-    "counts",
+    ("channel", "counts", "include_eve", "include_chianti", "expected"),
+    # Reference values from SSW: aia_bp_estimate_error(counts, channel, n_sample=1),
+    # see test_idl.py::test_error_consistent
     [
-        1,
-        RANDOM_GENERATOR.standard_normal(1),
-        RANDOM_GENERATOR.standard_normal(10),
-        RANDOM_GENERATOR.standard_normal((100, 200)),
-        RANDOM_GENERATOR.standard_normal((10, 10, 5)),
+        (94, 10, False, False, 4.603076840668012),
+        (131, 10, False, False, 4.020984506447918),
+        (171, 10, False, False, 3.5578527795700317),
+        (193, 10, False, False, 3.3254046973404905),
+        (211, 10, False, False, 3.1997369268573),
+        (304, 10, False, False, 2.7474199535371726),
+        (335, 10, False, False, 2.6829678345247077),
+        (171, 1000, True, False, 38.598564688738406),
+        (171, 1000, False, True, 252.24759502526624),
     ],
 )
-def test_counts_shapes(counts) -> None:
-    counts = np.abs(counts) * 1000 * u.DN / u.pix
+def test_error_matches_idl(channel, counts, include_eve, include_chianti, expected) -> None:
+    error = estimate_error(
+        counts * u.DN / u.pix,
+        channel * u.angstrom,
+        error_table=table_local,
+        include_eve=include_eve,
+        include_chianti=include_chianti,
+        compare_idl=True,
+    )
+    assert_quantity_allclose(error, [expected] * u.DN / u.pix, rtol=1e-4)
+
+
+@pytest.mark.parametrize("shape", [(), (1,), (10,), (100, 200), (10, 10, 5)])
+def test_counts_shapes(shape) -> None:
+    counts = np.full(shape, 1000.0) * u.DN / u.pix
     errors = estimate_error(counts, 171 * u.angstrom, error_table=table_local)
-    if counts.shape == ():
-        assert errors.shape == (1,)
-    else:
-        assert counts.shape == errors.shape
+    assert errors.shape == (counts.shape or (1,))
 
 
 @pytest.mark.parametrize(
-    ("include_preflight", "include_eve", "include_chianti", "expectation"),
+    ("include_preflight", "include_eve", "expectation"),
     [
-        (False, True, False, nullcontext()),
-        (True, False, False, nullcontext()),
-        (False, False, False, nullcontext()),
-        (False, False, True, nullcontext()),
-        (
-            True,
-            True,
-            False,
-            pytest.raises(ValueError, match=r"Cannot include both EVE and pre-flight correction."),
-        ),
+        (True, False, nullcontext()),
+        (True, True, pytest.raises(ValueError, match=r"Cannot include both EVE and pre-flight correction.")),
     ],
 )
-def test_flags(include_preflight, include_eve, include_chianti, expectation) -> None:
+def test_flags(include_preflight, include_eve, expectation) -> None:
     with expectation:
         errors = estimate_error(
             1 * u.DN / u.pix,
@@ -62,6 +63,5 @@ def test_flags(include_preflight, include_eve, include_chianti, expectation) -> 
             error_table=table_local,
             include_eve=include_eve,
             include_preflight=include_preflight,
-            include_chianti=include_chianti,
         )
         assert isinstance(errors, u.Quantity)
