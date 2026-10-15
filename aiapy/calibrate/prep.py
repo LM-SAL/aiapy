@@ -84,7 +84,8 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
         for details on different algorithms. Default is ``'interpolation'``.
     **kwargs
         Passed to `~sunpy.map.GenericMap.reproject_to`, with
-        ``preserve_date_obs=True`` by default. Output timestamps retain the
+        ``preserve_date_obs=True`` and, except for the exact algorithm,
+        ``roundtrip_coords=False`` by default. Output timestamps retain the
         input header's time scale. Large images use 1024 by 1024 pixel blocks
         and a thread for every CPU available to the process by default.
         Set ``parallel`` to an integer to choose the worker count, or ``False``
@@ -107,6 +108,9 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     header, full_frame = _target_grid(smap)
     kwargs.setdefault("auto_extent", None if full_frame else "edges")
     kwargs.setdefault("preserve_date_obs", True)
+    if algorithm != "exact":
+        # Input and output share a frame, so coordinates always round-trip; skip reproject's check.
+        kwargs.setdefault("roundtrip_coords", False)
     # Parallelize only images larger than one 1024 by 1024 block.
     kwargs.setdefault("parallel", (os.process_cpu_count() or 1) if smap.data.size > 1024**2 else False)
     kwargs.setdefault("block_size", (1024, 1024) if kwargs["parallel"] else None)
