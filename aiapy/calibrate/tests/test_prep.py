@@ -286,6 +286,7 @@ def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, 
     assert reprojection.call_args.kwargs["parallel"] == expected_parallel
     assert reprojection.call_args.kwargs["order"] == 3
     assert reprojection.call_args.kwargs["preserve_date_obs"] is True
+    assert reprojection.call_args.kwargs["roundtrip_coords"] is False
     register(large_map, parallel=False, block_size=(512, 512), order=1, preserve_date_obs=False)
     assert reprojection.call_args.kwargs["block_size"] == (512, 512)
     assert reprojection.call_args.kwargs["parallel"] is False
