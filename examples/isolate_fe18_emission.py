@@ -60,7 +60,7 @@ for level_1_map in (map_94, map_171, map_193):
     level_1_5_maps.append(map_corrected / map_corrected.exposure_time)
 
 ###############################################################################
-# Registered images can have different shapes, so crop to the same solar region.
+# Crop all three channels to the same solar region.
 #
 # The function does not check for alignment or different observation timing.
 
