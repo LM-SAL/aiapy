@@ -253,7 +253,7 @@ def test_deconvolve_consistent(idl_environment, aia_171_positive_map, psf_128, t
 
 
 def test_aec_consistent(idl_environment, tmp_path) -> None:
-    # Interleaved AEC-off/on frames; NSATPIX is zero at both ends, where IDL INTERPOL extrapolates.
+    # Interleaved AEC-off/on frames; NSATPIX is nonzero at both ends, where IDL INTERPOL extrapolates.
     n = 40
     flare = np.sin(np.linspace(0, np.pi, n)) ** 2
     aec_on = np.arange(n) % 2 == 1
@@ -263,7 +263,7 @@ def test_aec_consistent(idl_environment, tmp_path) -> None:
             "AECTYPE": np.where(aec_on, 2, 0),
             "DATAMEAN": 10 + 5 * flare,
             "EXPTIME": np.where(aec_on, 2.9 - 2.7 * flare, 2.9),
-            "NSATPIX": np.round(np.clip(flare - 0.5, 0, None) * np.where(aec_on, 600, 6000)).astype(int),
+            "NSATPIX": np.round((0.1 + flare) * np.where(aec_on, 600, 6000)).astype(int),
         }
     )
     table.write(tmp_path / "hdrs.fits")

@@ -58,6 +58,7 @@ def correct_aec(
     saturation_scale : `float`, optional
         Number of saturated pixels (``NSATPIX``) per 1 DN/s of residual signal.
         If `None`, no saturation correction is applied.
+        Frames outside the time range of the other AEC state are extrapolated linearly, as in the IDL routine.
     saturation_shift : `~astropy.units.Quantity`, optional
         Time lag between a saturated image and its residual signal.
 
@@ -76,6 +77,14 @@ def correct_aec(
         # Each image is corrected with the NSATPIX of the images in the other AEC state.
         residual = np.asarray(table["NSATPIX"]) / saturation_scale * u.DN / u.s
         shifted = seconds + saturation_shift.to_value(u.s)
-        rate[aec_on] -= np.interp(seconds[aec_on], shifted[~aec_on], residual[~aec_on])
-        rate[~aec_on] -= np.interp(seconds[~aec_on], shifted[aec_on], residual[aec_on])
+        rate[aec_on] -= _interpol(seconds[aec_on], shifted[~aec_on], residual[~aec_on])
+        rate[~aec_on] -= _interpol(seconds[~aec_on], shifted[aec_on], residual[aec_on])
     return rate
+
+
+def _interpol(x, xp, fp):
+    """
+    Linear interpolation that extrapolates from the end segments, like IDL's ``INTERPOL``.
+    """
+    i = np.clip(np.searchsorted(xp, x, side="right") - 1, 0, len(xp) - 2)
+    return fp[i] + (x - xp[i]) * (fp[i + 1] - fp[i]) / (xp[i + 1] - xp[i])

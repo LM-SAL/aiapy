@@ -20,5 +20,6 @@ def test_correct_aec() -> None:
     rate = correct_aec(table, dn_bias=-0.1 * u.DN, exptime_bias=-0.01 * u.s)
     assert_quantity_allclose(rate, [5.05, 10, 5.05, 10] * u.DN / u.s)
     # Each frame loses the NSATPIX of the other AEC state, interpolated to its time.
+    # The last frame is after the last AEC-off frame, so it is extrapolated like IDL's INTERPOL.
     rate = correct_aec(table, saturation_scale=100, saturation_shift=0 * u.s)
-    assert_quantity_allclose(rate, [4.5, 8, 4.5, 7] * u.DN / u.s)
+    assert_quantity_allclose(rate, [4.5, 8, 4.5, 6] * u.DN / u.s)
