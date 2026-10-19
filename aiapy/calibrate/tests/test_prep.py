@@ -56,6 +56,7 @@ def test_register(lvl_15_map, tmp_path) -> None:
         assert smap.data.shape == tuple(detector_dimensions().to_value(u.pix))
         assert_quantity_allclose(smap.reference_pixel, (u.Quantity(smap.dimensions) - 1 * u.pix) / 2)
         assert_quantity_allclose(smap.scale, [0.6, 0.6] * u.arcsec / u.pix)
+        assert smap.meta["cunit1"] == smap.meta["cunit2"] == "arcsec"
         np.testing.assert_allclose(smap.rotation_matrix, np.identity(2))
         assert smap.meta["lvl_num"] == 1.5
         assert smap.meta["bitpix"] == -64

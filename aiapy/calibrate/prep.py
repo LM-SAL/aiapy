@@ -153,6 +153,10 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     for key in ("crota1", "crota2", "pc1_1", "pc1_2", "pc2_1", "pc2_2", "cd1_1", "cd1_2", "cd2_1", "cd2_2"):
         new_meta.pop(key, None)
     new_meta.update(smap_l15.meta)
+    # WCS serializes in degrees; keep the arcsec units of AIA headers.
+    for key in ("cdelt1", "cdelt2", "crval1", "crval2"):
+        new_meta[key] = (new_meta[key] * u.Unit(new_meta[f"cunit{key[-1]}"])).to_value(u.arcsec)
+    new_meta.update({"cunit1": "arcsec", "cunit2": "arcsec"})
     # Reprojection serializes times in UTC; restore the input header's time scale and precision.
     timesys = smap.meta.get("timesys", "UTC").lower()
     date_obs = Time(smap.date if kwargs["preserve_date_obs"] else smap.reference_date, scale=timesys, precision=9)
