@@ -10,10 +10,11 @@ import pytest
 import astropy.time
 import astropy.units as u
 from astropy.io import fits
+from astropy.table import Table
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.psf
-from aiapy.calibrate import estimate_error, fetch_spikes, register, respike, update_pointing
+from aiapy.calibrate import correct_aec, estimate_error, fetch_spikes, register, respike, update_pointing
 from aiapy.calibrate.utils import get_correction_table, get_error_table
 from aiapy.response import Channel
 from aiapy.tests.data import get_test_filepath
@@ -249,3 +250,39 @@ def test_deconvolve_consistent(idl_environment, aia_171_positive_map, psf_128, t
     )
     map_decon = aiapy.psf.deconvolve(aia_171_positive_map, psf=psf_128, iterations=25)
     np.testing.assert_allclose(map_decon.data, ssw["out"], rtol=1e-10)
+
+
+def test_aec_consistent(idl_environment, tmp_path) -> None:
+    # Interleaved AEC-off/on frames; NSATPIX is zero at both ends, where IDL INTERPOL extrapolates.
+    n = 40
+    flare = np.sin(np.linspace(0, np.pi, n)) ** 2
+    aec_on = np.arange(n) % 2 == 1
+    table = Table(
+        {
+            "T_OBS": (astropy.time.Time("2014-09-09T00:00:00") + np.arange(n) * 12 * u.s).isot,
+            "AECTYPE": np.where(aec_on, 2, 0),
+            "DATAMEAN": 10 + 5 * flare,
+            "EXPTIME": np.where(aec_on, 2.9 - 2.7 * flare, 2.9),
+            "NSATPIX": np.round(np.clip(flare - 0.5, 0, None) * np.where(aec_on, 600, 6000)).astype(int),
+        }
+    )
+    table.write(tmp_path / "hdrs.fits")
+    ssw = idl_environment.run(
+        """
+        hdrs = mrdfits('{{ path }}', 1, /silent)
+        aia_aec_correct, hdrs, dnbias = -0.084d, exptimebias = -0.0032d, /shortonly, satscale = 18000, $
+            satshift = -12, fixcounts_on = fixcounts_on, fixcounts_off = fixcounts_off, /noplot
+        """,
+        args={"path": (tmp_path / "hdrs.fits").as_posix()},
+        save_vars=["fixcounts_on", "fixcounts_off"],
+        verbose=False,
+    )
+    rate = correct_aec(
+        table,
+        dn_bias=-0.084 * u.DN,
+        exptime_bias=-3.2 * u.ms,
+        saturation_scale=18000,
+        saturation_shift=-12 * u.s,
+    )
+    assert_quantity_allclose(rate[aec_on], ssw["fixcounts_on"] * u.DN / u.s, rtol=1e-6)
+    assert_quantity_allclose(rate[~aec_on], ssw["fixcounts_off"] * u.DN / u.s, rtol=1e-6)

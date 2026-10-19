@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib as mpl
 
 # Force MPL to use non-gui backends for testing.
@@ -151,6 +153,7 @@ def idl_environment():
         return hissw.Environment(
             ssw_packages=["sdo/aia", "vobs/ontology"],
             ssw_paths=["aia", "ontology"],
+            extra_paths=[str(Path(__file__).parent / "tests" / "idl")],
         )
     pytest.skip(
         "A working IDL installation is not available. You will not be able to run portions of the test suite.",
