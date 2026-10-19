@@ -15,13 +15,17 @@ from aiapy.utils.net import _get_data_from_jsoc
 
 __all__ = ["check_quality_flag", "detector_dimensions", "sdo_location", "telescope_number"]
 
-# This comes from Table 2 in Section 7.7.6 of the SDO User Guide
+# This comes from Table 2 in Section 7.7.6 of the SDO User Guide.
+# Bits 5-7, 24 and 25 are not in that table; they come from quallev1.h in the JSOC source and are set by hand.
 _QUALITY_FLAG_MESSAGES = {
     0: "Flatfield data are not available",
     1: "Orbit data are not available",
     2: "Ancillary science data are not available",
     3: "Master pointing data are not available",
     4: "Limb-fit data are not available (generally not applicable to AIA images)",
+    5: "Instrument anomaly",
+    6: "Instrument misconfiguration (inherited from level 0)",
+    7: "Camera anomaly",
     8: "Value of MISSVALS keyword is nonzero",
     9: "Value of MISSVALS keyword is more than 1% of the value of the TOTVALS keyword",
     10: "Value of MISSVALS keyword is more than 5% of the value of the TOTVALS keyword",
@@ -35,6 +39,8 @@ _QUALITY_FLAG_MESSAGES = {
     18: "Calibration image",
     20: "Focus is out of range",
     21: "Register flag is set",
+    24: "Hard shadow (occultation) in the field of view",
+    25: "Earth atmospheric EUV absorption",
     30: "Quicklook image",
     31: "Image is not available",
 }

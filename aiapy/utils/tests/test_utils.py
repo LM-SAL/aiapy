@@ -21,7 +21,7 @@ def test_sdo_location(aia_171_test_map) -> None:
         [],  # Nominal
         [16],  # Single message
         [12, 13, 14, 17, 21],  # Multiple messages
-        [4, 5],  # Empty bits
+        [4, 26],  # Empty bits
     ],
 )
 def test_check_quality_flag(bits):
@@ -32,3 +32,8 @@ def test_check_quality_flag(bits):
     if bits:
         messages = [_QUALITY_FLAG_MESSAGES.get(b, "(empty)") for b in bits]
     assert messages == check_quality_flag(quality)
+
+
+def test_check_quality_flag_hand_set_bits():
+    # Set by hand at JSOC, so missing from the SDO User Guide table
+    assert "(empty)" not in check_quality_flag(sum(1 << b for b in (5, 6, 7, 24, 25)))
