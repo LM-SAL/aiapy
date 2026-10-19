@@ -150,7 +150,7 @@ def test_wavelength_response_smoke_tests(channel) -> None:
 @pytest.mark.parametrize(
     ("include_crosstalk", "expected"),
     # Reference values at 94 and 304 Å from SSW: aia_get_response(/area,/dn,evenorm=0)
-    # with /noblend for no crosstalk, see the IDL comparisons below
+    # with /noblend for no crosstalk, see test_idl.py::test_wavelength_response_consistent
     [
         (True, [0.5724313855171204, 1.0914278902873775e-07]),
         (False, [0.5724313855171204, 2.958600957948072e-15]),
@@ -163,52 +163,21 @@ def test_wavelength_response_matches_idl(channel, include_crosstalk, expected) -
     assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
 
 
-def test_wavelength_response_uncorrected(channel, idl_environment) -> None:
-    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    r = channel.wavelength_response(correction_table=correction_table)
-    ssw = idl_environment.run("r = aia_get_response(/area,/dn,evenorm=0)", save_vars=["r"], verbose=False)
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
-
-
-def test_wavelength_response_no_crosstalk(channel, idl_environment) -> None:
-    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    r = channel.wavelength_response(include_crosstalk=False, correction_table=correction_table)
-    ssw = idl_environment.run(
-        "r = aia_get_response(/area,/dn,/noblend,evenorm=0)",
-        save_vars=["r"],
-        verbose=False,
-    )
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
-
-
-@pytest.mark.parametrize("include_eve_correction", [False, True])
-def test_wavelength_response_time(channel, idl_environment, include_eve_correction) -> None:
-    now = astropy.time.Time.now()
-    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    r = channel.wavelength_response(
-        obstime=now,
-        include_eve_correction=include_eve_correction,
-        correction_table=correction_table,
-        calibration_version=8,
-    )
-    ssw = idl_environment.run(
-        """
-        r = aia_get_response(/area,/dn,evenorm={{evenorm}}, $
-        timedepend_date='{{obstime}}',version={{version}},respversion='{{respversion}}')
-        """,
-        save_vars=["r"],
-        args={
-            "obstime": now.tai.isot,
-            "evenorm": int(include_eve_correction),
-            "version": 8,
-            "respversion": "8",
-        },
-        verbose=False,
-    )
-    r_ssw = ssw["r"][f"A{channel.name}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
-    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+@pytest.mark.remote_data
+@pytest.mark.parametrize(
+    ("channel_wavelength", "expected"),
+    # Reference values at the channel wavelength and 5000 Å from SSW: aia_get_response(/area,/dn,/uv,evenorm=0)
+    [
+        (1600 * u.angstrom, [0.002308473689481616, 3.016716737525016e-11]),
+        (1700 * u.angstrom, [0.004395448137074709, 1.8126247169902854e-09]),
+        (4500 * u.angstrom, [1.6016370864235796e-05, 8.497925563233366e-08]),
+    ],
+)
+def test_fuv_wavelength_response_matches_idl(channel_wavelength, expected) -> None:
+    channel = Channel(channel_wavelength)
+    r = channel.wavelength_response()
+    indices = [np.argmin(np.abs(channel.wavelength - w)) for w in [channel_wavelength, 5000 * u.angstrom]]
+    assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
 
 
 @pytest.mark.remote_data

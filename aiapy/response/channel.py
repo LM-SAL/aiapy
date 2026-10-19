@@ -341,15 +341,16 @@ class Channel:
 
         .. math::
 
-            G(\lambda) = \frac{hc}{\lambda}\frac{g}{a}
+            G(\lambda) = \max\left(\frac{hc}{\lambda a}, 1\right)g
 
         where :math:`g` is the camera gain in DN per electron
-        and :math:`\approx 3.65` eV per electron is a conversion factor.
+        and :math:`a \approx 3.65` eV per electron is a conversion factor.
+        A detected photon frees at least one electron, as in SSW.
         """
         _e = u.electron  # Avoid rewriting u.electron a lot
         electron_per_ev = self._data["elecperev"] * _e / u.eV
         energy_per_photon = const.h * const.c / self.wavelength / u.ph
-        electron_per_photon = (electron_per_ev * energy_per_photon).to(_e / u.ph)
+        electron_per_photon = np.maximum((electron_per_ev * energy_per_photon).to(_e / u.ph), 1 * _e / u.ph)
         return electron_per_photon / (self._data["elecperdn"] * _e / u.DN)
 
     @u.quantity_input
