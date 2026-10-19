@@ -164,6 +164,23 @@ def test_wavelength_response_matches_idl(channel, include_crosstalk, expected) -
 
 
 @pytest.mark.remote_data
+@pytest.mark.parametrize(
+    ("channel_wavelength", "expected"),
+    # Reference values at the channel wavelength and 5000 Å from SSW: aia_get_response(/area,/dn,/uv,evenorm=0)
+    [
+        (1600 * u.angstrom, [0.002308473689481616, 3.016716737525016e-11]),
+        (1700 * u.angstrom, [0.004395448137074709, 1.8126247169902854e-09]),
+        (4500 * u.angstrom, [1.6016370864235796e-05, 8.497925563233366e-08]),
+    ],
+)
+def test_fuv_wavelength_response_matches_idl(channel_wavelength, expected) -> None:
+    channel = Channel(channel_wavelength)
+    r = channel.wavelength_response()
+    indices = [np.argmin(np.abs(channel.wavelength - w)) for w in [channel_wavelength, 5000 * u.angstrom]]
+    assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
+
+
+@pytest.mark.remote_data
 @pytest.mark.parametrize("channel_wavelength", [1600 * u.angstrom, 1700 * u.angstrom, 4500 * u.angstrom])
 def test_fuv_channel(channel_wavelength, channel_properties, required_keys) -> None:
     # There are a few corner cases for the 1600, 1700, and 4500 channels

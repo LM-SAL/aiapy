@@ -1,0 +1,1 @@
+`aiapy.response.Channel.gain` now counts at least one electron per detected photon, as SSW does, which raises the 1600, 1700 and 4500 Å wavelength responses above 3397 Å to match ``aia_get_response``.
