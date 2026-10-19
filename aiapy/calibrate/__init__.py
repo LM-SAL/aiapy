@@ -2,6 +2,7 @@
 Subpackage for calibrating AIA imaging data.
 """
 
+from .aec import *
 from .meta import *
 from .prep import *
 from .spikes import *
