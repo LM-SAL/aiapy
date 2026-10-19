@@ -7,31 +7,40 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import astropy.time
 import astropy.units as u
 from astropy.io import fits
 from astropy.tests.helper import assert_quantity_allclose
 
 import aiapy.psf
-from aiapy.calibrate import estimate_error
-from aiapy.calibrate.utils import get_error_table
+from aiapy.calibrate import estimate_error, fetch_spikes, register, respike, update_pointing
+from aiapy.calibrate.utils import get_correction_table, get_error_table
+from aiapy.response import Channel
+from aiapy.tests.data import get_test_filepath
 from aiapy.tests.helpers import CHANNELS
+
+FUV_CHANNELS = [1600, 1700, 4500] * u.angstrom
+# An epoch inside the correction table and the latest epoch
+OBSTIMES = astropy.time.Time(["2015-01-01T00:00:00", "2025-01-01T00:00:00"], scale="utc")
 
 
 @pytest.mark.parametrize(
-    ("channel", "counts", "include_eve", "include_preflight", "include_chianti"),
-    [[c, 10 * u.DN / u.pixel] + 3 * [False] for c in CHANNELS]
+    ("channel", "n_sample", "include_eve", "include_chianti"),
+    [(c, n, False, False) for c in [*CHANNELS, *FUV_CHANNELS] for n in (1, 4)]
     + [
-        [171 * u.angstrom, 1000 * u.DN / u.pix, True, False, False],
-        [171 * u.angstrom, 1000 * u.DN / u.pix, False, False, True],
+        (171 * u.angstrom, 1, True, False),
+        (171 * u.angstrom, 1, False, True),
     ],
 )
-def test_error_consistent(idl_environment, channel, counts, include_eve, include_preflight, include_chianti) -> None:
+def test_error_consistent(idl_environment, channel, n_sample, include_eve, include_chianti) -> None:
+    # Spans the 25 DN switch in the compression noise
+    counts = [0.5, 10, 24.9, 25, 1000, 1e4] * u.DN / u.pix
     idl = """
     common aia_bp_error_common,common_errtable
     common_errtable=aia_bp_read_error_table('{{ error_table }}')
-    data = {{ data }}
-    channel = {{ channel }}
-    error=aia_bp_estimate_error(data,channel,n_sample=1{{ include_eve }}{{ include_preflight }}{{ include_chianti }})
+    data = [{{ data }}]
+    channel = replicate({{ channel }}, n_elements(data))
+    error=aia_bp_estimate_error(data,channel,n_sample={{ n_sample }}{{ include_eve }}{{ include_chianti }})
     """
     error_table_path = Path(idl_environment.ssw_home) / "sdo" / "aia" / "response" / "aia_V3_error_table.txt"
     error_table = get_error_table(error_table_path)
@@ -40,13 +49,11 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
         save_vars=["error"],
         args={
             "channel": channel.to("angstrom").value,
-            "data": counts.to("dn pixel-1").value,
+            "data": ",".join(map(str, counts.to_value("DN pix-1"))),
+            "n_sample": n_sample,
             "error_table": error_table_path.as_posix(),
             "include_eve": ",/evenorm" if include_eve else "",
-            # NOTE: use of this keyword is actually broken in SSW so these
-            # tests only set it to False until it works, but consistency with
-            # these results has been verified
-            "include_preflight": ",/cal" if include_preflight else "",
+            # NOTE: The /cal keyword (include_preflight) is broken in SSW so it is not tested here
             "include_chianti": ",/temperature" if include_chianti else "",
         },
         verbose=False,
@@ -55,13 +62,145 @@ def test_error_consistent(idl_environment, channel, counts, include_eve, include
     error = estimate_error(
         counts,
         channel,
+        n_sample=n_sample,
         include_eve=include_eve,
-        include_preflight=include_preflight,
         include_chianti=include_chianti,
         error_table=error_table,
         compare_idl=True,
     )
     assert_quantity_allclose(error, error_ssw, rtol=1e-4)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize("channel", [*CHANNELS, *FUV_CHANNELS])
+@pytest.mark.parametrize(
+    ("kwargs", "keywords"),
+    [
+        ({}, ",evenorm=0"),
+        ({"include_crosstalk": False}, ",/noblend,evenorm=0"),
+        *[
+            (
+                {"obstime": t, "include_eve_correction": eve},
+                f",evenorm={int(eve)},timedepend_date='{t.tai.isot}',version=8,respversion='8'",
+            )
+            for t in OBSTIMES
+            for eve in (False, True)
+        ],
+    ],
+)
+def test_wavelength_response_consistent(idl_environment, channel, kwargs, keywords) -> None:
+    if channel == 4500 * u.angstrom and "obstime" in kwargs:
+        pytest.skip("The version 8 correction table has no 4500 Å calibration")
+    fuv = channel in FUV_CHANNELS
+    r = Channel(channel).wavelength_response(
+        correction_table=get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
+        calibration_version=8,
+        **kwargs,
+    )
+    ssw = idl_environment.run(
+        "r = aia_get_response(/area,/dn{{ uv }}{{ keywords }})",
+        args={"uv": ",/uv" if fuv else "", "keywords": keywords},
+        save_vars=["r"],
+        verbose=False,
+    )
+    r_ssw = ssw["r"][f"A{channel.to_value('angstrom'):.0f}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
+    assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+
+
+@pytest.mark.parametrize("channel", CHANNELS)
+@pytest.mark.parametrize("use_preflightcore", [False, True])
+def test_filter_mesh_parameters_consistent(idl_environment, channel, use_preflightcore) -> None:
+    ssw = idl_environment.run(
+        """
+        resolve_routine, 'aia_calc_psf', /is_function
+        m = call_function('aia_getmeshinfo', {{ channel }}, use_preflightcore={{ preflight }})
+        """,
+        args={"channel": f"{channel.to_value('angstrom'):.0f}", "preflight": int(use_preflightcore)},
+        save_vars=["m"],
+        verbose=False,
+    )
+    m = ssw["m"][0]
+    params = aiapy.psf.filter_mesh_parameters(use_preflightcore=use_preflightcore)[channel]
+    for key, expected in [
+        ("angle_arm", [m[f"angle{i}"] for i in range(1, 5)] * u.deg),
+        ("error_angle_arm", [m[f"delta{i}"] for i in range(1, 5)] * u.deg),
+        ("spacing_e", m["spacing"] * u.pix),
+        ("spacing_fp", m["fp_spacing"] * u.pix),
+        ("mesh_pitch", m["meshpitch"] * u.um),
+        ("mesh_width", m["meshwidth"] * u.um),
+        ("width", m["gs_width"] * u.pix),
+    ]:
+        assert_quantity_allclose(params[key], expected, rtol=1e-6)
+
+
+@pytest.mark.remote_data
+def test_register_consistent(idl_environment, aia_193_level1_file, aia_193_level1_map) -> None:
+    ssw = idl_environment.run(
+        """
+        read_sdo, '{{ file }}', index, data, /uncomp_delete
+        aia_prep, index, data, oindex, odata, /no_mpo_update
+        header = [oindex.crpix1, oindex.crpix2, oindex.cdelt1, oindex.cdelt2, oindex.crota2]
+        """,
+        args={"file": aia_193_level1_file},
+        save_vars=["header", "odata"],
+        verbose=False,
+    )
+    registered = register(aia_193_level1_map)
+    meta = registered.meta
+    np.testing.assert_allclose([meta["crpix1"], meta["crpix2"], meta["cdelt1"], meta["cdelt2"]], ssw["header"][:4])
+    np.testing.assert_allclose(registered.rotation_matrix, np.identity(2), atol=1e-8)
+    assert ssw["header"][4] == 0
+    # SSW interpolates with cubic convolution and aiapy with a cubic spline,
+    # so only compare the bulk intensities
+    bright = ssw["odata"] > 50
+    np.testing.assert_allclose(np.median(registered.data[bright] / ssw["odata"][bright]), 1, atol=5e-3)
+    np.testing.assert_allclose(registered.data.sum() / ssw["odata"].sum(), 1, atol=5e-3)
+
+
+@pytest.mark.remote_data
+def test_update_pointing_consistent(idl_environment, aia_193_level1_file, aia_193_level1_map, pointing_table) -> None:
+    # aia2wcsmin queries the JSOC for the master pointing table
+    ssw = idl_environment.run(
+        """
+        read_sdo, '{{ file }}', index
+        nindex = aia2wcsmin(index)
+        header = [nindex.crpix1, nindex.crpix2, nindex.cdelt1, nindex.cdelt2, nindex.crota2]
+        """,
+        args={"file": aia_193_level1_file},
+        save_vars=["header"],
+        verbose=False,
+    )
+    meta = update_pointing(aia_193_level1_map, pointing_table=pointing_table).meta
+    np.testing.assert_allclose(
+        [meta["crpix1"], meta["crpix2"], meta["cdelt1"], meta["cdelt2"], meta["crota2"]],
+        ssw["header"],
+        rtol=1e-6,
+    )
+
+
+@pytest.mark.remote_data
+def test_respike_consistent(idl_environment, aia_193_level1_map, tmp_path) -> None:
+    # SSW's own spike download needs a registered JSOC email, so pass it the full-frame spikes
+    coords, values = fetch_spikes(aia_193_level1_map)
+    index = coords.y.to_value("pix").round() * aia_193_level1_map.data.shape[1] + coords.x.to_value("pix").round()
+    fits.writeto(tmp_path / "spikes.fits", np.array([index, values]).astype(np.int32))
+    cutout = aia_193_level1_map.submap([500, 1000] * u.pix, top_right=[2499, 2999] * u.pix)
+    # BLANK only applies to integer data
+    cutout.meta.pop("blank")
+    cutout.save(tmp_path / "cutout.fits")
+    ssw = idl_environment.run(
+        """
+        read_sdo, '{{ path }}/cutout.fits', index, data
+        spikes = readfits('{{ path }}/spikes.fits')
+        aia_respike, index, data, oindex, odata, ispikedd=spikes
+        """,
+        args={"path": tmp_path.as_posix()},
+        save_vars=["odata"],
+        verbose=False,
+    )
+    respiked = respike(cutout)
+    assert (respiked.data != cutout.data).any()
+    np.testing.assert_array_equal(respiked.data, ssw["odata"])
 
 
 # For now, we only need the 94 Angstrom PSF
