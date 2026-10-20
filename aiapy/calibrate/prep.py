@@ -11,10 +11,7 @@ from scipy.ndimage import maximum_filter
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from astropy.wcs import WCS
-from astropy.wcs.utils import pixel_to_pixel
 
-from sunpy.map import contains_full_disk
 from sunpy.map.header_helper import make_fitswcs_header
 
 from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
@@ -28,39 +25,24 @@ def _target_grid(smap):
     """
     Return the north-aligned, Sun-centered output header and whether ``smap`` fills it.
     """
-    detector_shape = tuple(detector_dimensions().to_value(u.pix))
-    full_resolution = smap.data.shape == detector_shape
     scale = 0.6 * u.arcsec / u.pix
-    binning = 1 if full_resolution else max(1, round((smap.scale.axis1 / scale).to_value(u.one)))
-    shape = tuple(np.rint(np.array(detector_shape) / binning).astype(int))
-    full_frame = smap.data.shape == shape
+    binning = max(1, round((smap.scale.axis1 / scale).to_value(u.one)))
+    shape = tuple(np.rint(detector_dimensions().to_value(u.pix) / binning).astype(int))
     ref_coord = SkyCoord(0, 0, unit="arcsec", frame=smap.coordinate_frame)
     header = make_fitswcs_header(shape, ref_coord, scale=[binning, binning] * scale)
-    if not full_frame and contains_full_disk(smap):
-        # Full-disk frames resampled by a non-integer factor keep the binned grid when, north-aligned,
-        # they overhang it by at most 1% per side, the plate-scale spread full-resolution frames absorb.
-        ny, nx = smap.data.shape
-        corners = pixel_to_pixel(
-            smap.wcs,
-            WCS(header),
-            np.array([-0.5, nx - 0.5, nx - 0.5, -0.5]),
-            np.array([-0.5, -0.5, ny - 0.5, ny - 0.5]),
-        )
-        full_frame = all(np.abs(c - (n - 1) / 2).max() <= 0.51 * n for c, n in zip(corners, shape[::-1], strict=True))
-    return header, full_frame
+    return header, smap.data.shape == shape
 
 
 def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs):
     """
     Register a level 1 AIA image or HMI magnetogram using `reproject`.
 
-    Align solar North with the y axis. Full detector frames retain their shape
-    with the Sun at the center. Full-resolution pixels are 0.6 arcsec, so HMI
-    images land on the same pixel grid as AIA; resampled images use an integer
-    multiple of that scale. Full-disk frames resampled by a non-integer factor
-    snap to the nearest binned detector grid, centered on the Sun. Cutouts
-    share the full-disk grid and expand to contain their transformed edges;
-    the Sun need not lie inside them.
+    Align solar North with the y axis. Full detector frames, at full resolution
+    or binned by an integer factor, keep their shape with the Sun at the center.
+    Full-resolution pixels are 0.6 arcsec, so HMI images land on the same pixel
+    grid as AIA; binned images use an integer multiple of that scale. Other
+    images, such as cutouts, share that grid and expand to contain their
+    transformed edges; the Sun need not lie inside them.
 
     .. note::
 
@@ -74,10 +56,8 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     missing : `float`, optional
         Fill missing pixels with this value, or the minimum non-NaN input
         value if `None`.
-    order : `int` or `str`, optional
-        Interpolation order, from 0 to 5, defaulting to cubic (3).
-        The interpolation names accepted by `reproject` can also be used.
-        Ignored for the adaptive and exact algorithms.
+    order : `int`, optional
+        Interpolation order, from 0 to 5, defaulting to cubic (3). Ignored for the adaptive and exact algorithms.
     algorithm : `str`, optional
         The reprojection algorithm to use. See the `reproject` documentation
         for details on different algorithms. Default is ``'interpolation'``.
@@ -115,7 +95,6 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     source = smap
     nan_mask = None
     if algorithm == "interpolation":
-        order = {"nearest-neighbor": 0, "bilinear": 1, "biquadratic": 2, "bicubic": 3}.get(order, order)
         kwargs["order"] = order
         if order in (2, 3, 4, 5) and np.isnan(smap.data).any():
             # Spline filtering needs finite input; restore invalid neighborhoods afterward.

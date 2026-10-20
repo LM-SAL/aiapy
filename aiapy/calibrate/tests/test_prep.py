@@ -6,13 +6,12 @@ import pytest
 
 import astropy.time
 import astropy.units as u
-from astropy.io import fits
 from astropy.io.fits.verify import VerifyWarning
 from astropy.tests.helper import assert_quantity_allclose
 from astropy.wcs.utils import pixel_to_pixel
 
 import sunpy.data.test
-from sunpy.map import Map, contains_full_disk
+from sunpy.map import Map
 from sunpy.map.sources.sdo import HMIMap
 
 from aiapy.calibrate import correct_degradation, degradation, register
@@ -142,34 +141,6 @@ def test_register_resampled_full_disk(aia_171_test_map) -> None:
     assert abs(registered.bottom_left_coord.Tx) > 1200 * u.arcsec
 
 
-@pytest.mark.parametrize("scale", [0.6 * 4.096, 0.6086 * 4.096, 0.6 * 2.048])
-def test_register_non_integer_binning(scale) -> None:
-    """
-    Full-disk frames resampled by a non-integer factor snap to the binned, Sun-centered grid.
-    """
-    shape = (np.rint(4096 * 0.6 / scale).astype(int),) * 2
-    binning = round(scale / 0.6)
-    registered = register(make_aia_map(np.ones(shape, dtype=np.float32), level=1, scale=scale), parallel=False)
-    assert registered.data.shape == tuple(np.rint(detector_dimensions().to_value(u.pix) / binning).astype(int))
-    assert_quantity_allclose(registered.scale, [binning * 0.6] * 2 * u.arcsec / u.pix)
-    assert_quantity_allclose(registered.reference_pixel, (u.Quantity(registered.dimensions) - 1 * u.pix) / 2)
-
-
-@pytest.mark.parametrize(("size", "shape", "scale"), [(4096, (4096, 4096), 0.6), (1024, (1365, 1365), 1.8)])
-def test_register_hmi_full_disk(size, shape, scale) -> None:
-    """
-    Full-disk HMI frames land on the Sun-centered, binned AIA grid.
-    """
-    header = fits.Header.fromtextfile(sunpy.data.test.get_test_filepath("hmi_bharp_vlos_mag.header"))
-    header.remove("BLANK", ignore_missing=True)
-    smap = Map(np.ones((header["naxis2"], header["naxis1"]), dtype=np.float32), header).resample([size, size] * u.pix)
-    with pytest.warns(AIApyUserWarning, match="Image registration should only be applied to level 1 data"):
-        registered = register(smap)
-    assert registered.data.shape == shape
-    assert_quantity_allclose(registered.scale, [scale, scale] * u.arcsec / u.pix)
-    assert_quantity_allclose(registered.reference_pixel, (u.Quantity(registered.dimensions) - 1 * u.pix) / 2)
-
-
 @pytest.mark.parametrize("date_keyword", ["date-obs", "date_obs"])
 @pytest.mark.parametrize("timesys", ["UTC", "TAI"])
 @pytest.mark.parametrize("reference_keyword", ["date-avg", "t_obs"])
@@ -234,7 +205,7 @@ def test_register_no_overlap(small_aia_map) -> None:
     np.testing.assert_array_equal(registered.data, small_aia_map.min())
 
 
-@pytest.mark.parametrize("order", [1, 3, "bicubic"])
+@pytest.mark.parametrize("order", [1, 3])
 @pytest.mark.parametrize("missing", [None, -100, np.nan])
 def test_register_nan_input(small_aia_map, order, missing) -> None:
     data = small_aia_map.data.astype(float)
@@ -266,19 +237,6 @@ def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, 
     assert reprojection.call_args.kwargs["block_size"] == (512, 512)
     assert reprojection.call_args.kwargs["parallel"] is False
     assert reprojection.call_args.kwargs["order"] == 1
-
-
-def test_register_cutout_containing_full_disk(aia_171_test_map) -> None:
-    full_frame = aia_171_test_map
-    cutout = full_frame.submap([8, 8] * u.pix, top_right=[119, 119] * u.pix)
-    meta = cutout.meta.copy()
-    # Rotate the cutout enough that its corners need an expanded output grid.
-    meta["crota2"] = 23
-    cutout = Map(cutout.data, meta)
-    assert contains_full_disk(cutout)
-    assert cutout.data.shape != full_frame.data.shape
-
-    assert_contains_input(cutout, register(cutout))
 
 
 def test_register_submap(lvl_15_map, aia_171_submap) -> None:
