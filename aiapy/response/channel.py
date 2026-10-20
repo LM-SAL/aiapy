@@ -55,7 +55,7 @@ class Channel(AbstractChannel):
         Wavelength of AIA channel.
     instrument_file : `str` or `dict`, optional
         Path to AIA instrument file or the already-parsed contents of one
-        (as returned by `~sunpy.io.special.read_genx`).
+        (as returned by ``sunpy.io.special.read_genx``).
         If not specified, the latest version will be downloaded from SolarSoft.
     include_eve_correction : `bool`, optional
         If true, include correction to EVE calibration in effective area.
@@ -160,7 +160,7 @@ class Channel(AbstractChannel):
         """
         Label denoting the telescope to which the given channel is assigned.
 
-        See `crosstalk` for context of why this is important.
+        See `effective_area` for why this matters.
         """
         return telescope_number(self.channel)
 
@@ -264,7 +264,7 @@ class Channel(AbstractChannel):
     @property
     def correction_table(self):
         """
-        Correction table as provided: a table, a path, or `None`.
+        The correction table as given, which is a table, a path or `None`.
         """
         return self._correction_table_input
 
