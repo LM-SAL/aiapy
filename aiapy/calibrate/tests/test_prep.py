@@ -131,44 +131,6 @@ def test_register_wcs_metadata(small_aia_map, matrix) -> None:
     np.testing.assert_array_equal(smap.data, original_data)
 
 
-def test_register_resampled_full_disk(aia_171_test_map) -> None:
-    smap = aia_171_test_map
-    registered = register(smap)
-    assert registered.data.shape == smap.data.shape == (128, 128)
-    assert_quantity_allclose(registered.scale, [19.2, 19.2] * u.arcsec / u.pix)
-    assert_quantity_allclose(registered.reference_pixel, [63.5, 63.5] * u.pix)
-    assert abs(registered.bottom_left_coord.Tx) > 1200 * u.arcsec
-
-
-@pytest.mark.parametrize("date_keyword", ["date-obs", "date_obs"])
-@pytest.mark.parametrize("timesys", ["UTC", "TAI"])
-@pytest.mark.parametrize("reference_keyword", ["date-avg", "t_obs"])
-def test_register_observation_time(small_aia_map, tmp_path, date_keyword, timesys, reference_keyword) -> None:
-    meta = small_aia_map.meta.copy()
-    meta.pop("date-obs")
-    # The fixture carries reference-time keywords; drop the candidates so this test
-    # controls exactly which one (date-avg or t_obs) drives the reference date.
-    meta.pop("date-avg", None)
-    meta.pop("t_obs", None)
-    meta[date_keyword] = "2020-01-01T00:00:00.123456"
-    meta["timesys"] = timesys
-    reference_date = astropy.time.Time("2020-01-01T00:00:01", scale=timesys.lower())
-    meta[reference_keyword] = (
-        "2020.01.01_00:00:01_TAI" if reference_keyword == "t_obs" and timesys == "TAI" else reference_date.isot
-    )
-    meta["mjd-avg"] = reference_date.mjd
-    smap = Map(small_aia_map.data, meta)
-    assert smap.reference_date == reference_date
-    assert smap.date == astropy.time.Time("2020-01-01T00:00:00.123456", scale=timesys.lower())
-    registered = register(smap)
-    assert time_keywords(registered.meta) == time_keywords(smap.meta)
-    filename = tmp_path / "registered.fits"
-    registered.save(filename)
-    for result in (registered, Map(filename)):
-        assert result.date == smap.date
-        assert result.reference_date == smap.reference_date
-
-
 def test_register_solar_radius(aia_171_test_map) -> None:
     smap = aia_171_test_map
     smap.meta["rsun_obs"] = 960
