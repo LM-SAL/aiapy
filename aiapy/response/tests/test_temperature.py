@@ -35,7 +35,7 @@ def test_temperature_response(spectra, channel, corrected, expected) -> None:
     temperature, response = temperature_response(channel, spectra, obstime, chiantifix=corrected)
     index = [32, 40, 48, 60]
     assert_quantity_allclose(temperature[index], 10 ** np.array([5.6, 6.0, 6.4, 7.0]) * u.K)
-    # TODO: rtol=1e-4 once sunkit-instruments folds on the spectra wavelengths (sunpy/sunkit-instruments#231)
+    # TODO: rtol=1e-5 once sunkit-instruments folds on the spectra wavelengths (sunpy/sunkit-instruments#231)
     assert_quantity_allclose(response[index], expected * u.Unit("cm5 DN / (pix s)"), rtol=2e-4)
 
 

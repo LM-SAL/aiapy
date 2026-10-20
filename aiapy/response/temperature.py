@@ -6,6 +6,7 @@ import numpy as np
 from sunkit_instruments.response import SourceSpectra
 
 import astropy.units as u
+from astropy.constants import c, h
 from astropy.io import fits
 
 from sunpy.time import parse_time
@@ -30,6 +31,9 @@ def get_source_spectra():
     (CHIANTI 9.0.1, Feldman 1992 extended coronal abundances, ``chianti.ioneq``,
     constant pressure of :math:`10^{15}` K cm\\ :sup:`-3`, He II 303.786 Å boosted by 20),
     on a 0.1 Å grid from 1 to 901 Å.
+    SolarSoft converts it to DN with :math:`hc` = 12398 eV Å, so it is rescaled here by
+    12398 eV Å / :math:`hc`; folding it with the exact :math:`hc` that
+    `aiapy.response.Channel` uses then reproduces SolarSoft.
     ``meta`` records these settings and the ``aia_V9_chiantifix.genx`` correction
     used by `temperature_response`.
 
@@ -43,6 +47,7 @@ def get_source_spectra():
         temperature = 10 ** hdul["TEMPERATURE"].data["logte"].astype(float) * u.K
         wavelength = hdul["WAVELENGTH"].data["wavelength"].astype(float) * u.angstrom
         emissivity = hdul["EMISSIVITY"].data.astype(float) * u.Unit("ph cm3 s-1 sr-1 Angstrom-1")
+        emissivity *= (12398 * u.eV * u.angstrom / (h * c)).to_value(u.dimensionless_unscaled)
         chiantifix = hdul["CHIANTIFIX"].data
         meta = {
             "chianti_version": header["CHIANTI"],
@@ -76,8 +81,7 @@ def temperature_response(channel, spectra, obstime=None, *, chiantifix=False):
     With ``get_source_spectra()`` this is SolarSoft's
     ``aia_get_response(/temperature, /dn)``, with ``/evenorm`` if the channel has
     ``include_eve_correction=True`` and ``timedepend_date`` if ``obstime`` is given.
-    The results agree with SolarSoft to about :math:`10^{-4}`; :math:`3.4\times10^{-5}`
-    of that is because SolarSoft takes :math:`hc` as 12398 eV Å.
+    The results agree with SolarSoft to about :math:`10^{-4}`.
 
     The chiantifix is SolarSoft's empirical correction for 94 Å emission missing from
     CHIANTI; it is zero for the other channels.

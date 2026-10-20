@@ -138,7 +138,7 @@ def test_temperature_response_consistent(idl_environment, channel, obstime, incl
         verbose=False,
     )
     r_ssw = ssw["r"][f"A{channel.to_value('angstrom'):.0f}"][0]["tresp"][0] * u.Unit("cm5 DN / (pix s)")
-    # TODO: rtol=1e-4 once sunkit-instruments folds on the spectra wavelengths (sunpy/sunkit-instruments#231)
+    # TODO: rtol=1e-5 once sunkit-instruments folds on the spectra wavelengths (sunpy/sunkit-instruments#231)
     assert_quantity_allclose(response, r_ssw, rtol=2e-4)
 
 
