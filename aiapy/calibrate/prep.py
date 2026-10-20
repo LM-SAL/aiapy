@@ -2,117 +2,140 @@
 Functions for calibrating AIA images.
 """
 
+import os
+import copy
 import warnings
 
 import numpy as np
+from scipy.ndimage import maximum_filter
 
 import astropy.units as u
+from astropy.coordinates import SkyCoord
 
-from sunpy.map import contains_full_disk
-from sunpy.map.sources.sdo import AIAMap, HMIMap
-from sunpy.util.decorators import add_common_docstring
+from sunpy.map.header_helper import make_fitswcs_header
 
-from aiapy.calibrate.transform import _rotation_function_names
 from aiapy.calibrate.utils import LATEST_CORRECTION_VERSION, _select_epoch_from_correction_table, get_correction_table
-from aiapy.utils import AIApyUserWarning
+from aiapy.utils import AIApyUserWarning, detector_dimensions
 from aiapy.utils.decorators import validate_channel
 
 __all__ = ["correct_degradation", "degradation", "register"]
 
 
-@add_common_docstring(rotation_function_names=_rotation_function_names)
-def register(smap, *, missing=None, order=3, method="scipy"):
+def _target_grid(smap):
     """
-    Processes a full-disk level 1 `~sunpy.map.sources.AIAMap` into a level
-    1.5 `~sunpy.map.sources.AIAMap`.
+    Return the north-aligned, Sun-centered output header and whether ``smap`` fills it.
+    """
+    scale = 0.6 * u.arcsec / u.pix
+    binning = max(1, round((smap.scale.axis1 / scale).to_value(u.one)))
+    shape = tuple(np.rint(detector_dimensions().to_value(u.pix) / binning).astype(int))
+    ref_coord = SkyCoord(0, 0, unit="arcsec", frame=smap.coordinate_frame)
+    header = make_fitswcs_header(shape, ref_coord, scale=[binning, binning] * scale)
+    return header, smap.data.shape == shape
 
-    Rotates, scales and translates the image so that solar North is aligned
-    with the y axis, each pixel is 0.6 arcsec across, and the center of the
-    Sun is at the center of the image. The actual transformation is done by
-    the `~sunpy.map.GenericMap.rotate` method.
 
-    .. warning::
+def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs):
+    """
+    Register a level 1 AIA image or HMI magnetogram using `reproject`.
 
-        This function might not return a 4096 by 4096 data array
-        due to the nature of rotating and scaling the image.
-        If you need a 4096 by 4096 image, you will need to pad the array manually,
-        update header: crpix1 and crpix2 by the difference divided by 2 in size along that axis.
-        Then create a new map.
-
-        Please open an issue on the `aiapy GitHub page <https://github.com/LM-SAL/aiapy/issues>`__
-        if you would like to see this changed.
+    Align solar North with the y axis. Full detector frames, at full resolution
+    or binned by an integer factor, keep their shape with the Sun at the center.
+    Full-resolution pixels are 0.6 arcsec, so HMI images land on the same pixel
+    grid as AIA; binned images use an integer multiple of that scale. Other
+    images, such as cutouts, share that grid and expand to contain their
+    transformed edges; the Sun need not lie inside them.
 
     .. note::
 
-        This routine modifies the header information to the standard
-        ``PCi_j`` WCS formalism. The FITS header resulting in saving a file
-        after this procedure will therefore differ from the original
-        file.
+        Output headers use standard ``PCi_j`` WCS metadata and may differ
+        from the original FITS header.
 
     Parameters
     ----------
     smap : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
-        A `~sunpy.map.Map` containing a full-disk AIA image or HMI magnetogram
+        A full-disk AIA image or HMI magnetogram, or a cutout of one.
     missing : `float`, optional
-        If there are missing values after the interpolation, they will be
-        filled in with ``missing``. If `None`, the default value will be the
-        minimum value of ``smap``
+        Fill pixels outside the input image with this value, or the minimum
+        non-NaN input value if `None`. NaN input pixels stay NaN.
     order : `int`, optional
-        Order of the spline interpolation.
-    method : {{{rotation_function_names}}}, optional
-        Rotation function to use. Defaults to ``'scipy'``.
+        Interpolation order, from 0 to 5, defaulting to cubic (3). Ignored for the adaptive and exact algorithms.
+    algorithm : `str`, optional
+        The reprojection algorithm to use. See the `reproject` documentation
+        for details on different algorithms. Default is ``'interpolation'``.
+    **kwargs
+        Passed to `~sunpy.map.GenericMap.reproject_to`, with
+        ``roundtrip_coords=False`` by default except for the exact algorithm.
+        Large images use 1024 by 1024 pixel blocks
+        and a thread for every CPU available to the process by default.
+        Set ``parallel`` to an integer to choose the worker count, or ``False``
+        to run serially, e.g. when already registering many files in parallel.
 
     Returns
     -------
-    `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`:
-        A level 1.5 copy of `~sunpy.map.sources.AIAMap` or
-        `~sunpy.map.sources.sdo.HMIMap`.
+    registered : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
+        A registered map with processing level 1.5.
     """
-    # This implementation is taken directly from the `aiaprep` method in
-    # sunpy.instr.aia.aiaprep under the terms of the BSD 2 Clause license.
-    # See licenses/SUNPY.rst.
-    if not isinstance(smap, AIAMap | HMIMap):
-        msg = "Input must be an AIAMap or HMIMap."
-        raise TypeError(msg)
-    if not contains_full_disk(smap):
-        msg = "Input must be a full disk image."
-        raise ValueError(msg)
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
             "Image registration should only be applied to level 1 data",
             AIApyUserWarning,
-            stacklevel=3,
+            stacklevel=2,
         )
-    # Target scale is 0.6 arcsec/pixel, but this needs to be adjusted if the
-    # map has already been rescaled.
-    if (smap.scale[0] / 0.6).round() != 1.0 * u.arcsec / u.pix and smap.data.shape != (
-        4096,
-        4096,
-    ):
-        scale = (smap.scale[0] / 0.6).round() * 0.6 * u.arcsec
-    else:
-        scale = 0.6 * u.arcsec  # pragma: no cover # needs a full res image
-    scale_factor = smap.scale[0] / scale
+    header, full_frame = _target_grid(smap)
+    kwargs.setdefault("auto_extent", None if full_frame else "edges")
+    if algorithm != "exact":
+        # Input and output share a frame, so coordinates always round-trip; skip reproject's check.
+        kwargs.setdefault("roundtrip_coords", False)
+    # Parallelize only images larger than one 1024 by 1024 block.
+    kwargs.setdefault("parallel", (os.process_cpu_count() or 1) if smap.data.size > 1024**2 else False)
+    kwargs.setdefault("block_size", (1024, 1024) if kwargs["parallel"] else None)
     missing = smap.min() if missing is None else missing
-    tempmap = smap.rotate(
-        recenter=True,
-        scale=scale_factor.value,
-        order=order,
-        missing=missing,
-        method=method,
+    if algorithm == "interpolation":
+        kwargs["order"] = order
+    nan = np.isnan(smap.data)
+    source = smap
+    if nan.any():
+        # Reproject finite data so NaN marks only pixels outside the input, then restore
+        # NaN where a NaN input pixel contributed. An order-k spline samples k+1 pixels
+        # per axis, so a NaN reaches 2 pixels for orders 2-3 and 3 for orders 4-5.
+        size = {2: 5, 3: 5, 4: 7, 5: 7}.get(order, 1) if algorithm == "interpolation" else 1
+        nan = maximum_filter(nan, size=size, mode="constant")
+        source = smap._new_instance(np.where(np.isnan(smap.data), np.nanmedian(smap.data), smap.data), smap.meta)
+    smap_l15 = source.reproject_to(header, algorithm=algorithm, **kwargs)
+    data = smap_l15.data
+    if algorithm == "interpolation":
+        np.clip(data, smap.min(), smap.max(), out=data)
+    # Fill after clipping to preserve custom missing values.
+    data[np.isnan(data)] = missing
+    if nan.any():
+        nan_l15 = smap._new_instance(nan.astype(float), smap.meta).reproject_to(
+            smap_l15.wcs,
+            order=1,
+            shape_out=data.shape,
+            parallel=kwargs["parallel"],
+            block_size=kwargs["block_size"],
+        )
+        data[nan_l15.data > 0] = np.nan
+    # Reprojection retains only WCS metadata.
+    new_meta = copy.deepcopy(smap.meta)
+    # Identity matrices are omitted from WCS headers, so remove the old matrix.
+    for key in ("crota1", "crota2", "pc1_1", "pc1_2", "pc2_1", "pc2_2", "cd1_1", "cd1_2", "cd2_1", "cd2_2"):
+        new_meta.pop(key, None)
+    # Keep the input's times; reprojection rewrites them from the reference date.
+    new_meta.update({k: v for k, v in smap_l15.meta.items() if not k.startswith(("date", "mjd"))})
+    # WCS serializes in degrees; keep the arcsec units of AIA headers.
+    for key in ("cdelt1", "cdelt2", "crval1", "crval2"):
+        new_meta[key] = (new_meta[key] * u.Unit(new_meta[f"cunit{key[-1]}"])).to_value(u.arcsec)
+    new_meta.update({"cunit1": "arcsec", "cunit2": "arcsec"})
+    new_meta.update(
+        {
+            "naxis1": data.shape[1],
+            "naxis2": data.shape[0],
+            "r_sun": (smap.rsun_obs / smap_l15.scale.axis1).to_value(u.pix),
+            "lvl_num": 1.5,
+            "bitpix": -8 * data.dtype.itemsize,
+        }
     )
-    # Extract center from padded smap.rotate output
-    # crpix1 and crpix2 will be equal (recenter=True), as prep does not work with submaps
-    center = np.floor(tempmap.meta["crpix1"])
-    range_side = (center + np.array([-1, 1]) * smap.data.shape[0] / 2) * u.pix
-    newmap = tempmap.submap(
-        u.Quantity([range_side[0], range_side[0]]),
-        top_right=u.Quantity([range_side[1], range_side[1]]) - 1 * u.pix,
-    )
-    newmap.meta["r_sun"] = newmap.meta["rsun_obs"] / newmap.meta["cdelt1"]
-    newmap.meta["lvl_num"] = 1.5
-    newmap.meta["bitpix"] = -64
-    return newmap
+    return smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
 
 
 def correct_degradation(smap, *, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION):

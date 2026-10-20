@@ -156,6 +156,8 @@ def test_register_consistent(idl_environment, aia_193_level1_file, aia_193_level
     bright = ssw["odata"] > 50
     np.testing.assert_allclose(np.median(registered.data[bright] / ssw["odata"][bright]), 1, atol=5e-3)
     np.testing.assert_allclose(registered.data.sum() / ssw["odata"].sum(), 1, atol=5e-3)
+    # A 0.25 pixel shift doubles the per-pixel difference
+    assert np.median(np.abs(registered.data[bright] / ssw["odata"][bright] - 1)) < 7.5e-3
 
 
 @pytest.mark.remote_data
