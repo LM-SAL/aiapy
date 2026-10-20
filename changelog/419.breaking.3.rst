@@ -1,0 +1,2 @@
+``aiapy.response.Channel.wavelength_response`` now includes the pixel solid angle and therefore has units of ``cm2 DN sr / (ph pix)`` instead of ``cm2 DN / ph``.
+Divide the result by ``Channel.pixel_solid_angle`` to recover the old values.
