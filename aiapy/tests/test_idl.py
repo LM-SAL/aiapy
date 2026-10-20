@@ -87,10 +87,11 @@ def test_error_consistent(idl_environment, channel, n_sample, include_eve, inclu
             for t in OBSTIMES
             for eve in (False, True)
         ],
+        ({"include_eve_correction": True}, ",/evenorm,version=8,respversion='8'"),
     ],
 )
 def test_wavelength_response_consistent(idl_environment, channel, kwargs, keywords) -> None:
-    if channel == 4500 * u.angstrom and "obstime" in kwargs:
+    if channel == 4500 * u.angstrom and ("obstime" in kwargs or "include_eve_correction" in kwargs):
         pytest.skip("The version 8 correction table has no 4500 Å calibration")
     fuv = channel in FUV_CHANNELS
     kwargs = dict(kwargs)

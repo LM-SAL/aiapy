@@ -213,7 +213,9 @@ class Channel(AbstractChannel):
     @property
     @u.quantity_input
     def filter_transmittance(self):
-        """Combined transmittance of the focal plane and entrance filters"""
+        """
+        Combined transmittance of the focal plane and entrance filters.
+        """
         return self.entrance_filter_transmittance * self.focal_plane_filter_transmittance
 
     @property
@@ -293,7 +295,7 @@ class Channel(AbstractChannel):
         return LATEST_CORRECTION_VERSION if self.calibration_version is None else self.calibration_version
 
     @u.quantity_input
-    def eve_correction(self, obstime, correction_table=None, calibration_version=None) -> u.dimensionless_unscaled:
+    def eve_correction(self, obstime=None, correction_table=None, calibration_version=None) -> u.dimensionless_unscaled:
         r"""
         Correct effective area to give good agreement with full-disk EVE data.
 
@@ -317,8 +319,9 @@ class Channel(AbstractChannel):
 
         Parameters
         ----------
-        obstime : `~astropy.time.Time`
+        obstime : `~astropy.time.Time`, optional
             The time of the observation.
+            Defaults to the first calibration epoch.
         correction_table : `astropy.table.QTable`, optional
             Table of correction parameters.
             Defaults to the ``correction_table`` of this channel.
@@ -368,8 +371,8 @@ class Channel(AbstractChannel):
         Parameters
         ----------
         obstime : `~astropy.time.Time`, optional
-            The time of the observation. If `None` (the default), no
-            degradation is applied.
+            The time of the observation. If `None` (the default), only
+            :math:`C_e` at the first calibration epoch is applied.
 
         Returns
         -------
@@ -380,7 +383,7 @@ class Channel(AbstractChannel):
         aiapy.calibrate.degradation
         """
         if obstime is None:
-            return u.Quantity(1.0)
+            return self.eve_correction() if self.include_eve_correction else u.Quantity(1.0)
         obstime = parse_time(obstime)
         degradation = aiapy.calibrate.degradation(
             self.channel,
@@ -450,7 +453,7 @@ class Channel(AbstractChannel):
         - :math:`Q`: effective quantum efficiency of the CCD
         - :math:`D_c`: preflight contaminant transmittance of the optics
         - :math:`D`: time-dependent degradation at ``obstime``
-          (none if ``obstime`` is `None`)
+          (only the EVE correction if ``obstime`` is `None`)
 
         The effective area contains information about the efficiency of the telescope optics and its sensitivity
         as a function of wavelength.
@@ -479,6 +482,4 @@ class Channel(AbstractChannel):
         # NOTE: The nominal channel's time-dependent degradation is applied to
         # the total (nominal + crosstalk) effective area since the postflight
         # cross-calibration is done on the whole channel including crosstalk.
-        if obstime is not None:
-            effective_area = effective_area * self.degradation(obstime=obstime)
-        return effective_area
+        return effective_area * self.degradation(obstime=obstime)

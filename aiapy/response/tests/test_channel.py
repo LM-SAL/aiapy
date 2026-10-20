@@ -119,6 +119,28 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
     assert_quantity_allclose(channel.eve_correction(obstime), eve_correction_truth)
 
 
+def test_eve_correction_without_obstime(channel) -> None:
+    # Without an obstime, the EVE correction is still applied, once
+    channel.correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
+    channel.calibration_version = 8
+    obstime = astropy.time.Time("2020-01-01T00:00:00")
+    eve = channel.eve_correction(obstime)
+    assert_quantity_allclose(channel.eve_correction(), eve)
+    area, area_obstime = channel.effective_area(), channel.effective_area(obstime)
+    channel.include_eve_correction = True
+    assert_quantity_allclose(channel.degradation(), eve)
+    assert_quantity_allclose(channel.effective_area(), area * eve)
+    assert_quantity_allclose(channel.effective_area(obstime), area_obstime * eve)
+
+
+@pytest.mark.remote_data
+def test_eff_wvln_constant(jsoc_correction_table) -> None:
+    # eve_correction() without an obstime uses the first epoch, which relies on this
+    for table in [jsoc_correction_table, get_correction_table()]:
+        for group in table.group_by(["WAVE_STR", "VER_NUM"]).groups:
+            assert np.all(group["EFF_WVLN"] == group["EFF_WVLN"][0])
+
+
 @pytest.mark.parametrize(
     ("obstime", "correction_table", "calibration_version", "include_eve_correction", "include_crosstalk"),
     [

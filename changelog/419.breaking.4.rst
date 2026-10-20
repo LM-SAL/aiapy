@@ -1,0 +1,2 @@
+With ``include_eve_correction=True``, `aiapy.response.Channel` now applies the EVE correction even without an ``obstime``, using the first calibration epoch; previously it was silently skipped.
+``Channel.eve_correction`` also defaults to the first calibration epoch.
