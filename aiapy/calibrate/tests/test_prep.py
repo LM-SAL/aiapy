@@ -28,6 +28,10 @@ def lvl_15_map():
     return register(smap.resample(detector_dimensions()))
 
 
+def time_keywords(meta):
+    return {k: v for k, v in meta.items() if k.startswith(("date", "mjd", "t_obs", "timesys"))}
+
+
 def assert_contains_input(smap, registered):
     """
     Every input pixel corner lands inside the registered output.
@@ -187,16 +191,12 @@ def test_register_observation_time(small_aia_map, tmp_path, date_keyword, timesy
     assert smap.reference_date == reference_date
     assert smap.date == astropy.time.Time("2020-01-01T00:00:00.123456", scale=timesys.lower())
     registered = register(smap)
+    assert time_keywords(registered.meta) == time_keywords(smap.meta)
     filename = tmp_path / "registered.fits"
     registered.save(filename)
     for result in (registered, Map(filename)):
-        assert result.meta["timesys"] == timesys
         assert result.date == smap.date
         assert result.reference_date == smap.reference_date
-        assert result.meta["mjd-obs"] == smap.date.mjd
-        assert astropy.time.Time(result.meta["date-avg"], scale=timesys.lower()) == smap.reference_date
-        assert result.meta["mjd-avg"] == smap.reference_date.mjd
-        assert "date_obs" not in result.meta
 
 
 def test_register_solar_radius(aia_171_test_map) -> None:
@@ -210,35 +210,10 @@ def test_register_solar_radius(aia_171_test_map) -> None:
 
 def test_register_real_input_metadata(aia_171_test_map) -> None:
     """
-    Observation and reference times survive registration of a real AIA level-1 file.
-
-    The real header exercises spellings the synthetic fixtures do not: a ``T_OBS``
-    reference time with a trailing ``Z``, a sub-second ``DATE-OBS``, no ``TIMESYS``,
-    and no ``MJD-OBS``/``MJD-AVG`` companion keywords.
+    A real AIA level-1 header (T_OBS with a trailing Z, no TIMESYS or MJD keywords) keeps its times.
     """
-    smap = aia_171_test_map
-    assert "mjd-avg" not in smap.meta
-    registered = register(smap)
-    # Observation and reference times are preserved at full precision.
-    assert registered.date == smap.date
-    assert registered.reference_date == smap.reference_date
-    assert astropy.time.Time(registered.meta["date-avg"]) == smap.reference_date
-    assert "date_obs" not in registered.meta
-    # DATE-OBS/MJD-OBS and DATE-AVG/MJD-AVG are consistently paired.
-    assert registered.meta["mjd-obs"] == smap.date.mjd
-    assert registered.meta["mjd-avg"] == smap.reference_date.mjd
-
-
-@pytest.mark.parametrize("timesys", ["UTC", "TAI"])
-def test_register_preserve_date_obs_override(small_aia_map, timesys) -> None:
-    meta = small_aia_map.meta.copy()
-    meta["timesys"] = timesys
-    meta["date-avg"] = "2020-01-01T00:00:01"
-    smap = Map(small_aia_map.data, meta)
-    registered = register(smap, preserve_date_obs=False)
-    assert registered.date == smap.reference_date
-    assert registered.reference_date == smap.reference_date
-    assert registered.meta["mjd-obs"] == smap.reference_date.mjd
+    registered = register(aia_171_test_map)
+    assert time_keywords(registered.meta) == time_keywords(aia_171_test_map.meta)
 
 
 @pytest.mark.parametrize("algorithm", ["interpolation", "adaptive", "exact"])
@@ -286,13 +261,11 @@ def test_register_parallel_defaults(small_aia_map, monkeypatch, available_cpus, 
     assert reprojection.call_args.kwargs["block_size"] == (1024, 1024)
     assert reprojection.call_args.kwargs["parallel"] == expected_parallel
     assert reprojection.call_args.kwargs["order"] == 3
-    assert reprojection.call_args.kwargs["preserve_date_obs"] is True
     assert reprojection.call_args.kwargs["roundtrip_coords"] is False
-    register(large_map, parallel=False, block_size=(512, 512), order=1, preserve_date_obs=False)
+    register(large_map, parallel=False, block_size=(512, 512), order=1)
     assert reprojection.call_args.kwargs["block_size"] == (512, 512)
     assert reprojection.call_args.kwargs["parallel"] is False
     assert reprojection.call_args.kwargs["order"] == 1
-    assert reprojection.call_args.kwargs["preserve_date_obs"] is False
 
 
 def test_register_cutout_containing_full_disk(aia_171_test_map) -> None:

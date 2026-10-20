@@ -11,7 +11,6 @@ from scipy.ndimage import maximum_filter
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from astropy.time import Time
 from astropy.wcs import WCS
 from astropy.wcs.utils import pixel_to_pixel
 
@@ -84,9 +83,8 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
         for details on different algorithms. Default is ``'interpolation'``.
     **kwargs
         Passed to `~sunpy.map.GenericMap.reproject_to`, with
-        ``preserve_date_obs=True`` and, except for the exact algorithm,
-        ``roundtrip_coords=False`` by default. Output timestamps retain the
-        input header's time scale. Large images use 1024 by 1024 pixel blocks
+        ``roundtrip_coords=False`` by default except for the exact algorithm.
+        Large images use 1024 by 1024 pixel blocks
         and a thread for every CPU available to the process by default.
         Set ``parallel`` to an integer to choose the worker count, or ``False``
         to run serially, e.g. when already registering many files in parallel.
@@ -107,7 +105,6 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
         )
     header, full_frame = _target_grid(smap)
     kwargs.setdefault("auto_extent", None if full_frame else "edges")
-    kwargs.setdefault("preserve_date_obs", True)
     if algorithm != "exact":
         # Input and output share a frame, so coordinates always round-trip; skip reproject's check.
         kwargs.setdefault("roundtrip_coords", False)
@@ -152,22 +149,14 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     # Identity matrices are omitted from WCS headers, so remove the old matrix.
     for key in ("crota1", "crota2", "pc1_1", "pc1_2", "pc2_1", "pc2_2", "cd1_1", "cd1_2", "cd2_1", "cd2_2"):
         new_meta.pop(key, None)
-    new_meta.update(smap_l15.meta)
+    # Keep the input's times; reprojection rewrites them from the reference date.
+    new_meta.update({k: v for k, v in smap_l15.meta.items() if not k.startswith(("date", "mjd"))})
     # WCS serializes in degrees; keep the arcsec units of AIA headers.
     for key in ("cdelt1", "cdelt2", "crval1", "crval2"):
         new_meta[key] = (new_meta[key] * u.Unit(new_meta[f"cunit{key[-1]}"])).to_value(u.arcsec)
     new_meta.update({"cunit1": "arcsec", "cunit2": "arcsec"})
-    # Reprojection serializes times in UTC; restore the input header's time scale and precision.
-    timesys = smap.meta.get("timesys", "UTC").lower()
-    date_obs = Time(smap.date if kwargs["preserve_date_obs"] else smap.reference_date, scale=timesys, precision=9)
-    date_avg = Time(smap.reference_date, scale=timesys, precision=9)
-    new_meta.pop("date_obs", None)
     new_meta.update(
         {
-            "date-obs": date_obs.isot,
-            "mjd-obs": date_obs.mjd,
-            "date-avg": date_avg.isot,
-            "mjd-avg": date_avg.mjd,
             "naxis1": data.shape[1],
             "naxis2": data.shape[0],
             "r_sun": (smap.rsun_obs / smap_l15.scale.axis1).to_value(u.pix),
