@@ -81,10 +81,13 @@ def temperature_response(channel, spectra, obstime=None, *, chiantifix=False):
 
     The chiantifix is SolarSoft's empirical correction for 94 Å emission missing from
     CHIANTI; it is zero for the other channels.
+    It raises the warm 94 Å response by up to a factor of 2.7 near log T = 6.2 and
+    lowers it by about a quarter above log T = 6.4.
     It was derived for CHIANTI 7.1.3 and the EVE-normalized response and has not been
     updated since, so it is only applied to the SolarSoft emissivity with
-    ``include_eve_correction=True``. It changes the 94 Å response by up to a factor of
-    2.7, at log T = 6.2.
+    ``include_eve_correction=True``.
+    Its effect on six-channel DEMs is small, but analyses that use 94 Å on its own
+    depend on it.
 
     Parameters
     ----------
