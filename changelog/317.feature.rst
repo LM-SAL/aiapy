@@ -1,1 +1,1 @@
-`aiapy.calibrate.register` can return the reprojection coverage with ``return_footprint=True``, keeps valid data next to NaNs and missing pixels, and reprojects large images in parallel blocks set by ``parallel`` and ``block_size``.
+`aiapy.calibrate.register` keeps valid data next to NaN pixels and reprojects large images in parallel blocks set by ``parallel`` and ``block_size``.

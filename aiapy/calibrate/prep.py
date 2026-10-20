@@ -54,8 +54,8 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     smap : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
         A full-disk AIA image or HMI magnetogram, or a cutout of one.
     missing : `float`, optional
-        Fill missing pixels with this value, or the minimum non-NaN input
-        value if `None`.
+        Fill pixels outside the input image with this value, or the minimum
+        non-NaN input value if `None`. NaN input pixels stay NaN.
     order : `int`, optional
         Interpolation order, from 0 to 5, defaulting to cubic (3). Ignored for the adaptive and exact algorithms.
     algorithm : `str`, optional
@@ -68,14 +68,11 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
         and a thread for every CPU available to the process by default.
         Set ``parallel`` to an integer to choose the worker count, or ``False``
         to run serially, e.g. when already registering many files in parallel.
-        Use ``return_footprint=True`` to return coverage.
 
     Returns
     -------
     registered : `~sunpy.map.sources.AIAMap` or `~sunpy.map.sources.sdo.HMIMap`
         A registered map with processing level 1.5.
-    footprint : `~numpy.ndarray`
-        Reprojection coverage, returned only when ``return_footprint=True``.
     """
     if smap.processing_level is None or smap.processing_level > 1:
         warnings.warn(
@@ -92,37 +89,32 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
     kwargs.setdefault("parallel", (os.process_cpu_count() or 1) if smap.data.size > 1024**2 else False)
     kwargs.setdefault("block_size", (1024, 1024) if kwargs["parallel"] else None)
     missing = smap.min() if missing is None else missing
-    source = smap
-    nan_mask = None
     if algorithm == "interpolation":
         kwargs["order"] = order
-        if order in (2, 3, 4, 5) and np.isnan(smap.data).any():
-            # Spline filtering needs finite input; restore invalid neighborhoods afterward.
-            # An order-k spline samples k+1 pixels per axis, so a NaN reaches 2 pixels
-            # for orders 2-3 and 3 pixels for orders 4-5.
-            nan_mask = maximum_filter(np.isnan(smap.data), size={2: 5, 3: 5, 4: 7, 5: 7}[order], mode="constant")
-            source = smap._new_instance(np.where(np.isnan(smap.data), np.nanmedian(smap.data), smap.data), smap.meta)
-    return_footprint = kwargs.pop("return_footprint", False)
-    result = source.reproject_to(header, algorithm=algorithm, return_footprint=return_footprint, **kwargs)
-    smap_l15, footprint = result if return_footprint else (result, None)
+    nan = np.isnan(smap.data)
+    source = smap
+    if nan.any():
+        # Reproject finite data so NaN marks only pixels outside the input, then restore
+        # NaN where a NaN input pixel contributed. An order-k spline samples k+1 pixels
+        # per axis, so a NaN reaches 2 pixels for orders 2-3 and 3 for orders 4-5.
+        size = {2: 5, 3: 5, 4: 7, 5: 7}.get(order, 1) if algorithm == "interpolation" else 1
+        nan = maximum_filter(nan, size=size, mode="constant")
+        source = smap._new_instance(np.where(np.isnan(smap.data), np.nanmedian(smap.data), smap.data), smap.meta)
+    smap_l15 = source.reproject_to(header, algorithm=algorithm, **kwargs)
     data = smap_l15.data
-    if nan_mask is not None:
-        mask_map = smap._new_instance(nan_mask.astype(float), smap.meta)
-        mask_l15 = mask_map.reproject_to(
+    if algorithm == "interpolation":
+        np.clip(data, smap.min(), smap.max(), out=data)
+    # Fill after clipping to preserve custom missing values.
+    data[np.isnan(data)] = missing
+    if nan.any():
+        nan_l15 = smap._new_instance(nan.astype(float), smap.meta).reproject_to(
             smap_l15.wcs,
             order=1,
             shape_out=data.shape,
             parallel=kwargs["parallel"],
             block_size=kwargs["block_size"],
         )
-        invalid = mask_l15.data > 0
-        data[invalid] = np.nan
-        if return_footprint:
-            footprint[invalid] = 0
-    if algorithm == "interpolation":
-        np.clip(data, smap.min(), smap.max(), out=data)
-    # Fill after clipping to preserve custom missing values.
-    data[np.isnan(data)] = missing
+        data[nan_l15.data > 0] = np.nan
     # Reprojection retains only WCS metadata.
     new_meta = copy.deepcopy(smap.meta)
     # Identity matrices are omitted from WCS headers, so remove the old matrix.
@@ -143,8 +135,7 @@ def register(smap, *, missing=None, order=3, algorithm="interpolation", **kwargs
             "bitpix": -8 * data.dtype.itemsize,
         }
     )
-    newmap = smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
-    return (newmap, footprint) if return_footprint else newmap
+    return smap._new_instance(data, new_meta, plot_settings=smap.plot_settings)
 
 
 def correct_degradation(smap, *, correction_table=None, calibration_version=LATEST_CORRECTION_VERSION):
