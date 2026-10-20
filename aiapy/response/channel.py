@@ -390,7 +390,7 @@ class Channel(AbstractChannel):
             obstime,
             correction_table=self._correction_table,
             calibration_version=self._calibration_version,
-        )
+        ).reshape(obstime.shape)
         if self.include_eve_correction:
             degradation = degradation * self.eve_correction(obstime)
         return degradation

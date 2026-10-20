@@ -129,6 +129,7 @@ def test_eve_correction_without_obstime(channel) -> None:
     area, area_obstime = channel.effective_area(), channel.effective_area(obstime)
     channel.include_eve_correction = True
     assert_quantity_allclose(channel.degradation(), eve)
+    assert channel.degradation(obstime).shape == channel.degradation().shape == ()
     assert_quantity_allclose(channel.effective_area(), area * eve)
     assert_quantity_allclose(channel.effective_area(obstime), area_obstime * eve)
 
@@ -172,6 +173,8 @@ def test_effective_area_obstime(channel) -> None:
     # The effective area at obstime is the pristine effective area scaled by
     # the time-dependent degradation
     assert_quantity_allclose(channel.effective_area(obstime), channel.effective_area() * channel.degradation(obstime))
+    assert channel.degradation(obstime).shape == ()
+    assert channel.degradation(astropy.time.Time([obstime, obstime])).shape == (2,)
 
 
 @pytest.mark.parametrize(
