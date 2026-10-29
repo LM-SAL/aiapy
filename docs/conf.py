@@ -153,6 +153,7 @@ intersphinx_mapping = {
         (None, "http://www.astropy.org/astropy-data/intersphinx/scipy.inv"),
     ),
     "skimage": ("https://scikit-image.org/docs/stable/", None),
+    "sunkit_instruments": ("https://docs.sunpy.org/projects/sunkit-instruments/en/stable/", None),
     "sunpy": ("https://docs.sunpy.org/en/stable/", None),
     "jax": ("https://docs.jax.dev/en/latest/", None),
 }
