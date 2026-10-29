@@ -1,0 +1,1 @@
+Added `aiapy.response.temperature_response` and `aiapy.response.get_source_spectra` to compute the temperature responses of the EUV channels, as SolarSoft's ``aia_get_response(/temperature, /dn)`` does, with the EVE normalization, the time-dependent degradation and the 94 Å "chiantifix".
