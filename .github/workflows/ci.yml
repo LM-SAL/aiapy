@@ -32,7 +32,7 @@ permissions: {}
 jobs:
   core:
     if: ${{ !github.event.repository.fork || github.event_name != 'schedule' }}
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1  # v3.2.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
     permissions:
       id-token: write
     with:
@@ -58,7 +58,7 @@ jobs:
 
   test:
     needs: [core, sdist_verify]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1  # v3.2.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
     permissions:
       id-token: write
     with:
@@ -73,7 +73,7 @@ jobs:
 
   docs:
     needs: [core]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1  # v3.2.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
     with:
       default_python: '3.13'
       submodules: false
@@ -88,7 +88,7 @@ jobs:
   online:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
     needs: [core]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
     permissions:
       id-token: write
     with:
@@ -111,7 +111,7 @@ jobs:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
     # After docs, so a docs warning fails in the quick build before the slow gallery build
     needs: [docs]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
     with:
       default_python: '3.13'
       submodules: false
