@@ -32,11 +32,7 @@ permissions: {}
 jobs:
   core:
     if: ${{ !github.event.repository.fork || github.event_name != 'schedule' }}
-<<<<<<<
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
-=======
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
->>>>>>>
     permissions:
       id-token: write
     with:
@@ -62,11 +58,7 @@ jobs:
 
   test:
     needs: [core, sdist_verify]
-<<<<<<<
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
-=======
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
->>>>>>>
     permissions:
       id-token: write
     with:
@@ -81,11 +73,7 @@ jobs:
 
   docs:
     needs: [core]
-<<<<<<<
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
-=======
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
->>>>>>>
     with:
       default_python: '3.13'
       submodules: false
@@ -100,7 +88,7 @@ jobs:
   online:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
     needs: [core]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
     permissions:
       id-token: write
     with:
@@ -123,7 +111,7 @@ jobs:
     if: "!startsWith(github.event.ref, 'refs/tags/v')"
     # After docs, so a docs warning fails in the quick build before the slow gallery build
     needs: [docs]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1  # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
     with:
       default_python: '3.13'
       submodules: false
