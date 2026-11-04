@@ -49,9 +49,18 @@ channel = Channel(94 * u.angstrom, include_eve_correction=True)
 temperature, response = temperature_response(channel, spectra, obstime)
 _, response_chiantifix = temperature_response(channel, spectra, obstime, chiantifix=True)
 
+###############################################################################
+# The emissivity can also come from CHIANTI 11, computed with fiasco. Between
+# CHIANTI 9 and 11 the Fe XIV line at 93.6 Å moved out of the 94 Å passband,
+# so the warm 94 Å response is lower still. The chiantifix does not apply to it.
+
+spectra_chianti11 = get_source_spectra("chianti11")
+_, response_chianti11 = temperature_response(channel, spectra_chianti11, obstime)
+
 fig, ax = plt.subplots()
-ax.plot(temperature, response, label="94 Å")
-ax.plot(temperature, response_chiantifix, label="94 Å with chiantifix")
+ax.plot(temperature, response, label="94 Å, SolarSoft (CHIANTI 9)")
+ax.plot(temperature, response_chiantifix, label="94 Å, SolarSoft with chiantifix")
+ax.plot(temperature, response_chianti11, label="94 Å, CHIANTI 11")
 ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlim(1e5, 1e8)

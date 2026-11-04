@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from sunkit_instruments.response import SourceSpectra
 
 import astropy.time
 import astropy.units as u
@@ -16,6 +15,11 @@ OBSTIME = astropy.time.Time("2015-01-01T00:00:00", scale="utc")
 @pytest.fixture(scope="module")
 def spectra():
     return get_source_spectra()
+
+
+@pytest.fixture(scope="module")
+def spectra_chianti11():
+    return get_source_spectra("chianti11")
 
 
 @pytest.mark.parametrize(
@@ -44,10 +48,34 @@ def test_chiantifix_requires_eve(spectra) -> None:
         temperature_response(Channel(94 * u.angstrom), spectra, chiantifix=True)
 
 
-def test_chiantifix_requires_ssw_spectra(spectra) -> None:
-    other = SourceSpectra(spectra.temperature, spectra.wavelength, spectra.data)
+@pytest.mark.parametrize(
+    ("channel", "index", "expected", "rtol"),
+    # sdo.aia.temperature_response's aia_chianti11_temperature_response.ecsv (sun-data/solar-dynamics-observatory#28,
+    # the same plasma, fiasco 0.8.2 and CHIANTI 11.0.2), raw, at log T 6.0, 6.4 and 7.0. Two known differences:
+    # sdo boosts only one member of the He II doublet (see get_source_spectra); He II reaches 335 Å through the
+    # short-wavelength wing of its filter and 94 Å through the 304 Å crosstalk, worth 1.8e-3 of 335 Å at log T 6.0,
+    # 3.9e-4 at 6.4 and 7.9e-4 at 7.0 (and 1.1e-4 of 94 Å at 5.6), so 335 Å is compared at 6.4 and 7.0 only. And sdo
+    # computed the continua on a grid starting at 25 Å, where CHIANTI's free-bound routine (and fiasco's port of it)
+    # leaves out recombination onto the excited levels of the H-like and He-like ions (mostly O VIII, O VII and
+    # N VII here), worth 2.4e-3 of 94 Å at log T 6.4 and under 1e-4 elsewhere. The rest is the fold, about 4e-5.
+    [
+        (94, [40, 60], [1.60677102e-27, 1.91762518e-27], 2e-4),
+        (94, [48], [1.34141879e-28], 3e-3),
+        (335, [48, 60], [4.95033912e-27, 4.59150350e-28], 1.5e-3),
+    ],
+)
+def test_temperature_response_chianti11(spectra_chianti11, channel, index, expected, rtol) -> None:
+    assert spectra_chianti11.meta["chianti_version"] == "11.0.2"
+    assert "chiantifix" not in spectra_chianti11.meta
+    temperature, response = temperature_response(Channel(channel * u.angstrom), spectra_chianti11)
+    assert_quantity_allclose(np.log10(temperature[[40, 48, 60]].to_value(u.K)), [6.0, 6.4, 7.0])
+    assert_quantity_allclose(response[index], expected * u.Unit("cm5 DN / (pix s)"), rtol=rtol)
+
+
+def test_chiantifix_requires_ssw_spectra(spectra_chianti11) -> None:
+    channel = Channel(94 * u.angstrom, include_eve_correction=True)
     with pytest.raises(ValueError, match="get_source_spectra"):
-        temperature_response(Channel(94 * u.angstrom, include_eve_correction=True), other, chiantifix=True)
+        temperature_response(channel, spectra_chianti11, chiantifix=True)
 
 
 def test_temperature_response_obstime_array(spectra) -> None:
