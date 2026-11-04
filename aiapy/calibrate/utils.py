@@ -149,7 +149,8 @@ def _select_epoch_from_correction_table(
     Parameters
     ----------
     channel : `~astropy.units.Quantity`
-    obstime : `~astropy.time.Time`
+    obstime : `~astropy.time.Time` or `None`
+        If `None`, the first epoch.
     correction_table : `~astropy.table.QTable`
     calibration_version : `int`
         The version of the correction table to use.
@@ -171,6 +172,8 @@ def _select_epoch_from_correction_table(
             msg,
         )
     # Select the epoch for the given observation time
+    if obstime is None:
+        obstime = table["T_START"][0]
     obstime_in_epoch = np.logical_and(obstime >= table["T_START"], obstime < table["T_STOP"])
     if not obstime_in_epoch.any():
         msg = f"No valid calibration epoch for {obstime}"

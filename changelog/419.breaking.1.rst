@@ -1,0 +1,8 @@
+Several properties of `aiapy.response.Channel` have been renamed to match the naming used by `sunkit_instruments.response.abstractions.AbstractChannel`:
+``primary_reflectance`` is now ``primary_mirror_reflectance``,
+``secondary_reflectance`` is now ``secondary_mirror_reflectance``,
+``entrance_filter_efficiency`` is now ``entrance_filter_transmittance``,
+``focal_plane_filter_efficiency`` is now ``focal_plane_filter_transmittance``,
+``geometrical_collecting_area`` is now ``geometrical_area``,
+``quantum_efficiency`` is now ``effective_quantum_efficiency``
+and ``plate_scale`` is now ``pixel_solid_angle``.
