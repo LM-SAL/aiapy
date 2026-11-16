@@ -1,0 +1,1 @@
+`aiapy.response.get_source_spectra` takes ``source="chianti11"`` for an emissivity computed from CHIANTI 11.0.2 with fiasco, with the plasma of the SolarSoft emissivity and each line folded at its exact wavelength.
