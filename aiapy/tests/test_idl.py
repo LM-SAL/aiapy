@@ -16,7 +16,7 @@ from astropy.tests.helper import assert_quantity_allclose
 import aiapy.psf
 from aiapy.calibrate import correct_aec, estimate_error, fetch_spikes, register, respike, update_pointing
 from aiapy.calibrate.utils import get_correction_table, get_error_table
-from aiapy.response import Channel
+from aiapy.response import Channel, get_source_spectra, temperature_response
 from aiapy.tests.data import get_test_filepath
 from aiapy.tests.helpers import CHANNELS
 
@@ -111,6 +111,35 @@ def test_wavelength_response_consistent(idl_environment, channel, kwargs, keywor
     )
     r_ssw = ssw["r"][f"A{channel.to_value('angstrom'):.0f}"][0]["ea"][0] * u.cm**2 * u.DN / u.ph
     assert_quantity_allclose(r, r_ssw, rtol=1e-4, atol=0.0 * u.cm**2 * u.DN / u.ph)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize("channel", CHANNELS)
+@pytest.mark.parametrize("obstime", [None, OBSTIMES[0]])
+@pytest.mark.parametrize(("include_eve_correction", "chiantifix"), [(False, False), (True, False), (True, True)])
+def test_temperature_response_consistent(idl_environment, channel, obstime, include_eve_correction, chiantifix) -> None:
+    c = Channel(
+        channel,
+        include_eve_correction=include_eve_correction,
+        correction_table=get_correction_table(get_test_filepath("aia_V10_20201119_190000_response_table.txt")),
+        calibration_version=10,
+    )
+    _, response = temperature_response(c, get_source_spectra(), obstime, chiantifix=chiantifix)
+    # Always set evenorm: with timedepend_date and no evenorm, IDL waits for input
+    keywords = f",evenorm={int(include_eve_correction)}"
+    if chiantifix:
+        keywords += ",/chiantifix"
+    if obstime is not None:
+        keywords += f",timedepend_date='{obstime.tai.isot}'"
+    ssw = idl_environment.run(
+        "r = aia_get_response(/temperature,/dn,version=10,respversion='20201119_190000'{{ keywords }})",
+        args={"keywords": keywords},
+        save_vars=["r"],
+        verbose=False,
+    )
+    r_ssw = ssw["r"][f"A{channel.to_value('angstrom'):.0f}"][0]["tresp"][0] * u.Unit("cm5 DN / (pix s)")
+    # TODO: rtol=1e-5 once sunkit-instruments folds on the spectra wavelengths (sunpy/sunkit-instruments#231)
+    assert_quantity_allclose(response, r_ssw, rtol=2e-4)
 
 
 @pytest.mark.parametrize("channel", CHANNELS)
