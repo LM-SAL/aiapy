@@ -18,19 +18,13 @@ def channel(request):
 
 @pytest.fixture
 def channel_properties():
+    # Properties that we need, but are not checked by the ABC
     return [
         "wavelength",
-        "primary_reflectance",
-        "secondary_reflectance",
-        "focal_plane_filter_efficiency",
-        "entrance_filter_efficiency",
-        "geometrical_collecting_area",
-        "quantum_efficiency",
-        "contamination",
-        "plate_scale",
-        "effective_area",
-        "gain",
-        "crosstalk",
+        "primary_mirror_reflectance",
+        "secondary_mirror_reflectance",
+        "focal_plane_filter_transmittance",
+        "entrance_filter_transmittance",
     ]
 
 
@@ -75,17 +69,10 @@ def test_channel_properties(channel, channel_properties) -> None:
         assert isinstance(getattr(channel, p), u.Quantity)
 
 
-def test_effective_area(channel) -> None:
-    effective_area = (
-        channel.primary_reflectance
-        * channel.secondary_reflectance
-        * channel.focal_plane_filter_efficiency
-        * channel.entrance_filter_efficiency
-        * channel.geometrical_collecting_area
-        * channel.quantum_efficiency
-        * channel.contamination
-    )
-    assert (effective_area == channel.effective_area).all()
+def test_nominal_effective_area(channel) -> None:
+    # The effective area without crosstalk matches the one stored in the instrument file
+    channel.include_crosstalk = False
+    assert_quantity_allclose(channel.effective_area(), channel._data["effarea"] * u.cm**2, rtol=1e-6)
 
 
 @pytest.mark.parametrize(
@@ -126,25 +113,68 @@ def test_eve_correction(channel, source, eve_correction_truth) -> None:
         obstime, correction_table=correction_table, calibration_version=calibration_version
     )
     assert_quantity_allclose(eve_correction, eve_correction_truth)
+    # The channel's own correction table and version are the defaults
+    channel.correction_table = correction_table
+    channel.calibration_version = calibration_version
+    assert_quantity_allclose(channel.eve_correction(obstime), eve_correction_truth)
 
 
-def test_wavelength_response_smoke_tests(channel) -> None:
+def test_eve_correction_without_obstime(channel) -> None:
+    # Without an obstime, the EVE correction is still applied, once
+    channel.correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
+    channel.calibration_version = 8
+    obstime = astropy.time.Time("2020-01-01T00:00:00")
+    eve = channel.eve_correction(obstime)
+    assert_quantity_allclose(channel.eve_correction(), eve)
+    area, area_obstime = channel.effective_area(), channel.effective_area(obstime)
+    channel.include_eve_correction = True
+    assert_quantity_allclose(channel.degradation(), eve)
+    assert channel.degradation(obstime).shape == channel.degradation().shape == ()
+    assert_quantity_allclose(channel.effective_area(), area * eve)
+    assert_quantity_allclose(channel.effective_area(obstime), area_obstime * eve)
+
+
+@pytest.mark.remote_data
+def test_eff_wvln_constant(jsoc_correction_table) -> None:
+    # eve_correction() without an obstime uses the first epoch, which relies on this
+    for table in [jsoc_correction_table, get_correction_table()]:
+        for group in table.group_by(["WAVE_STR", "VER_NUM"]).groups:
+            assert np.all(group["EFF_WVLN"] == group["EFF_WVLN"][0])
+
+
+@pytest.mark.parametrize(
+    ("obstime", "correction_table", "calibration_version", "include_eve_correction", "include_crosstalk"),
+    [
+        (None, None, None, False, True),
+        (None, None, None, False, False),
+        ("2020-01-01", get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, False, True),
+        ("2020-01-01", get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, False, False),
+        (astropy.time.Time.now(), get_test_filepath("aia_V8_20171210_050627_response_table.txt"), 8, True, True),
+    ],
+)
+def test_effective_area(
+    channel, obstime, correction_table, calibration_version, include_eve_correction, include_crosstalk
+) -> None:
     # NOTE: this does not test correctness, but just that the method can
     # be run with the various combinations of inputs. The tests below test the
     # correctness of the output as evaluated by their similarity to those
     # results from SSW.
-    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    channel.wavelength_response(correction_table=correction_table, calibration_version=8)
-    channel.wavelength_response(include_crosstalk=False, correction_table=correction_table, calibration_version=8)
-    channel.wavelength_response(
-        obstime=astropy.time.Time.now(), correction_table=correction_table, calibration_version=8
-    )
-    channel.wavelength_response(
-        obstime=astropy.time.Time.now(),
-        include_eve_correction=True,
-        correction_table=correction_table,
-        calibration_version=8,
-    )
+    channel.include_crosstalk = include_crosstalk
+    channel.include_eve_correction = include_eve_correction
+    channel.calibration_version = calibration_version
+    channel.correction_table = correction_table
+    assert channel.effective_area(obstime=obstime).shape == channel.wavelength.shape
+
+
+def test_effective_area_obstime(channel) -> None:
+    channel.correction_table = get_test_filepath("aia_V8_20171210_050627_response_table.txt")
+    channel.calibration_version = 8
+    obstime = astropy.time.Time("2020-01-01T00:00:00")
+    # The effective area at obstime is the pristine effective area scaled by
+    # the time-dependent degradation
+    assert_quantity_allclose(channel.effective_area(obstime), channel.effective_area() * channel.degradation(obstime))
+    assert channel.degradation(obstime).shape == ()
+    assert channel.degradation(astropy.time.Time([obstime, obstime])).shape == (2,)
 
 
 @pytest.mark.parametrize(
@@ -157,8 +187,8 @@ def test_wavelength_response_smoke_tests(channel) -> None:
     ],
 )
 def test_wavelength_response_matches_idl(channel, include_crosstalk, expected) -> None:
-    correction_table = get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt"))
-    r = channel.wavelength_response(include_crosstalk=include_crosstalk, correction_table=correction_table)
+    channel.include_crosstalk = include_crosstalk
+    r = channel.wavelength_response() / channel.pixel_solid_angle
     indices = [np.argmin(np.abs(channel.wavelength - w)) for w in [94, 304] * u.angstrom]
     assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
 
@@ -175,7 +205,7 @@ def test_wavelength_response_matches_idl(channel, include_crosstalk, expected) -
 )
 def test_fuv_wavelength_response_matches_idl(channel_wavelength, expected) -> None:
     channel = Channel(channel_wavelength)
-    r = channel.wavelength_response()
+    r = channel.wavelength_response() / channel.pixel_solid_angle
     indices = [np.argmin(np.abs(channel.wavelength - w)) for w in [channel_wavelength, 5000 * u.angstrom]]
     assert_quantity_allclose(r[indices], expected * u.cm**2 * u.DN / u.ph, rtol=1e-4)
 
@@ -188,4 +218,5 @@ def test_fuv_channel(channel_wavelength, channel_properties, required_keys) -> N
     assert all(k in channel._data for k in required_keys)
     for p in channel_properties:
         assert isinstance(getattr(channel, p), u.Quantity)
-    assert_quantity_allclose(channel.contamination, u.Quantity([1]))
+    # The preflight contamination is missing for the FUV channels and falls back to 1
+    assert_quantity_allclose(channel._preflight_contamination, np.ones(channel.wavelength.shape))

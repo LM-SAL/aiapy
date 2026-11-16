@@ -87,17 +87,22 @@ def test_error_consistent(idl_environment, channel, n_sample, include_eve, inclu
             for t in OBSTIMES
             for eve in (False, True)
         ],
+        ({"include_eve_correction": True}, ",/evenorm,version=8,respversion='8'"),
     ],
 )
 def test_wavelength_response_consistent(idl_environment, channel, kwargs, keywords) -> None:
-    if channel == 4500 * u.angstrom and "obstime" in kwargs:
+    if channel == 4500 * u.angstrom and ("obstime" in kwargs or "include_eve_correction" in kwargs):
         pytest.skip("The version 8 correction table has no 4500 Å calibration")
     fuv = channel in FUV_CHANNELS
-    r = Channel(channel).wavelength_response(
+    kwargs = dict(kwargs)
+    obstime = kwargs.pop("obstime", None)
+    c = Channel(
+        channel,
         correction_table=get_correction_table(get_test_filepath("aia_V8_20171210_050627_response_table.txt")),
         calibration_version=8,
         **kwargs,
     )
+    r = c.wavelength_response(obstime=obstime) / c.pixel_solid_angle
     ssw = idl_environment.run(
         "r = aia_get_response(/area,/dn{{ uv }}{{ keywords }})",
         args={"uv": ",/uv" if fuv else "", "keywords": keywords},
